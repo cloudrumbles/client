@@ -2,6 +2,10 @@ struct SkyVarying {
     @builtin(position) position: vec4<f32>,
     @location(0) coordinate: vec2<f32>,
 };
+struct SkyOutput {
+    @location(0) color: vec4<f32>,
+    @location(1) reactive: vec4<f32>,
+};
 
 @vertex fn vs_sky(@builtin(vertex_index) index: u32) -> SkyVarying {
     let coordinate = vec2<f32>(f32((index << 1u) & 2u), f32(index & 2u));
@@ -11,13 +15,20 @@ struct SkyVarying {
     return output;
 }
 
-@fragment fn fs_sky(input: SkyVarying) -> @location(0) vec4<f32> {
+@fragment fn fs_sky(input: SkyVarying) -> SkyOutput {
+    let coordinate = input.coordinate - frame.jitter_info.xy;
     let ray = normalize(frame.camera_forward.xyz
-        + frame.camera_right.xyz * input.coordinate.x * frame.camera_right.w
-        + frame.camera_up.xyz * input.coordinate.y * frame.camera_up.w);
+        + frame.camera_right.xyz * coordinate.x * frame.camera_right.w
+        + frame.camera_up.xyz * coordinate.y * frame.camera_up.w);
     let sun = solar_direction();
     let day = frame.light_direction_daylight.w;
     var color = environment_color(ray);
+    if (frame.camera_forward.w < 0.5) {
+        var output: SkyOutput;
+        output.color = vec4<f32>(color, 1.0);
+        output.reactive = vec4<f32>(0.0);
+        return output;
+    }
     let sun_disk = smoothstep(0.99970, 0.99985, dot(ray, sun));
     let moon_disk = smoothstep(0.99956, 0.99979, dot(ray, -sun));
     color += sun_disk * vec3<f32>(9.0, 7.5, 4.6) * smoothstep(-0.10, 0.02, sun.y);
@@ -29,5 +40,8 @@ struct SkyVarying {
 
     // Tiny celestial features remain analytic so the bounded environment map
     // can be reused without blurring the sun, moon, or stars.
-    return vec4<f32>(color, 1.0);
+    var output: SkyOutput;
+    output.color = vec4<f32>(color, 1.0);
+    output.reactive = vec4<f32>(0.0);
+    return output;
 }

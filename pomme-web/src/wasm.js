@@ -9,5 +9,6 @@ export async function loadCore(seed) {
 
 export function copyMesh(core, index, water) {
   const count = core.mesh_chunk(index, water ? 1 : 0);
-  return new Float32Array(core.memory.buffer, core.mesh_ptr(), count * 10).slice();
+  const stride = core.mesh_vertex_stride?.() ?? 10;
+  return new Float32Array(core.memory.buffer, core.mesh_ptr(), count * stride).slice();
 }

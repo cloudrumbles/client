@@ -7,7 +7,7 @@ const bytes = await readFile(new URL('../public/core.wasm', import.meta.url)).ca
   throw new Error('Build the real WASM artifact with npm run build before running tests.', { cause: error });
 });
 const wasmModule = await WebAssembly.compile(bytes);
-const stride = 10;
+const stride = 14;
 
 async function world(seed = 1650) {
   const instance = await WebAssembly.instantiate(wasmModule, {});
@@ -44,8 +44,8 @@ function assertMesh(mesh) {
     assert.equal(Math.abs(mesh[i + 3]) + Math.abs(mesh[i + 4]) + Math.abs(mesh[i + 5]), 1, 'cardinal unit normal');
   }
   for (let i = 0; i < mesh.length; i += stride * 3) {
-    const u = [mesh[i + 10] - mesh[i], mesh[i + 11] - mesh[i + 1], mesh[i + 12] - mesh[i + 2]];
-    const v = [mesh[i + 20] - mesh[i], mesh[i + 21] - mesh[i + 1], mesh[i + 22] - mesh[i + 2]];
+    const u = [mesh[i + stride] - mesh[i], mesh[i + stride + 1] - mesh[i + 1], mesh[i + stride + 2] - mesh[i + 2]];
+    const v = [mesh[i + stride * 2] - mesh[i], mesh[i + stride * 2 + 1] - mesh[i + 1], mesh[i + stride * 2 + 2] - mesh[i + 2]];
     const cross = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
     const facing = cross[0] * mesh[i + 3] + cross[1] * mesh[i + 4] + cross[2] * mesh[i + 5];
     assert.ok(facing > 0, 'triangle winding faces outward and has nonzero area');
@@ -57,10 +57,14 @@ test('built WASM runs without host imports and exports the browser ABI', async (
   const core = await world();
   assert.ok(core.memory instanceof WebAssembly.Memory);
   for (const name of ['block_get', 'block_set', 'block_solid', 'mesh_chunk', 'mesh_ptr', 'mesh_dirty',
-    'mesh_clean', 'world_revision', 'chunk_revision', 'terrain_height', 'ray_cast', 'ray_hit_ptr', 'collides_aabb']) {
+    'mesh_clean', 'world_revision', 'chunk_revision', 'terrain_height', 'ray_cast', 'ray_hit_ptr', 'collides_aabb',
+    'world_reset', 'world_rebase', 'world_column_loaded', 'world_stage_ptr', 'world_load_section',
+    'world_min_y', 'world_origin_x', 'world_origin_z', 'mesh_vertex_stride', 'block_flags',
+    'world_float_stage_ptr', 'block_model_register', 'block_collision_register']) {
     assert.equal(typeof core[name], 'function', name);
   }
   assert.deepEqual([core.world_width(), core.world_height(), core.world_depth()], [128, 64, 128]);
+  assert.equal(core.mesh_vertex_stride(), stride);
   assert.equal(core.world_chunk_size(), 16);
   assert.equal(core.world_chunk_count(), 64);
 });
@@ -96,7 +100,7 @@ test('invalid coordinates and IDs cannot modify world state', async () => {
   assert.equal(core.block_solid(0), 0);
   assert.equal(core.block_solid(7), 0);
   assert.equal(core.block_solid(3), 1);
-  assert.equal(core.block_solid(999), 0);
+  assert.equal(core.block_solid(999), 1, 'unknown imported states conservatively retain collision');
 });
 
 test('corner editing invalidates diagonal AO neighbours and only actual edits advance revisions', async () => {

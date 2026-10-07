@@ -52,11 +52,12 @@ version management, and spawns the client with the appropriate flags.
 
 ### Experimental browser client
 
-An editable WASM/WebGPU terrain sandbox is available in [pomme-web](./pomme-web).
-It includes cached shadows, worker meshing, scalable shaders and a hardware
-benchmark. This is the first browser-engine milestone; Minecraft protocol,
-vanilla gameplay, Photon-pack compatibility and distant-terrain LOD are still
-pending. See its README for build instructions and the implementation roadmap.
+A Java 1.20.4 WASM/WebGPU browser client is available in [pomme-web](./pomme-web).
+It connects through a local Java-server gateway, imports Anvil worlds and resource
+packs, and includes persistent distant terrain, cached lighting, temporal shaders
+and a hardware benchmark. Original Photon GLSL packs and Java rendering mods are
+not loaded directly. See its README for setup, supported gameplay and current
+parity limits; 60 FPS on a 1650 Ti still requires target-hardware measurements.
 
 Before building, you must have [just](https://github.com/casey/just) installed.
 The Rust toolchain is pinned in `rust-toolchain.toml`; rustup picks it up.

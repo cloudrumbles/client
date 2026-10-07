@@ -48,8 +48,12 @@ try {
   await page.evaluate(() => { window.pomme.player.position = [64.5, 48, 88.5]; window.pomme.player.verticalSpeed = 0; });
   const initialPosition = await page.evaluate(() => [...window.pomme.player.position]);
   await page.keyboard.down('w');
-  await page.waitForTimeout(600);
-  await page.keyboard.up('w');
+  try {
+    await page.waitForFunction(start => {
+      const p = window.pomme.player.position;
+      return Math.hypot(p[0] - start[0], p[2] - start[2]) > 0.05;
+    }, initialPosition, { timeout: 15000 });
+  } finally { await page.keyboard.up('w'); }
   const moved = await page.evaluate(() => [...window.pomme.player.position]);
   assert.ok(Math.hypot(moved[0] - initialPosition[0], moved[2] - initialPosition[2]) > 0.05, 'WASD moves the player under pointer lock');
   await page.keyboard.press('KeyE');

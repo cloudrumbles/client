@@ -40,16 +40,19 @@ jobs:
             if curl --fail --silent http://127.0.0.1:5173 > /dev/null; then break; fi
             sleep 1
           done
-          CHROMIUM_PATH="$(node --input-type=module -e "import { chromium } from 'playwright'; console.log(chromium.executablePath())")" POMME_SOFTWARE_GPU=1 npm run test:browser
+          export CHROMIUM_PATH="$(node --input-type=module -e "import { chromium } from 'playwright'; console.log(chromium.executablePath())")"
+          export POMME_SOFTWARE_GPU=1
+          npm run test:browser
+          npm run test:renderer
+          npm run test:lighting
+          npm run test:minecraft
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: browser-screenshots
           path: pomme-web/test-results/
+      - run: npm run bundle
       - uses: actions/upload-artifact@v4
         with:
           name: browser-client
-          path: |
-            pomme-web/index.html
-            pomme-web/src/
-            pomme-web/public/core.wasm
+          path: pomme-web/dist/pomme-browser.zip

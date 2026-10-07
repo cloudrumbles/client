@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#132638" />
-    <meta name="description" content="Pomme's experimental voxel sandbox running with WebAssembly and WebGPU in your browser." />
+    <meta name="description" content="Pomme Minecraft browser client with a WebAssembly world and WebGPU rendering." />
     <title>Pomme / browser</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
@@ -15,6 +15,27 @@
       <a class="wordmark" href="./" aria-label="Pomme browser home"><span class="wordmark-icon" aria-hidden="true"></span>Pomme <span class="wordmark-detail">/ browser</span></a>
       <button id="settings-toggle" class="button button-quiet" type="button" aria-label="Open graphics settings" aria-expanded="false" aria-controls="settings"><svg aria-hidden="true" viewBox="0 0 20 20" fill="none"><path d="M4 3v14M10 3v14M16 3v14M2 7h4M8 13h4M14 8h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>Settings</button>
     </header>
+
+    <button id="worlds-toggle" class="button button-quiet worlds-toggle" type="button" aria-controls="worlds" aria-expanded="false">Worlds &amp; servers</button>
+    <aside id="worlds" class="worlds-panel glass" hidden>
+      <h2>Worlds &amp; servers</h2>
+      <label class="file-label">Minecraft textures &amp; models<input id="resource-pack" type="file" accept=".zip,.jar" /></label>
+      <p id="pack-status" class="muted">Import your 1.20.4 client JAR or a resource pack.</p>
+      <label class="file-label">Java world files<input id="world-files" type="file" accept=".mca,.dat" multiple /></label>
+      <p class="muted">Select region files and optionally level.dat. Imported worlds allow local building.</p>
+      <button id="resume-import" class="button button-secondary" type="button" hidden>Resume saved Java world</button>
+      <form id="server-form">
+        <label>Server address<input id="server-host" value="localhost" autocomplete="off" required /></label>
+        <div class="server-row"><label>Port<input id="server-port" type="number" min="1" max="65535" value="25565" required /></label><label>Username<input id="server-username" value="Player" maxlength="16" required /></label></div>
+        <label>Account<select id="server-auth"><option value="microsoft">Microsoft account</option><option value="offline">Offline / local server</option></select></label>
+        <label>Gateway URL<input id="server-gateway" value="ws://127.0.0.1:5174" required /></label>
+        <p class="muted">Start the local gateway with <code>npm run gateway</code>. Java edition 1.20.4.</p>
+        <button id="connect" class="button button-primary" type="submit">Connect to server</button>
+        <button id="disconnect" class="button button-secondary" type="button" hidden>Disconnect</button>
+      </form>
+      <p id="connection-status" role="status"></p>
+      <div id="account-code" hidden><a id="account-link" target="_blank" rel="noopener">Sign in to Microsoft</a><p>Enter code <strong id="account-code-text"></strong></p></div>
+    </aside>
 
     <aside id="settings" class="settings-panel glass" aria-labelledby="settings-heading" hidden>
       <div class="settings-heading"><h2 id="settings-heading">Graphics &amp; sunlight</h2><span class="muted">Live controls</span></div>
@@ -46,19 +67,19 @@
         <div class="welcome-worldmark" aria-hidden="true"><span></span><span></span><span></span></div>
         <p class="engine-note">WASM world · WebGPU rendering</p>
         <h1 id="welcome-heading">Step into the world.</h1>
-        <p class="welcome-copy">Explore, build, and watch the light change in Pomme’s first browser sandbox.</p>
+        <p class="welcome-copy">Explore the demo, import a Java world, or connect to a Minecraft server.</p>
         <button id="play" class="button button-primary play-button" type="button">Enter world <svg aria-hidden="true" viewBox="0 0 20 20" fill="none"><path d="m8 5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
         <div class="controls-grid" aria-label="Keyboard and mouse controls">
           <div><span class="control-keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span>Move</span></div>
           <div><span class="control-keys"><kbd>Mouse</kbd></span><span>Look around</span></div>
           <div><span class="control-keys"><kbd>Space</kbd></span><span>Jump</span></div>
-          <div><span class="control-keys"><kbd>Shift</kbd></span><span>Sprint</span></div>
+          <div><span class="control-keys"><kbd>Ctrl</kbd><kbd>Shift</kbd></span><span>Sprint / sneak</span></div>
           <div><span class="control-keys"><kbd>Left click</kbd></span><span>Break block</span></div>
           <div><span class="control-keys"><kbd>Right click</kbd></span><span>Place block</span></div>
           <div><span class="control-keys"><kbd>1</kbd><span class="key-range">–</span><kbd>6</kbd></span><span>Select block</span></div>
-          <div><span class="control-keys"><kbd>E</kbd></span><span>Release cursor</span></div>
+          <div><span class="control-keys"><kbd>Esc</kbd></span><span>Release cursor</span></div>
         </div>
-        <p class="build-note">Experimental browser engine. Keyboard and mouse required; touch controls are not available in this build.</p>
+        <p class="build-note">Java 1.20.4 browser engine. Keyboard and mouse required.</p>
       </section>
     </div>
 

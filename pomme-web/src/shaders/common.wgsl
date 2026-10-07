@@ -12,6 +12,8 @@ struct Frame {
     camera_forward: vec4<f32>,
     fog: vec4<f32>,
     screen_quality: vec4<f32>,
+    inverse_view_projection: mat4x4<f32>,
+    jitter_info: vec4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> frame: Frame;
@@ -48,6 +50,7 @@ fn solar_direction() -> vec3<f32> {
 }
 
 fn atmosphere(ray: vec3<f32>) -> vec3<f32> {
+    if (frame.camera_forward.w < 0.5) { return vec3<f32>(0.065, 0.016, 0.008); }
     let sun = solar_direction();
     let day = frame.light_direction_daylight.w;
     let height = pow(clamp(ray.y * 0.5 + 0.5, 0.0, 1.0), 0.7);
@@ -74,18 +77,38 @@ fn environment_color(ray: vec3<f32>) -> vec3<f32> {
 // water reflections then share a texture lookup instead of repeating noise.
 fn clouded_atmosphere(ray: vec3<f32>) -> vec3<f32> {
     var color = atmosphere(ray);
+    if (frame.camera_forward.w < 0.5) { return color; }
     if (ray.y > 0.035 && frame.screen_quality.z > 0.5) {
         let sun = solar_direction();
         let day = frame.light_direction_daylight.w;
         let cloud_position = ray.xz / (ray.y + 0.20) * 4.0 + frame.eye_time.xz * 0.0018;
         let wind = vec2<f32>(frame.eye_time.w * 0.006, frame.eye_time.w * 0.002);
+        if (frame.screen_quality.z > 1.5) {
+            // A bounded six-slice participating cloud layer. This runs only
+            // when the environment cache updates, never for every camera or
+            // reflected-water pixel. Accumulated extinction gives soft depth.
+            var transmission = 1.0;
+            var radiance = vec3<f32>(0.0);
+            for (var slice = 0; slice < 6; slice += 1) {
+                let height = (f32(slice) + 0.5) / 6.0;
+                let position = ray.xz / (ray.y + 0.20) * (3.4 + height * 1.2)
+                    + frame.eye_time.xz * 0.0018 + wind;
+                let noise = noise2(position) * 0.70 + noise2(position * 2.13 + vec2<f32>(height * 0.71)) * 0.30;
+                let profile = pow(sin(height * PI), 0.8);
+                let density = clamp((noise - 0.43) * 3.6, 0.0, 1.0) * profile;
+                let opacity = (1.0 - exp(-density * 0.68)) * smoothstep(0.035, 0.20, ray.y);
+                let self_shadow = mix(0.60, 1.0, height);
+                let silver = pow(max(dot(ray, sun), 0.0), 12.0) * day * (1.0 - density) * 0.85;
+                let lit = mix(vec3<f32>(0.035, 0.055, 0.10), vec3<f32>(0.78, 0.86, 0.95), day) * self_shadow
+                    + frame.light_color_day_phase.rgb * silver;
+                radiance += transmission * opacity * lit;
+                transmission *= 1.0 - opacity;
+            }
+            return color * transmission + radiance;
+        }
         var cloud_noise = noise2(cloud_position + wind) * 0.63
             + noise2(cloud_position * 2.13 + wind) * 0.25;
-        if (frame.screen_quality.z > 1.5) {
-            cloud_noise += noise2(cloud_position * 4.37 + wind) * 0.12;
-        } else {
-            cloud_noise += 0.06;
-        }
+        cloud_noise += 0.06;
         let cloud = smoothstep(0.49, 0.72, cloud_noise) * smoothstep(0.035, 0.20, ray.y);
         let cloud_light = mix(vec3<f32>(0.035, 0.055, 0.10), vec3<f32>(0.76, 0.85, 0.93), day);
         let lining = pow(max(dot(ray, sun), 0.0), 12.0) * day;
@@ -98,7 +121,7 @@ fn fog_color(world_position: vec3<f32>, surface: vec3<f32>) -> vec3<f32> {
     let delta = world_position - frame.eye_time.xyz;
     let distance = length(delta);
     let ray = delta / max(distance, 0.001);
-    let height_density = exp(-max(world_position.y - 12.0, 0.0) * 0.029);
+    let height_density = exp(-max(world_position.y - frame.fog.x, 0.0) * 0.029);
     let density = frame.fog.z * mix(0.48, 1.0, height_density);
     let fog_amount = 1.0 - exp(-distance * distance * density);
     let light_scatter = pow(max(dot(ray, frame.light_direction_daylight.xyz), 0.0), 10.0);
@@ -107,6 +130,7 @@ fn fog_color(world_position: vec3<f32>, surface: vec3<f32>) -> vec3<f32> {
 }
 
 fn terrain_shadow(world_position: vec3<f32>, normal: vec3<f32>) -> f32 {
+    if (frame.camera_forward.w < 0.5) { return 1.0; }
     let light_clip = frame.light_view_projection * vec4<f32>(world_position, 1.0);
     let light_ndc = light_clip.xyz / light_clip.w;
     let uv = light_ndc.xy * vec2<f32>(0.5, -0.5) + vec2<f32>(0.5);
@@ -114,7 +138,7 @@ fn terrain_shadow(world_position: vec3<f32>, normal: vec3<f32>) -> f32 {
         return 1.0;
     }
     let alignment = clamp(dot(normal, frame.light_direction_daylight.xyz), 0.0, 1.0);
-    let depth = light_ndc.z - (0.00023 + (1.0 - alignment) * 0.0012);
+    let depth = light_ndc.z - (0.00023 + (1.0 - alignment) * 0.0012) * frame.fog.w;
     let texel = 1.0 / vec2<f32>(textureDimensions(shadow_map));
     // Low: hardware 2x2 PCF. Balanced/high: a stable 3x3 filter.
     if (frame.screen_quality.z < 0.5) {

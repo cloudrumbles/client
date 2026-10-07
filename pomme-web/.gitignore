@@ -2,3 +2,6 @@
 /public/core.wasm
 /node_modules/
 /test-results/
+/data/
+/vendor/
+/dist/
