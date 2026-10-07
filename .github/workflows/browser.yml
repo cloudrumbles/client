@@ -1,0 +1,55 @@
+name: Browser client
+on:
+  push:
+    paths: ['pomme-web/**', '.github/workflows/browser.yml']
+  pull_request:
+    paths: ['pomme-web/**', '.github/workflows/browser.yml']
+permissions:
+  contents: read
+jobs:
+  wasm-webgpu:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pomme-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: pomme-web/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: clippy, rustfmt
+      - run: npm ci
+      - run: npm run build
+      - run: cargo fmt --check
+        working-directory: pomme-web/core
+      - run: cargo clippy --all-targets -- -D warnings
+        working-directory: pomme-web/core
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - name: Browser integration
+        run: |
+          npm run dev > /tmp/pomme-web-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:5173 > /dev/null; then break; fi
+            sleep 1
+          done
+          CHROMIUM_PATH="$(node --input-type=module -e "import { chromium } from 'playwright'; console.log(chromium.executablePath())")" POMME_SOFTWARE_GPU=1 npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-screenshots
+          path: pomme-web/test-results/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: browser-client
+          path: |
+            pomme-web/index.html
+            pomme-web/src/
+            pomme-web/public/core.wasm

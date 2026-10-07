@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#132638" />
+    <meta name="description" content="Pomme's experimental voxel sandbox running with WebAssembly and WebGPU in your browser." />
+    <title>Pomme / browser</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <canvas id="world" aria-label="Interactive voxel world" tabindex="0"></canvas>
+
+    <header class="topbar">
+      <a class="wordmark" href="./" aria-label="Pomme browser home"><span class="wordmark-icon" aria-hidden="true"></span>Pomme <span class="wordmark-detail">/ browser</span></a>
+      <button id="settings-toggle" class="button button-quiet" type="button" aria-label="Open graphics settings" aria-expanded="false" aria-controls="settings"><svg aria-hidden="true" viewBox="0 0 20 20" fill="none"><path d="M4 3v14M10 3v14M16 3v14M2 7h4M8 13h4M14 8h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>Settings</button>
+    </header>
+
+    <aside id="settings" class="settings-panel glass" aria-labelledby="settings-heading" hidden>
+      <div class="settings-heading"><h2 id="settings-heading">Graphics &amp; sunlight</h2><span class="muted">Live controls</span></div>
+      <div class="setting-row">
+        <label for="quality">Shader quality</label>
+        <select id="quality"><option value="low">Low</option><option value="balanced" selected>Balanced</option><option value="high">High</option></select>
+      </div>
+      <div class="setting-range">
+        <label for="resolution">Render resolution <span class="setting-hint">50–100%</span></label>
+        <input id="resolution" type="range" min="0.5" max="1" step="0.01" value="0.85" aria-label="Render resolution scale" />
+      </div>
+      <label class="checkbox-row" for="adaptive"><span><strong>Adaptive resolution</strong><small>Adjust scale toward 60 fps</small></span><input id="adaptive" type="checkbox" checked /><span class="switch" aria-hidden="true"></span></label>
+      <div class="setting-divider"></div>
+      <label class="checkbox-row" for="cycle"><span><strong>Day &amp; night cycle</strong><small>Let the sun move through the sky</small></span><input id="cycle" type="checkbox" checked /><span class="switch" aria-hidden="true"></span></label>
+      <div class="setting-range">
+        <label for="sun">Time of day <span class="setting-hint">Sun position</span></label>
+        <input id="sun" type="range" min="0" max="1" step="0.001" value="0.22" aria-label="Time of day" />
+        <div class="range-endpoints" aria-hidden="true"><span>Dawn</span><span>Day</span><span>Night</span></div>
+      </div>
+      <div class="setting-divider"></div>
+      <button id="benchmark" class="button button-secondary benchmark-button" type="button">Benchmark 30 seconds</button>
+      <p id="benchmark-status" class="benchmark-status" aria-live="polite">Record frame times on your hardware.</p>
+      <button id="export-results" class="button button-quiet export-button" type="button">Export results</button>
+      <p class="settings-footnote">60 fps is a target. Your hardware, browser, and scene determine actual performance.</p>
+    </aside>
+
+    <div id="welcome" class="overlay" role="dialog" aria-modal="true" aria-labelledby="welcome-heading">
+      <section class="welcome-panel glass">
+        <div class="welcome-worldmark" aria-hidden="true"><span></span><span></span><span></span></div>
+        <p class="engine-note">WASM world · WebGPU rendering</p>
+        <h1 id="welcome-heading">Step into the world.</h1>
+        <p class="welcome-copy">Explore, build, and watch the light change in Pomme’s first browser sandbox.</p>
+        <button id="play" class="button button-primary play-button" type="button">Enter world <svg aria-hidden="true" viewBox="0 0 20 20" fill="none"><path d="m8 5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
+        <div class="controls-grid" aria-label="Keyboard and mouse controls">
+          <div><span class="control-keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span>Move</span></div>
+          <div><span class="control-keys"><kbd>Mouse</kbd></span><span>Look around</span></div>
+          <div><span class="control-keys"><kbd>Space</kbd></span><span>Jump</span></div>
+          <div><span class="control-keys"><kbd>Shift</kbd></span><span>Sprint</span></div>
+          <div><span class="control-keys"><kbd>Left click</kbd></span><span>Break block</span></div>
+          <div><span class="control-keys"><kbd>Right click</kbd></span><span>Place block</span></div>
+          <div><span class="control-keys"><kbd>1</kbd><span class="key-range">–</span><kbd>6</kbd></span><span>Select block</span></div>
+          <div><span class="control-keys"><kbd>E</kbd></span><span>Release cursor</span></div>
+        </div>
+        <p class="build-note">Experimental browser engine. Keyboard and mouse required; touch controls are not available in this build.</p>
+      </section>
+    </div>
+
+    <div id="pause" class="overlay" role="dialog" aria-modal="true" aria-labelledby="pause-heading" hidden>
+      <section class="pause-panel glass">
+        <p class="engine-note">Pomme / browser</p>
+        <h2 id="pause-heading">Take a moment.</h2>
+        <p>Your world is waiting. Adjust the graphics or jump back in.</p>
+        <button id="resume" class="button button-primary" type="button">Resume exploring</button>
+        <p class="pause-hint"><kbd>E</kbd> releases the cursor while exploring.</p>
+      </section>
+    </div>
+
+    <div id="error" class="error-panel glass" role="alert" hidden></div>
+    <div id="crosshair" aria-hidden="true"><span></span><span></span></div>
+
+    <div class="world-info" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span id="world-status">Preparing the world…</span></div>
+    <aside class="performance-strip glass" aria-label="Performance statistics">
+      <div class="performance-primary"><span id="fps">—</span><span>fps</span></div>
+      <dl>
+        <div><dt>Frame</dt><dd id="frame-time">— ms</dd></div>
+        <div><dt>GPU</dt><dd id="gpu-time">—</dd></div>
+        <div><dt>Geometry</dt><dd id="geometry">—</dd></div>
+        <div><dt>Sun cache</dt><dd id="shadow-cache">—</dd></div>
+        <div><dt>Scale</dt><dd id="render-scale">85%</dd></div>
+      </dl>
+    </aside>
+
+    <nav id="hotbar" class="hotbar" aria-label="Block selection">
+      <button class="hotbar-slot selected" data-block="1" type="button" aria-label="Select grass block, key 1" aria-pressed="true"><span class="slot-key">1</span><span class="block-preview grass" aria-hidden="true"><i class="face top"></i><i class="face front"></i><i class="face side"></i></span><span class="slot-name">Grass</span></button>
+      <button class="hotbar-slot" data-block="3" type="button" aria-label="Select stone block, key 2" aria-pressed="false"><span class="slot-key">2</span><span class="block-preview stone" aria-hidden="true"><i class="face top"></i><i class="face front"></i><i class="face side"></i></span><span class="slot-name">Stone</span></button>
+      <button class="hotbar-slot" data-block="4" type="button" aria-label="Select wood block, key 3" aria-pressed="false"><span class="slot-key">3</span><span class="block-preview wood" aria-hidden="true"><i class="face top"></i><i class="face front"></i><i class="face side"></i></span><span class="slot-name">Wood</span></button>
+      <button class="hotbar-slot" data-block="6" type="button" aria-label="Select sand block, key 4" aria-pressed="false"><span class="slot-key">4</span><span class="block-preview sand" aria-hidden="true"><i class="face top"></i><i class="face front"></i><i class="face side"></i></span><span class="slot-name">Sand</span></button>
+      <button class="hotbar-slot" data-block="5" type="button" aria-label="Select leaves block, key 5" aria-pressed="false"><span class="slot-key">5</span><span class="block-preview leaves" aria-hidden="true"><i class="face top"></i><i class="face front"></i><i class="face side"></i></span><span class="slot-name">Leaves</span></button>
+      <button class="hotbar-slot" data-block="8" type="button" aria-label="Select lamp block, key 6" aria-pressed="false"><span class="slot-key">6</span><span class="block-preview lamp" aria-hidden="true"><i class="face top"></i><i class="face front"></i><i class="face side"></i></span><span class="slot-name">Lamp</span></button>
+    </nav>
+    <div class="in-world-hint"><kbd>E</kbd> release cursor</div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

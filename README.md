@@ -50,6 +50,14 @@ version management, and spawns the client with the appropriate flags.
 
 ## Building
 
+### Experimental browser client
+
+An editable WASM/WebGPU terrain sandbox is available in [pomme-web](./pomme-web).
+It includes cached shadows, worker meshing, scalable shaders and a hardware
+benchmark. This is the first browser-engine milestone; Minecraft protocol,
+vanilla gameplay, Photon-pack compatibility and distant-terrain LOD are still
+pending. See its README for build instructions and the implementation roadmap.
+
 Before building, you must have [just](https://github.com/casey/just) installed.
 The Rust toolchain is pinned in `rust-toolchain.toml`; rustup picks it up.
 

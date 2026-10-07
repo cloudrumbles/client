@@ -1,0 +1,4 @@
+/core/target/
+/public/core.wasm
+/node_modules/
+/test-results/
