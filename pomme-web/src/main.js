@@ -296,7 +296,9 @@ function frame(now) {
       }
     }
   } } catch (error) { fail(error); return; }
-  try { renderer.render({ eye: player.eye, yaw: player.yaw, pitch: player.pitch, timeSeconds: now / 1000, dayPhase: phase, revision, quality: $('quality').value, scale }); }
+  // The renderer tracks actual geometry changes; empty worker results only
+  // advance the application's diagnostic revision and preserve HDR history.
+  try { renderer.render({ eye: player.eye, yaw: player.yaw, pitch: player.pitch, timeSeconds: now / 1000, dayPhase: phase, quality: $('quality').value, scale }); }
   catch (error) { fail(error); return; }
   if (now - hudAt > 500) {
     hudAt = now;

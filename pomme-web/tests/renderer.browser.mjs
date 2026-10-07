@@ -59,6 +59,18 @@ try {
       check(renderer.stats().skyCacheUpdates === cached.skyCacheUpdates, 'Frozen sky must reuse its environment map.');
       check(renderer.stats().meshUploadCount === cached.meshUploadCount, 'Rendering must not upload stable geometry.');
 
+      // Empty entering-window chunks have no rendered vertices. Repeated
+      // empty uploads and their removal must preserve valid temporal history.
+      const emptyCache = renderer.stats();
+      for (let upload = 0; upload < 2; upload++) {
+        renderer.uploadChunk('empty-column', [], [], bounds, { stride: 14 });
+        await draw(frame);
+        check(renderer.stats().historyUsed && renderer.stats().temporalResets === emptyCache.temporalResets, 'Empty chunk additions and replacements must preserve temporal history.');
+      }
+      renderer.removeChunk('empty-column'); await draw(frame);
+      check(renderer.stats().historyUsed && renderer.stats().temporalResets === emptyCache.temporalResets, 'Removing an empty chunk must preserve temporal history.');
+      check(renderer.stats().meshUploadCount === emptyCache.meshUploadCount && renderer.stats().totalChunks === emptyCache.totalChunks, 'Empty meshes must preserve stored geometry and upload counters.');
+
       // Streamed terrain outside the cached light frustum cannot alter its
       // depth. Root revision counters still change as meshes arrive, so they
       // must not override the renderer's actual caster-coverage decision.

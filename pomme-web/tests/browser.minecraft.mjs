@@ -192,6 +192,24 @@ try {
   assert.match(await page.getByRole('log', { name: 'Server chat' }).textContent(), /Browser integration ready/);
   assert.equal(proof.renderer.temporalEnabled, true); assert.equal(proof.renderer.ssrEnabled, true);
   assert.equal(proof.renderer.dynamicMeshes, 1); assert.ok(proof.renderer.entityTriangles > 0);
+  // An empty worker result advances diagnostics without changing visible
+  // geometry. The application must preserve the renderer's temporal history.
+  const emptyMesh = await page.evaluate(() => {
+    const { world, renderer, core } = window.pomme;
+    const before = renderer.stats(), revision = window.pomme.revision;
+    const x = core.world_origin_x(), z = core.world_origin_z();
+    world.worker.onmessage({ data: {
+      type: 'mesh', generation: world.generation, index: `${x / 16},${z / 16}`,
+      opaque: new Float32Array(), water: new Float32Array(), stride: 14,
+      origin: [x, 0, z], bounds: { min: [x, -64, z], max: [x + 16, 320, z + 16] },
+    } });
+    return { frames: before.frameCount, resets: before.temporalResets, revision };
+  });
+  await page.waitForFunction(frames => window.pomme.renderer.stats().frameCount >= frames + 3, emptyMesh.frames);
+  const emptyAfter = await page.evaluate(() => ({ revision: window.pomme.revision, ...window.pomme.renderer.stats() }));
+  assert.ok(emptyAfter.revision > emptyMesh.revision, 'empty uploads still advance application diagnostics');
+  assert.equal(emptyAfter.temporalResets, emptyMesh.resets, 'empty streamed columns preserve actual application temporal history');
+  assert.equal(emptyAfter.historyUsed, true);
   assert.equal((await received.wait('teleport_confirm')).params.teleportId, 7);
   await received.wait('keep_alive'); await received.wait('chunk_batch_received');
 
