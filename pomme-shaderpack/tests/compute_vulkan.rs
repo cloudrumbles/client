@@ -54,8 +54,9 @@ fn dispatch_preserves_current_front_and_raster_visibility_across_resets_and_repl
     // deferred1 has no fragment pair. deferred2_a must precede deferred2.fsh.
     fixture.write("deferred1.csh", compute);
     fixture.write("deferred2_a.csh", compute);
+    fixture.write("deferred2_b.csh", "#version 430\nlayout(local_size_x=1) in;const ivec3 workGroups=ivec3(8,8,1);layout(rgba16f) coherent readonly uniform image2D colorimg0;layout(rgba16f) restrict writeonly uniform image2D colorimg2;void main(){ivec2 p=ivec2(gl_GlobalInvocationID.xy);imageStore(colorimg2,p,imageLoad(colorimg0,p));}\n");
     fixture.write("deferred2.vsh", SCREEN);
-    fixture.write("deferred2.fsh", "#version 330 compatibility\n/* RENDERTARGETS: 0 */\nvarying vec2 uv;uniform sampler2D colortex0;uniform sampler2D colortex1;const bool colortex1Clear=false;void main(){vec4 v=texture2D(colortex0,uv);gl_FragColor=vec4(v.r*2,v.g,texture2D(colortex1,uv).r+v.b,1);}\n");
+    fixture.write("deferred2.fsh", "#version 330 compatibility\n/* RENDERTARGETS: 0 */\nvarying vec2 uv;uniform sampler2D colortex2;uniform sampler2D colortex1;const bool colortex1Clear=false;void main(){vec4 v=texture2D(colortex2,uv);gl_FragColor=vec4(v.r*2,v.g,texture2D(colortex1,uv).r+v.b,1);}\n");
     fixture.write("final.vsh", SCREEN);
     fixture.write("final.fsh", "#version 330 compatibility\nvarying vec2 uv;uniform sampler2D colortex0;void main(){gl_FragColor=texture2D(colortex0,uv);}\n");
     let scene = Scene {
@@ -84,6 +85,28 @@ fn dispatch_preserves_current_front_and_raster_visibility_across_resets_and_repl
     )
     .unwrap();
     let names = engine.pass_names();
+    let manifest = engine.compute_manifest();
+    let producer = manifest
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|p| p["program"] == "deferred1")
+        .unwrap();
+    let consumer = manifest
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|p| p["program"] == "deferred2_b")
+        .unwrap();
+    assert_eq!(producer["images"][0]["access"], "WriteOnly");
+    let read = consumer["images"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|i| i["name"] == "colorimg0")
+        .unwrap();
+    assert_eq!(read["access"], "ReadOnly");
+    assert_eq!(read["qualifiers"], serde_json::json!(["coherent"]));
     assert!(
         names.iter().position(|n| n == "deferred1").unwrap()
             < names.iter().position(|n| n == "deferred2_a").unwrap()
@@ -116,7 +139,7 @@ fn dispatch_preserves_current_front_and_raster_visibility_across_resets_and_repl
         ); // half-float0.1
         assert_eq!(
             engine.compute_dispatches.len(),
-            if frame == 0 { 3 } else { 2 }
+            if frame == 0 { 4 } else { 3 }
         );
     }
     input.world_time = 12000;
@@ -129,7 +152,7 @@ fn dispatch_preserves_current_front_and_raster_visibility_across_resets_and_repl
         .unwrap();
     close(screenshot(&engine, &file), [102, 128, 89, 255]);
     assert_eq!(engine.invalidations, 2);
-    assert_eq!(engine.compute_dispatches.len(), 3);
+    assert_eq!(engine.compute_dispatches.len(), 4);
     // Replacement allocates new storage, runs setup and uses new shader bytes.
     drop(engine);
     fixture.write("deferred1.csh", &compute.replace("+0.1", "+0.2"));

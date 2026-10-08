@@ -37,6 +37,13 @@ impl ImageAccess {
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct ImageBinding {
+    pub name: String,
+    pub ty: String,
+    pub binding: u32,
+    pub format: String,
+}
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct StorageImage {
     pub name: String,
     pub ty: String,
@@ -49,7 +56,9 @@ pub struct StorageImage {
 pub struct Abi {
     pub uniforms: Vec<Uniform>,
     pub samplers: Vec<Sampler>,
-    pub images: Vec<StorageImage>,
+    /// Shared resource identity. Access and memory qualifiers belong to each
+    /// compute program's declaration, rather than to the descriptor binding.
+    pub images: Vec<ImageBinding>,
     pub uniform_size: usize,
 }
 pub struct Program {
@@ -233,7 +242,7 @@ fn collect_declarations(
     source: &str,
     uniforms: &mut BTreeMap<String, (String, usize)>,
     samplers: &mut BTreeSet<(String, String)>,
-    images: &mut BTreeMap<String, StorageImage>,
+    images: &mut BTreeMap<String, ImageBinding>,
 ) -> Result<()> {
     let source = without_comments(source)?;
     ensure!(
@@ -250,13 +259,21 @@ fn collect_declarations(
     );
     let image_re = image_re()?;
     for c in image_re.captures_iter(&source) {
-        let image = parsed_image(&c)?;
-        if let Some(previous) = images.insert(image.name.clone(), image.clone()) {
+        let declaration = parsed_image(&c)?;
+        let image = ImageBinding {
+            name: declaration.name,
+            ty: declaration.ty,
+            binding: 0,
+            format: declaration.format,
+        };
+        if let Some(previous) = images.get(&image.name) {
             ensure!(
-                previous == image,
+                *previous == image,
                 "conflicting storage image declaration {}",
                 image.name
             );
+        } else {
+            images.insert(image.name.clone(), image);
         }
     }
     let source = image_re.replace_all(&source, "");
@@ -283,22 +300,31 @@ fn collect_declarations(
     }
     Ok(())
 }
+fn bind_image(mut image: StorageImage, abi: &Abi) -> Result<StorageImage> {
+    let binding = abi
+        .images
+        .iter()
+        .find(|binding| binding.name == image.name)
+        .with_context(|| format!("unbound storage image {}", image.name))?;
+    ensure!(
+        binding.ty == image.ty && binding.format == image.format,
+        "conflicting storage image declaration {}",
+        image.name
+    );
+    image.binding = binding.binding;
+    Ok(image)
+}
 fn translate_declarations(source: &str, abi: &Abi) -> Result<String> {
     let source = without_comments(source)?;
     let ire = image_re()?;
     let mut image_replacements = BTreeMap::new();
     for c in ire.captures_iter(&source) {
-        let image = parsed_image(&c)?;
-        let bound = abi
-            .images
-            .iter()
-            .find(|i| i.name == image.name && i.ty == image.ty)
-            .with_context(|| format!("unbound storage image {}", image.name))?;
+        let image = bind_image(parsed_image(&c)?, abi)?;
         image_replacements.insert(
             c[0].to_owned(),
             format!(
                 "layout(set=0,binding={}, {}) {} {} uniform {} {};",
-                bound.binding,
+                image.binding,
                 image.format,
                 image.access.qualifier(),
                 image.qualifiers.join(" "),
@@ -759,6 +785,12 @@ impl Compiled {
         }
         let mut compute_programs = Vec::new();
         for compute in compute_sources {
+            let declarations = without_comments(&compute.source)?;
+            let mut program_images = BTreeMap::new();
+            for declaration in image_re()?.captures_iter(&declarations) {
+                let image = bind_image(parsed_image(&declaration)?, &abi)?;
+                program_images.insert(image.name.clone(), image);
+            }
             let source = translate_compute(&compute.source, &abi)?;
             let artifact = compiler
                 .compile_into_spirv(
@@ -783,11 +815,9 @@ impl Compiled {
                 .filter(|s| bindings.contains(&s.binding))
                 .cloned()
                 .collect();
-            let images = abi
-                .images
-                .iter()
+            let images = program_images
+                .into_values()
                 .filter(|image| bindings.contains(&image.binding))
-                .cloned()
                 .collect();
             let shared_memory_bytes = shared_memory_bytes(&spirv)?;
             let capabilities = spirv_instructions(&spirv)?
@@ -1392,6 +1422,95 @@ mod tests {
         }
     }
     #[test]
+    fn compute_image_bindings_share_identity_and_preserve_each_programs_access() {
+        for (producer_qualifiers, consumer_qualifiers, expected_producer, expected_consumer) in [
+            ("", "", vec![], vec![]),
+            (
+                "coherent restrict",
+                "coherent",
+                vec!["coherent", "restrict"],
+                vec!["coherent"],
+            ),
+            (
+                "restrict",
+                "volatile restrict",
+                vec!["restrict"],
+                vec!["restrict", "volatile"],
+            ),
+        ] {
+            let fixture = ComputeFixture::new(&format!(
+                "#version 430\nlayout(local_size_x=1) in;\nconst ivec3 workGroups=ivec3(1,1,1);\nlayout(rgba16f,binding=7) {producer_qualifiers} writeonly uniform image2D colorimg0;\nvoid main(){{imageStore(colorimg0,ivec2(0),vec4(0.25));}}\n"
+            ));
+            std::fs::write(
+                fixture.0.join("shaders/deferred_b.csh"),
+                format!(
+                    "#version 430\nlayout(local_size_x=1) in;\nconst ivec3 workGroups=ivec3(1,1,1);\nlayout(rgba16f,binding=19) {consumer_qualifiers} readonly uniform image2D colorimg0;\nlayout(rgba16f) writeonly uniform image2D colorimg1;\nvoid main(){{imageStore(colorimg1,ivec2(0),imageLoad(colorimg0,ivec2(0)));}}\n"
+                ),
+            )
+            .unwrap();
+            let compiled = Compiled::new(&fixture.pack()).unwrap();
+            assert_eq!(compiled.abi.images.len(), 2);
+            let shared = compiled
+                .abi
+                .images
+                .iter()
+                .find(|image| image.name == "colorimg0")
+                .unwrap();
+            assert_eq!(shared.ty, "image2D");
+            assert_eq!(shared.format, "rgba16f");
+            assert_eq!(compiled.compute_programs.len(), 2);
+            for (name, access, qualifiers) in [
+                ("deferred_a", ImageAccess::WriteOnly, expected_producer),
+                ("deferred_b", ImageAccess::ReadOnly, expected_consumer),
+            ] {
+                let program = compiled
+                    .compute_programs
+                    .iter()
+                    .find(|program| program.name == name)
+                    .unwrap();
+                let image = program
+                    .images
+                    .iter()
+                    .find(|image| image.name == "colorimg0")
+                    .unwrap();
+                assert_eq!(image.binding, shared.binding);
+                assert_eq!(image.access, access);
+                assert_eq!(image.qualifiers, qualifiers);
+                // Check the compiler's actual interface decorations as well as
+                // the metadata used by runtime barriers and mip invalidation.
+                let instructions = spirv_instructions(&program.spirv).unwrap();
+                let id = instructions
+                    .iter()
+                    .find(|(op, args)| {
+                        *op == 71 && args.len() == 3 && args[1] == 33 && args[2] == shared.binding
+                    })
+                    .unwrap()
+                    .1[0];
+                let decorations: BTreeSet<_> = instructions
+                    .iter()
+                    .filter(|(op, args)| *op == 71 && args.len() >= 2 && args[0] == id)
+                    .map(|(_, args)| args[1])
+                    .collect();
+                assert_eq!(decorations.contains(&24), access == ImageAccess::ReadOnly);
+                assert_eq!(decorations.contains(&25), access == ImageAccess::WriteOnly);
+                for (qualifier, decoration) in
+                    [("coherent", 23), ("restrict", 19), ("volatile", 21)]
+                {
+                    // GLSL volatile accesses are also coherent; shaderc emits
+                    // both SPIR-V decorations without adding a source qualifier.
+                    let expected = image.qualifiers.iter().any(|q| q == qualifier)
+                        || (qualifier == "coherent"
+                            && image.qualifiers.iter().any(|q| q == "volatile"));
+                    assert_eq!(
+                        decorations.contains(&decoration),
+                        expected,
+                        "{name}: {qualifier}"
+                    );
+                }
+            }
+        }
+    }
+    #[test]
     fn storage_declarations_reject_unsupported_or_conflicting_abis() {
         for source in [
             "uniform image2D unformatted;",
@@ -1427,6 +1546,16 @@ mod tests {
             )
             .is_err()
         );
+        assert_eq!(images["result"].format, "rgba16f");
+        assert!(
+            collect_declarations(
+                "layout(rgba16ui) readonly uniform uimage2D result;",
+                &mut BTreeMap::new(),
+                &mut BTreeSet::new(),
+                &mut images
+            )
+            .is_err()
+        );
         let mut uniforms = BTreeMap::new();
         collect_declarations(
             "uniform vec3 sharedInput;",
@@ -1456,7 +1585,18 @@ mod tests {
             &mut images,
         )
         .unwrap();
-        let image = images.remove("counters").unwrap();
+        let abi = Abi {
+            uniforms: vec![],
+            samplers: vec![],
+            images: images.into_values().collect(),
+            uniform_size: 0,
+        };
+        let declaration = image_re().unwrap();
+        let image = bind_image(
+            parsed_image(&declaration.captures(source).unwrap()).unwrap(),
+            &abi,
+        )
+        .unwrap();
         assert_eq!(image.ty, "uimage2D");
         assert_eq!(image.access, ImageAccess::ReadOnly);
         assert_eq!(image.qualifiers, ["coherent"]);
