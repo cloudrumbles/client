@@ -754,7 +754,7 @@ impl Engine {
         let projection = glam::camera::rh::proj::opengl::perspective(
             input.fov_degrees.to_radians(),
             self.width as f32 / self.height as f32,
-            0.1,
+            input.near,
             input.far,
         );
         let angle = (input.world_time as f32 - 6000.) / 24000. * std::f32::consts::TAU;
@@ -778,7 +778,6 @@ impl Engine {
             shadow_projection,
             sun,
         );
-        base.insert("near".into(), Value::scalar(0.1));
         base.insert(
             "atlasSize".into(),
             Value(vec![
@@ -826,6 +825,12 @@ impl Engine {
             let cpu_start = std::time::Instant::now();
             let mut values = values.clone();
             let is_shadow = self.passes[n].program.name == "shadow";
+            if is_shadow {
+                self.shadows[0].clear(cmd, [0.; 4]);
+                for t in &self.shadow_colors {
+                    t.clear(cmd, [0.; 4]);
+                }
+            }
             let is_geo = is_shadow || self.passes[n].program.name.starts_with("gbuffers_");
             let model = if is_shadow {
                 shadow * Mat4::from_translation(-input.camera)
@@ -967,14 +972,6 @@ impl Engine {
             }
             if let Some(depth) = depth {
                 depth.transition(cmd, vk::ImageLayout::DepthStencilAttachmentOptimal);
-            }
-            if is_shadow {
-                self.shadows[0].clear(cmd, [0.; 4]);
-                for t in &targets {
-                    t.clear(cmd, [0.; 4]);
-                    t.transition(cmd, vk::ImageLayout::ColorAttachmentOptimal);
-                }
-                self.shadows[0].transition(cmd, vk::ImageLayout::DepthStencilAttachmentOptimal);
             }
             let mut views = targets.iter().map(|t| t.attachment).collect::<Vec<_>>();
             if let Some(depth) = depth {

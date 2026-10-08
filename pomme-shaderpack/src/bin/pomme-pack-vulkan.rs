@@ -23,6 +23,12 @@ fn main() -> anyhow::Result<()> {
         frames: u32,
         #[arg(long, default_value = "terrain")]
         scene: String,
+        #[arg(long)]
+        atlas: Option<std::path::PathBuf>,
+        #[arg(long, default_value_t = 0)]
+        warmup: u32,
+        #[arg(long,default_value="static",value_parser=["static","orbit","state-changes"])]
+        scenario: String,
         #[arg(long, default_value_t = 6000)]
         time: i32,
         #[arg(long, default_value_t = 0.)]
@@ -45,7 +51,20 @@ fn main() -> anyhow::Result<()> {
         use pomme_shaderpack::vulkan::headless::Headless;
         std::fs::create_dir_all(&a.output)?;
         let context = Headless::new()?;
-        let scene = Scene::fixture(&a.scene);
+        anyhow::ensure!(
+            a.frames > 0 && a.frames.checked_add(a.warmup).is_some(),
+            "invalid frames"
+        );
+        anyhow::ensure!((0.0..=1.0).contains(&a.rain), "rain must be in [0,1]");
+        let mut scene = Scene::fixture(&a.scene);
+        let atlas = a
+            .atlas
+            .as_ref()
+            .map(|p| image::open(p).map(|i| i.to_rgba8()))
+            .transpose()?;
+        let atlas = atlas
+            .as_ref()
+            .map(|i| ([i.width(), i.height()], i.as_raw().as_slice()));
         let manifest =
             serde_json::json!({"source_hash":p.digest,"options":p.options,"dimension":p.dimension});
         let mut engine = Engine::new(
@@ -54,22 +73,69 @@ fn main() -> anyhow::Result<()> {
             a.width,
             a.height,
             &scene,
-            None,
+            atlas,
             1,
         )?;
         let mut samples = Vec::new();
-        for f in 0..a.frames {
-            let input = FrameInput::fixture(&scene, f, a.time, a.rain);
+        for f in 0..a.frames + a.warmup {
+            let mut input = FrameInput::fixture(&scene, f, a.time, a.rain);
+            if a.scenario == "orbit" {
+                let angle = (f as f32) * 0.01;
+                let offset = input.camera - input.target;
+                input.camera = input.target + glam::Quat::from_rotation_y(angle) * offset;
+            }
+            if a.scenario == "state-changes" && f >= a.warmup {
+                let phase = (f - a.warmup) / 4;
+                if phase >= 1 {
+                    input.world_time = 18000;
+                }
+                if phase >= 2 {
+                    input.rain = 1.;
+                    input.wetness = 1.;
+                }
+                if phase >= 3 {
+                    input.camera += glam::Vec3::new(32., 0., 0.);
+                    input.target += glam::Vec3::new(32., 0., 0.);
+                }
+                if phase >= 4 {
+                    input.world_revision = 1;
+                }
+                if phase >= 5 {
+                    input.lighting_revision = 1;
+                }
+                if phase >= 6 {
+                    input.material_revision = 1;
+                }
+                if (4..=6).contains(&phase) && (f - a.warmup).is_multiple_of(4) {
+                    match phase {
+                        4 => scene.solid.truncate(scene.solid.len().saturating_sub(36)),
+                        5 => {
+                            for v in &mut scene.solid {
+                                v.light = [0.; 2];
+                            }
+                        }
+                        6 => {
+                            for v in &mut scene.solid {
+                                v.color = [0.7, 0.2, 0.2, 1.];
+                            }
+                        }
+                        _ => {}
+                    }
+                    engine.replace_scene(&scene)?;
+                }
+            }
             let start = std::time::Instant::now();
             let gpu = engine.gpu.clone();
             gpu.submit(|cmd| engine.record(cmd, 0, &input))?;
-            samples.push(serde_json::json!({"frame":f,"wall_ms":start.elapsed().as_secs_f64()*1000.,"passes":engine.timings(0)?}));
+            if f >= a.warmup {
+                samples.push(serde_json::json!({"frame":f,"wall_ms":start.elapsed().as_secs_f64()*1000.,"passes":engine.timings(0)?,"input":{"camera":input.camera.to_array(),"world_time":input.world_time,"rain":input.rain,"world_revision":input.world_revision,"lighting_revision":input.lighting_revision,"material_revision":input.material_revision},"invalidations":engine.invalidations}));
+            }
         }
         engine.screenshot(&a.output.join("final.png"))?;
         std::fs::write(
             a.output.join("vulkan.json"),
             serde_json::to_vec_pretty(
-                &serde_json::json!({"backend":"Vulkan","device":context.name,"manifest":manifest,"width":a.width,"height":a.height,"samples":samples,"invalidations":engine.invalidations,"revision":pomme_shaderpack::BUILD_REVISION}),
+                &serde_json::json!({"backend":"Vulkan","device":context.name,"scene":a.scene,"scenario":a.scenario,"warmup":a.warmup,"measurement":"serialized Vulkan graph, GPU timestamps and CPU command recording; excludes game/presentation","manifest":manifest,"width":a.width,"height":a.height,"samples":samples,"invalidations":engine.invalidations,"revision":pomme_shaderpack::BUILD_REVISION}),
             )?,
         )?;
         return Ok(());

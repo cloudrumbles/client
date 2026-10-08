@@ -265,6 +265,7 @@ impl Bridge {
         frame.up = up;
         frame.world_day = (sky.day_time / 24000) as i32;
         frame.fov_degrees = camera.fov_degrees();
+        frame.near = 0.1;
         frame.far = (render_distance * 16 * 4).max(256) as f32;
         frame.eye_in_water = eyes_in_water;
         frame.eye_brightness = self.eye_brightness;
@@ -297,6 +298,17 @@ impl Bridge {
             Ok(())
         }
     }
+    /// Called only after all queue work has completed. Discard speculative
+    /// image-layout/history state from an unsubmitted, failed command buffer.
+    pub fn abort(&mut self) {
+        if let Some(n) = &mut self.native {
+            n.presenter = None;
+            n.engine = None;
+            n.pending.fill(None);
+            n.failed = true;
+        }
+        tracing::error!("Shader pack disabled after failure; F6 retries the selected pack");
+    }
     pub fn draw(
         &self,
         cmd: &pyronyx::vk::CommandBuffer,
@@ -312,8 +324,12 @@ impl Bridge {
     pub fn key(&mut self, key: winit::keyboard::KeyCode) {
         if let Some(n) = &mut self.native {
             match key {
-                winit::keyboard::KeyCode::F6 => n.reload = true,
+                winit::keyboard::KeyCode::F6 => {
+                    n.failed = false;
+                    n.reload = true;
+                }
                 winit::keyboard::KeyCode::F7 => {
+                    n.failed = false;
                     n.next_pack = true;
                     n.reload = true;
                 }
@@ -349,6 +365,7 @@ struct NativePack {
     saved: bool,
     reload: bool,
     next_pack: bool,
+    failed: bool,
 }
 impl NativePack {
     fn new(gpu: pomme_shaderpack::vulkan::resource::Gpu) -> Self {
@@ -371,6 +388,7 @@ impl NativePack {
             saved: false,
             reload: false,
             next_pack: false,
+            failed: false,
         }
     }
     fn prepare(
@@ -384,6 +402,9 @@ impl NativePack {
         use pomme_shaderpack::pack::Pack;
         use pomme_shaderpack::vulkan::engine::Engine;
         use pomme_shaderpack::vulkan::present::Presenter;
+        if self.failed {
+            return Ok(false);
+        }
         let options = OPTIONS.get().unwrap();
         if let Some(mut sample) = self.pending[slot].take()
             && let Some(e) = &self.engine
@@ -423,10 +444,14 @@ impl NativePack {
             "minecraft:the_end" => "world1",
             other => anyhow::bail!("shader dimension mapping unsupported: {other}"),
         };
-        let width = options.width.min(extent.width).max(1);
-        let height =
-            (width as u64 * extent.height as u64 / extent.width.max(1) as u64).max(1) as u32;
-        let size = [width, height];
+        let scale = (options.width.max(1) as f64 / extent.width.max(1) as f64)
+            .min(options.height.max(1) as f64 / extent.height.max(1) as f64)
+            .min(1.);
+        let size = [
+            (extent.width as f64 * scale).round().max(1.) as u32,
+            (extent.height as f64 * scale).round().max(1.) as u32,
+        ];
+        let [width, height] = size;
         if self.engine.is_none() || self.size != size || self.dimension != dimension || self.reload
         {
             self.gpu.device.wait_idle()?;
@@ -483,6 +508,7 @@ impl NativePack {
             })();
             match result {
                 Ok((engine, presenter)) => {
+                    tracing::info!(frame=self.frame, path, pack_hash=%engine.pack.digest, dimension, "Vulkan shader pack activated");
                     self.reloads.push(serde_json::json!({"frame":self.frame,"pack_hash":engine.pack.digest,"path":path,"dimension":dimension}));
                     self.engine = Some(engine);
                     self.presenter = Some(presenter);

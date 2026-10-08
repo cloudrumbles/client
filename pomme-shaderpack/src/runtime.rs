@@ -173,6 +173,7 @@ pub struct FrameInput {
     pub lighting_revision: u64,
     pub material_revision: u64,
     pub fov_degrees: f32,
+    pub near: f32,
     pub far: f32,
     pub eye_in_water: bool,
     pub eye_brightness: [f32; 2],
@@ -196,6 +197,7 @@ impl FrameInput {
             lighting_revision: 0,
             material_revision: 0,
             fov_degrees: 70.0,
+            near: 0.05,
             far: 256.0,
             eye_in_water: false,
             eye_brightness: [0.0, 240.0],
@@ -217,6 +219,7 @@ pub(crate) fn history_discontinuity(previous: Option<&FrameInput>, input: &Frame
             || p.world_day != input.world_day
             || p.rain != input.rain
             || p.wetness != input.wetness
+            || p.near != input.near
             || p.fov_degrees != input.fov_degrees
             || p.far != input.far
             || p.eye_in_water != input.eye_in_water
@@ -979,7 +982,7 @@ impl Runtime {
             let projection = glam::camera::rh::proj::opengl::perspective(
                 input.fov_degrees.to_radians(),
                 self.width as f32 / self.height as f32,
-                0.05,
+                input.near,
                 input.far,
             );
             let angle = (input.world_time as f32 - 6000.0) / 24000.0 * std::f32::consts::TAU;
@@ -1602,7 +1605,7 @@ pub(crate) fn frame_uniforms(
         ("worldDay", i.world_day as f64),
         ("moonPhase", (i.world_day % 8) as f64),
         ("sunAngle", (i.world_time as f64 / 24000.0) % 1.0),
-        ("near", 0.05),
+        ("near", i.near as f64),
         ("far", i.far as f64),
         ("eyeAltitude", i.camera.y as f64),
         ("rainStrength", i.rain as f64),

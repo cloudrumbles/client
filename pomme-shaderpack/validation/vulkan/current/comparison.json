@@ -1,0 +1,28 @@
+{
+  "comparison": "same low Photon source/options, 26.3 macros, 640x360 textured terrain, eight warmup plus twelve measured frames on llvmpipe; GL host reference, not Iris",
+  "pack_revision": "15458c0937f8647c37eb6a501bef5eb3bf3da31b",
+  "build": "b9ee1ba+dirty: near input, per-frame shadow clear, benchmark controls and registry adapter changes",
+  "mae_8bit": 1.580023169517517,
+  "p95_8bit": 4.0,
+  "max_8bit": 101.0,
+  "pixels_all_channels_within4": 0.9609722222222222,
+  "spirv_val": {
+    "stages": 60,
+    "failed": [],
+    "target": "vulkan1.2"
+  },
+  "headless_dimensions": {
+    "world-1": {
+      "measured_frames": 8,
+      "warmup_frames": 4,
+      "passes": 28,
+      "validation_errors": 0
+    },
+    "world1": {
+      "measured_frames": 8,
+      "warmup_frames": 4,
+      "passes": 29,
+      "validation_errors": 0
+    }
+  }
+}

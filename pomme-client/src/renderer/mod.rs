@@ -1510,14 +1510,19 @@ impl Renderer {
         #[cfg(feature = "shader-packs")]
         let pack_active = if matches!(&mode, RenderMode::World { .. }) {
             if let Some(bridge) = &mut self.shader_bridge {
-                bridge
-                    .prepare(
-                        frame,
-                        self.swapchain.extent,
-                        self.swapchain.render_pass,
-                        self.swapchain.format.format,
-                    )
-                    .map_err(RendererError::ShaderPack)?
+                match bridge.prepare(
+                    frame,
+                    self.swapchain.extent,
+                    self.swapchain.render_pass,
+                    self.swapchain.format.format,
+                ) {
+                    Ok(active) => active,
+                    Err(error) => {
+                        self.ctx.device.wait_idle()?;
+                        bridge.abort();
+                        return Err(RendererError::ShaderPack(error));
+                    }
+                }
             } else {
                 false
             }
@@ -1591,12 +1596,29 @@ impl Renderer {
         };
         cmd.begin(&begin_info)?;
         #[cfg(feature = "shader-packs")]
-        if pack_active {
-            self.shader_bridge
-                .as_mut()
-                .unwrap()
-                .record(&cmd, frame)
-                .map_err(RendererError::ShaderPack)?;
+        if pack_active && let Err(error) = self.shader_bridge.as_mut().unwrap().record(&cmd, frame)
+        {
+            // Acquisition signalled a binary semaphore. Consume it even
+            // though recording failed; leaving it signalled makes the next
+            // acquire invalid. The unsubmitted command buffer and pack's
+            // speculative layouts/history must both be discarded.
+            cmd.reset(vk::CommandBufferResetFlags::empty())?;
+            self.ctx.graphics_queue.submit(
+                &[vk::SubmitInfo {
+                    wait_semaphore_count: 1,
+                    wait_semaphores: &image_available,
+                    wait_dst_stage_mask: &vk::PipelineStageFlags::TopOfPipe,
+                    ..Default::default()
+                }],
+                vk::Fence::null(),
+            )?;
+            self.ctx.device.wait_idle()?;
+            self.shader_bridge.as_mut().unwrap().abort();
+            // Replacing the swapchain releases its acquired image, which
+            // this failed frame did not present. The frame fence remains
+            // signalled because reset happens only immediately at submit.
+            self.swapchain_dirty = true;
+            return Err(RendererError::ShaderPack(error));
         }
 
         let extent = self.swapchain.extent;

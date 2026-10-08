@@ -93,7 +93,10 @@ cargo build -p pomme-client --no-default-features --features shader-packs --lock
 Use an authorized local vanilla 26.3 server (Java 25). Movement, mouse look,
 inventory and the original pack appear in one Vulkan window. F6 reloads the pack;
 F7 cycles repeated `--shader-alternate-pack /path/to/pack` arguments. A failed
-compatible reload retains the active pack. Internal pack resolution fits the
+compatible reload retains the active pack. If command recording fails, the client
+discards the unsubmitted pack state, consumes the acquired semaphore and rebuilds
+the swapchain; native rendering resumes with an explicit error. F6 retries the
+selected pack. Internal pack resolution fits the
 requested shader width/height within the window aspect ratio; resize rebuilds
 its targets. `--shader-frames` captures pass evidence and leaves gameplay running.
 F2 captures the complete native window, including UI and forward actors.

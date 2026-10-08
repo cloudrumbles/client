@@ -399,6 +399,14 @@ fn translate(
     }
     header.push_str("};\n");
     if vertex {
+        // GLSL compatibility's ftransform is the fixed-function MVP operation.
+        // The wrapper below performs Vulkan's clip-depth conversion afterwards.
+        body = Regex::new(r"\bftransform\s*\(\s*\)")?
+            .replace_all(
+                &body,
+                "(pomme_ProjectionMatrix*pomme_ModelViewMatrix*pomme_Vertex)",
+            )
+            .into_owned();
         header.push_str("layout(location=0) in vec4 pomme_Vertex;\nlayout(location=1) in vec3 pomme_Normal;\nlayout(location=2) in vec4 pomme_TexCoord;\nlayout(location=3) in vec4 pomme_LightCoord;\nlayout(location=4) in vec4 pomme_Color;\n");
         body = Regex::new(r"\bvoid\s+main\s*\(\s*\)")?
             .replace(&body, "void pomme_main()")
@@ -556,6 +564,46 @@ impl Abi {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn compatibility_ftransform_compiles_for_vulkan() {
+        let abi = Abi {
+            uniforms: ["pomme_ModelViewMatrix", "pomme_ProjectionMatrix"]
+                .into_iter()
+                .enumerate()
+                .map(|(i, name)| Uniform {
+                    name: name.into(),
+                    ty: "mat4".into(),
+                    count: 1,
+                    offset: i * 64,
+                    size: 64,
+                })
+                .collect(),
+            samplers: Vec::new(),
+            uniform_size: 128,
+        };
+        let source = translate(
+            "#version 330 compatibility\nvoid main(){gl_Position=ftransform();}",
+            &abi,
+            &BTreeMap::new(),
+            true,
+        )
+        .unwrap();
+        let compiler = shaderc::Compiler::new().unwrap();
+        let mut options = shaderc::CompileOptions::new().unwrap();
+        options.set_target_env(
+            shaderc::TargetEnv::Vulkan,
+            shaderc::EnvVersion::Vulkan1_2 as u32,
+        );
+        compiler
+            .compile_into_spirv(
+                &source,
+                shaderc::ShaderKind::Vertex,
+                "legacy.vsh",
+                "main",
+                Some(&options),
+            )
+            .unwrap();
+    }
     #[test]
     fn std140_matrix_padding_and_active_inputs() {
         let abi = Abi {
