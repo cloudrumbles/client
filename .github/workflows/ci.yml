@@ -81,6 +81,16 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: cargo test -p pomme-client --release --no-default-features --features shader-packs
 
+      - name: Acquire fault driver selftests
+        if: matrix.os == 'ubuntu-latest'
+        run: python3 -B -m unittest discover -s pomme-client/tests -p 'test_acquire_fault_integration.py' -v
+
+      - name: Compile and test optional renderer fault injection
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cargo clippy -p pomme-client --release --all-targets --no-default-features --features renderer-fault-injection -- -D warnings
+          cargo test -p pomme-client --release --no-default-features --features renderer-fault-injection
+
       - name: Pin the steel revision
         if: matrix.os == 'ubuntu-latest'
         id: steel
