@@ -72,6 +72,7 @@ pub struct VulkanContext {
     pub gpu_name: String,
     pub vulkan_version: String,
     pub draw_indirect_count: bool,
+    #[cfg(feature = "shader-packs")]
     pub independent_blend: bool,
 }
 
@@ -298,6 +299,7 @@ impl VulkanContext {
             gpu_name,
             vulkan_version,
             draw_indirect_count,
+            #[cfg(feature = "shader-packs")]
             independent_blend: supported.independent_blend == vk::TRUE,
         })
     }
