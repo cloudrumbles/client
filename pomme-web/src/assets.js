@@ -432,6 +432,13 @@ export async function loadResourcePack(input, { registry, tileSize = 16, maxPack
       animations.push({ tile: id, width: tileWidth, height: tileHeight, frames: image.animation.sequence.map(({ index }) => cache.get(index)), durationsTicks: image.animation.sequence.map(({ duration }) => duration), interpolate: image.animation.interpolate });
     }
   }
+  // 26.1 moved the native portal sheet into its own entity directory. Keep the
+  // canonical model reference on the actual imported tile, without a pixel copy
+  // or loss of its animation metadata; older pack entries retain precedence.
+  const calendarPortal = tileByName.get('minecraft:entity/end_portal/end_portal');
+  if (!tileByName.has('minecraft:entity/end_portal') && calendarPortal !== undefined) {
+    tileByName.set('minecraft:entity/end_portal', calendarPortal); entityTiles.set('minecraft:entity/end_portal', calendarPortal);
+  }
   const portalId = tileByName.get('minecraft:entity/end_portal'), portalSkyTile = tileByName.get('minecraft:environment/end_sky');
   if (portalId !== undefined) {
     const portal = tiles[portalId]; portal.portalLayers = 15; portal.portalSkyTile = portalSkyTile ?? -1;

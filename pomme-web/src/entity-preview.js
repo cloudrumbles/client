@@ -28,6 +28,8 @@ export function previewEntityData(nbt, definition, registry) {
   if (name === 'fox') { field('type', 'Type', value => strip(value) === 'snow' ? 1 : 0); set('flags', (nbt.Sitting ? 1 : 0) | (nbt.Crouching ? 4 : 0) | (nbt.Sleeping ? 32 : 0)); }
   if (name === 'frog') field('variant', 'variant', value => ['temperate', 'warm', 'cold'].indexOf(strip(value)));
   if (name === 'axolotl') field('variant', 'Variant', Number);
+  if (['cow', 'pig', 'chicken', 'zombie_nautilus'].includes(name)) field('variant', 'variant', String);
+  if (name === 'camel' || name === 'camel_husk') field('last_pose_change_tick', 'LastPoseTick');
   if (name === 'llama' || name === 'trader_llama') { field('variant', 'Variant', Number); field('strength', 'Strength', Number); }
   if (name === 'boat' || name === 'chest_boat') field('type', 'Type', value => ['oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak', 'mangrove', 'bamboo', 'cherry'].indexOf(strip(value)));
   if (name === 'shulker') { field('color', 'Color', value => Math.min(16, Math.max(0, Number(value)))); field('attach_face', 'AttachFace', Number); field('peek', 'Peek', Number); }
@@ -38,11 +40,20 @@ export function previewEntityData(nbt, definition, registry) {
     const saved = nbt.VillagerData; if (saved) set('villager_data', { type: ['desert', 'jungle', 'plains', 'savanna', 'snow', 'swamp', 'taiga'].indexOf(strip(saved.type)), profession: ['none', 'armorer', 'butcher', 'cartographer', 'cleric', 'farmer', 'fisherman', 'fletcher', 'leatherworker', 'librarian', 'mason', 'nitwit', 'shepherd', 'toolsmith', 'weaponsmith'].indexOf(strip(saved.profession)), level: Number(saved.level) || 1 });
   }
   const items = new Map((registry.items || []).map(item => [strip(item.name), item.id]));
-  const item = saved => { const id = items.get(strip(saved?.id)); return id !== undefined && Number(saved.Count ?? saved.count ?? 1) > 0 ? { present: true, itemId: id, itemCount: Math.max(1, Math.min(127, Number(saved.Count ?? saved.count ?? 1))), nbtData: saved.tag } : { present: false }; };
+  const item = saved => { const id = items.get(strip(saved?.id)); return id !== undefined && Number(saved.Count ?? saved.count ?? 1) > 0 ? { present: true, itemId: id, itemCount: Math.max(1, Math.min(127, Number(saved.Count ?? saved.count ?? 1))), nbtData: saved.tag,
+    ...(saved.components ? { components: Object.entries(saved.components).map(([type, data]) => ({ type: strip(type), data })) } : {}) } : { present: false }; };
   const equipment = [];
   for (let hand = 0; hand < 2; hand++) if (nbt.HandItems?.[hand]) equipment.push({ slot: hand, item: item(nbt.HandItems[hand]) });
   for (let armor = 0; armor < 4; armor++) if (nbt.ArmorItems?.[armor]) equipment.push({ slot: armor + 2, item: item(nbt.ArmorItems[armor]) });
   if (nbt.ArmorItem && /horse/u.test(name)) equipment.push({ slot: 4, item: item(nbt.ArmorItem) });
+  // Current LivingEntity persistence uses EntityEquipment.CODEC's named map.
+  // It supersedes the old HandItems/ArmorItems lists for each represented slot.
+  for (const [slot, key] of ['mainhand', 'offhand', 'feet', 'legs', 'chest', 'head', 'body', 'saddle'].entries()) {
+    if (!Object.hasOwn(nbt.equipment || {}, key)) continue;
+    const prior = equipment.findIndex(entry => entry.slot === slot);
+    if (prior >= 0) equipment.splice(prior, 1);
+    equipment.push({ slot, item: item(nbt.equipment[key]) });
+  }
   if (nbt.DecorItem && /llama/u.test(name)) { const color = DYES.indexOf(strip(nbt.DecorItem.id).replace(/_carpet$/u, '')); if (color >= 0) set('swag', color); }
   if (name === 'panda') { const genes = ['normal', 'lazy', 'worried', 'playful', 'brown', 'weak', 'aggressive']; field('main_gene', 'MainGene', value => genes.indexOf(strip(value))); field('hidden_gene', 'HiddenGene', value => genes.indexOf(strip(value))); }
   return { metadata: [...values].map(([key, value]) => ({ key, value })), equipment };

@@ -73,6 +73,13 @@ jobs:
           npm run test:fullbright
           npm run test:actor-layers
           npm run test:gpu-profile
+          npm run test:breaking-overlay
+          npm run test:breaking-renderer
+          npm run test:breaking-main
+          npm run test:shadow-casters
+          npm run test:source-inventory
+          npm run test:native-menu-ui
+          npm run test:inventory-items
       - uses: actions/upload-artifact@v4
         if: always()
         with:

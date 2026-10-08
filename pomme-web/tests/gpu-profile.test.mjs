@@ -150,11 +150,11 @@ test('unsupported timestamps and an explicitly disabled profiler allocate no GPU
 
 test('three readbacks bound in-flight work and reuse a single query set and resolve buffer', async () => {
   const h = harness();
-  assert.equal(GPU_PROFILE_STAGES.length, 13);
-  assert.equal(new Set(GPU_PROFILE_STAGES).size, 13);
+  assert.equal(GPU_PROFILE_STAGES.length, 14);
+  assert.equal(new Set(GPU_PROFILE_STAGES).size, 14);
   assert.equal(post(), 'post');
   assert.equal(h.querySets.length, 1);
-  assert.equal(h.querySets[0].descriptor.count, 26);
+  assert.equal(h.querySets[0].descriptor.count, 28);
   assert.equal(h.buffers.length, 4, 'one persistent resolve buffer and three persistent readbacks');
   const pending = [1, 2, 3].map(id => frame(h, id));
   assert.equal(new Set(pending.map(value => value.buffer)).size, 3);
@@ -163,13 +163,13 @@ test('three readbacks bound in-flight work and reuse a single query set and reso
   assert.equal(h.profiler.stats().gpuProfiler.inFlight, 3);
   const source = pending[0].encoder.copies[0][0];
   for (const item of pending) {
-    assert.deepEqual(item.encoder.resolves, [[h.querySets[0], 0, 26, source, 0]]);
-    assert.deepEqual(item.encoder.copies, [[source, 0, item.buffer, 0, 208]]);
+    assert.deepEqual(item.encoder.resolves, [[h.querySets[0], 0, 28, source, 0]]);
+    assert.deepEqual(item.encoder.copies, [[source, 0, item.buffer, 0, 224]]);
     assert.equal(item.writes[0].querySet, h.querySets[0]);
     assert.equal(item.writes[0].beginningOfPassWriteIndex, 0);
     assert.equal(item.writes[0].endOfPassWriteIndex, 1);
-    assert.equal(item.writes[1].beginningOfPassWriteIndex, 24);
-    assert.equal(item.writes[1].endOfPassWriteIndex, 25);
+    assert.equal(item.writes[1].beginningOfPassWriteIndex, 26);
+    assert.equal(item.writes[1].endOfPassWriteIndex, 27);
   }
   pending[0].buffer.complete(fullFrameValues(1));
   await flush();
@@ -177,7 +177,7 @@ test('three readbacks bound in-flight work and reuse a single query set and reso
   assert.equal(reused.buffer, pending[0].buffer);
   assert.equal(h.querySets.length, 1);
   assert.equal(h.buffers.length, 4);
-  assert.equal(h.profiler.stats().gpuProfiler.bufferBytes, 832);
+  assert.equal(h.profiler.stats().gpuProfiler.bufferBytes, 896);
   for (const item of [...pending.slice(1), reused]) item.buffer.complete(fullFrameValues(1));
   await flush();
   assert.equal(h.profiler.stats().gpuProfiler.inFlight, 0);
@@ -463,7 +463,7 @@ test('native timestamp strings preserve Uint64 precision and use the host submis
   assert.equal(BigInt(sample.frameTimestamps.endNs) - BigInt(sample.frameTimestamps.beginNs), 3n);
   assert.deepEqual(JSON.parse(JSON.stringify(sample)).frameTimestamps, sample.frameTimestamps,
     'benchmark JSON encodes raw GPU timestamps without rounding or BigInt serialization errors');
-  assert.equal(h.profiler.stats().gpuProfiler.bufferBytes, 832);
+  assert.equal(h.profiler.stats().gpuProfiler.bufferBytes, 896);
   assert.equal(h.buffers.length, 4);
   h.profiler.destroy();
 });

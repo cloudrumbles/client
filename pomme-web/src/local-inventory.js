@@ -2,17 +2,18 @@ import { InventoryAuthority } from '../authority/inventory-client.js';
 import { loadNativeCraftingData } from '../authority/native-crafting-data.js';
 import { ServerGameplay } from './gameplay.js';
 import { LocalInventorySession } from './local-inventory-session.js';
+import { planSourceInventoryBootstrap } from './source-level-inventory.js';
 const HOTBAR = ['grass_block', 'stone', 'oak_planks', 'sand', 'oak_leaves', 'glowstone'];
 
 class LocalGameplay extends ServerGameplay {
   renderInventory() {
     super.renderInventory();
     const footer = [...this.ui.inventory.children].find(node => node.tagName === 'P');
-    if (footer) footer.textContent = 'Left click picks up or places a stack. Right click splits or places one item. Shift click the crafting result to make more.';
+    if (footer) footer.textContent = 'Left or right click moves items. Shift click moves stacks. Drag spreads items. Double click collects matching items. Number keys swap hotbar slots; F swaps hands.';
     this.ui['container-options'].replaceChildren();
     const layout = this.ui.slots;
     if (layout.dataset.menu === 'player') for (const button of layout.querySelectorAll('[data-slot]')) {
-      const slot = Number(button.dataset.slot); if (slot >= 5 && slot <= 8 || slot === 45) button.disabled = true;
+      const slot = Number(button.dataset.slot); if (slot >= 5 && slot <= 8) button.disabled = true;
     }
   }
   renderCreative() {
@@ -25,7 +26,7 @@ class LocalGameplay extends ServerGameplay {
     }));
   }
   key(event) {
-    if ([this.controls.chat, this.controls.command, this.controls.advancements, this.controls.playerList, this.controls.drop, this.controls.offhand].includes(event.code)) return this.blocking;
+    if ([this.controls.chat, this.controls.command, this.controls.advancements, this.controls.playerList, this.controls.drop].includes(event.code)) return this.blocking;
     return super.key(event);
   }
 }
@@ -45,10 +46,20 @@ export class LocalInventory {
         onEvents: () => local.accept(), onError: error => { if (local.current()) local.status(error.message); } });
       if (!local.current()) { await local.close({ save: false }); return null; }
       if (!local.authority.initial.restored) {
-        for (const [index, name] of HOTBAR.entries()) {
-          const item = options.registry.items.find(item => item.name === name); if (!item) continue;
-          await local.authority.setSlot('player', index, { present: true, itemId: item.id, itemCount: item.stackSize });
+        const source = options.sourceInventory?.present ? planSourceInventoryBootstrap(options.sourceInventory, { registry: options.registry }) : null;
+        if (source && !source.ready) {
+          local.status(options.sourceInventory.unavailable ? `Source inventory is unavailable: ${options.sourceInventory.unavailable.reason} Building remains available.` : 'Source inventory is preserved; this save still needs native item component conversion.');
+          await local.close({ save: false }); return null;
+        }
+        if (source) {
+          await local.authority.bootstrapPlayer(source.player, source.selected);
           if (!local.current()) { await local.close({ save: false }); return null; }
+        } else {
+          for (const [index, name] of HOTBAR.entries()) {
+            const item = options.registry.items.find(item => item.name === name); if (!item) continue;
+            await local.authority.setSlot('player', index, { present: true, itemId: item.id, itemCount: item.stackSize });
+            if (!local.current()) { await local.close({ save: false }); return null; }
+          }
         }
       }
       if (!local.current()) { await local.close({ save: false }); return null; }
@@ -108,7 +119,7 @@ export class LocalInventory {
     if (!this.current()) return false;
     const state = this.world?.core?.block_get?.(x, y, z) ?? this.world?.block_get?.(x, y, z) ?? this.world?.getBlock?.(x, y, z);
     if (this.blocks.get(state)?.name !== 'crafting_table') return false;
-    const changed = await this.run(() => this.authority.switchGrid(3));
+    const changed = await this.run(() => this.authority.switchGrid(3, 3, { allowDrops: false }));
     if (!this.current()) return false;
     if (changed === false || this.authority.state.width !== 3) throw new Error('Inventory is busy. Try opening the table again.');
     this.session.windowId = 1; this.session.state.windowId = 1; this.session.menus.set(1, { inventoryType: 'crafting' });
@@ -124,7 +135,9 @@ export class LocalInventory {
     this.closed = true; this.gameplay?.close();
     this.closePromise = this.pending.then(async () => {
       if (!this.authority) return;
-      if (save) { try { await this.authority.switchGrid(2); } catch {} }
+      // If returning cursor/grid items would require a ground actor, persist the
+      // intact open menu rather than creating an invisible pending drop.
+      if (save) { try { await this.authority.switchGrid(2, 2, { allowDrops: false }); } catch {} }
       await this.authority.close({ save });
     });
     return this.closePromise;

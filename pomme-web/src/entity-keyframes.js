@@ -1,4 +1,5 @@
 import { ENTITY_KEYFRAMES } from './entity-keyframe-data.js';
+import { MODERN_ENTITY_KEYFRAMES } from './entity-modern-keyframe-data.js';
 
 const TAU = Math.PI * 2;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -42,7 +43,7 @@ function long(value) {
   } catch { return 0n; }
 }
 
-function advanceWalk(track, input, enabled = true) {
+export function advanceWalk(track, input, enabled = true) {
   const tick = Math.floor(input.time * 20), partial = input.time * 20 - tick;
   const state = track.specialWalk ??= { tick, speed: 0, oldSpeed: 0, position: 0 };
   if (tick - state.tick > 100) state.tick = tick - 100;
@@ -56,8 +57,9 @@ function advanceWalk(track, input, enabled = true) {
 
 /** Native state selection; unknown world ages use a local preview transition. */
 export function prepareSpecialEntity(track, input, metadata, gameTime) {
-  const family = track.definition.name, time = input.time, result = new Map();
-  const apply = (name, seconds, weight = 1) => sampleEntityKeyframes(ENTITY_KEYFRAMES[family]?.[name], seconds, weight, result);
+  const family = track.definition.name === 'camel_husk' ? 'camel' : track.definition.name, time = input.time, result = new Map();
+  const animations = input.nativeCamelBaby ? MODERN_ENTITY_KEYFRAMES.camel_baby : ENTITY_KEYFRAMES[family];
+  const apply = (name, seconds, weight = 1) => sampleEntityKeyframes(animations?.[name], seconds, weight, result);
   if (family === 'camel') {
     const poseTick = long(metadata('last_pose_change_tick', 0)), sitting = poseTick < 0n;
     let poseTicks = changedAt(track, 'camelPose', String(poseTick), time) * 20;
@@ -132,7 +134,8 @@ export function prepareDragon(track, input, position, metadata, sampleAt = () =>
   make('dragon_root', [bob * 2 * Math.PI / 180, 0, 0], [0, -32 + bob * 16, -48]);
   make('jaw', [(Math.sin(cycle) + 1) * .2, 0, 0], null);
   const reference = sample(6), turn = wrap(sample(5)[0] - sample(10)[0]), centerYaw = wrap(sample(5)[0] + turn / 2);
-  const minor = /^1\.(\d+)/.exec(input.minecraftVersion ?? '1.20.4')?.[1], modern = Number(minor) > 20;
+  const version = input.minecraftVersion ?? '1.20.4';
+  const minor = /^1\.(\d+)/.exec(version)?.[1], modern = Number.parseInt(version, 10) >= 26 || Number(minor) > 20;
   make('dragon_body', [0, 0, -turn * 1.5], modern ? [0, 3, 8] : null);
   // Modern cube origins moved down one pixel while the banking pivot moved
   // from the legacy renderer's intermediary to the native body pose.

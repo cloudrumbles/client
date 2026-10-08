@@ -8,6 +8,7 @@ import { advanceEntityAnimation } from './entity-animation-state.js';
 import { drawDroppedItem, drawEquippedItem } from './entity-item-rendering.js';
 import { entityLightFlags } from './entity-lighting.js';
 import { prepareSpecialEntity, prepareDragon } from './entity-keyframes.js';
+import { prepareModernEntity, resolveModernEntity } from './entity-modern-models.js';
 import { actorEyeFlags, FULLBRIGHT, EMISSIVE_TRANSLUCENT, WIND_TRANSLUCENT } from './actor-layers.js';
 
 // Server entities use the native client's cuboid models and imported sheets.
@@ -26,6 +27,7 @@ const SKIN_UV_CACHE = new Map();
 const HUMANOIDS = /^(?:player|zombie|husk|drowned|skeleton|stray|wither_skeleton|villager|wandering_trader|witch|pillager|vindicator|evoker|illusioner|piglin|piglin_brute|zombified_piglin|armor_stand)$/;
 const QUADRUPEDS = /^(?:pig|cow|mooshroom|sheep|wolf|cat|ocelot|fox|goat|horse|donkey|mule|llama|trader_llama|polar_bear|panda|hoglin|zoglin)$/;
 const HIDDEN = new Set(['marker', 'interaction', 'area_effect_cloud']);
+const INVISIBLE_LAYERS = new Set(['spider', 'cave_spider', 'enderman', 'ender_dragon', 'breeze', 'happy_ghast', 'nautilus', 'zombie_nautilus', 'camel', 'camel_husk']);
 const PICK_SKIP = new Set([...HIDDEN, 'item', 'experience_orb', 'lightning_bolt']);
 const SKINS = {
   player: ['player/wide/steve', 64], zombie: ['zombie/zombie', 64], husk: ['zombie/husk', 64], drowned: ['zombie/drowned', 64],
@@ -275,15 +277,17 @@ function slotNBT(value, depth = 0) {
   return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, slotNBT(item, depth + 1)]));
 }
 function leatherTint(item) {
-  const value = slotNBT(item.nbtData)?.display?.color;
+  const component = item.components?.find(entry => ['dyed_color', 'minecraft:dyed_color'].includes(entry.type))?.data;
+  const value = slotNBT(item.nbtData)?.display?.color ?? (typeof component === 'number' ? component : component?.rgb ?? component?.color);
   const color = Number.isInteger(value) ? value : 0xa06540;
   return [color >> 16 & 255, color >> 8 & 255, color & 255].map(channel => channel / 255);
 }
 
 export class EntityScene {
-  constructor({ renderer, registry = {}, materials = null, atlas = null, maps = null, getLight = null, maxVisible = 96, maxTracked = 1024, maxDistance = 96, uploadHz = 30, fetchSkin } = {}) {
+  constructor({ renderer, registry = {}, registries = new Map(), materials = null, atlas = null, maps = null, getLight = null, maxVisible = 96, maxTracked = 1024, maxDistance = 96, uploadHz = 30, fetchSkin } = {}) {
     if (!renderer || typeof renderer.uploadDynamicMesh !== 'function') throw new Error('EntityScene requires renderer.uploadDynamicMesh.');
     this.renderer = renderer;
+    this.registries = registries;
     this.getLight = getLight;
     this.definitions = new Map((registry.entities || []).map((entity) => [entity.id, entity]));
     this.items = new Map((registry.items || []).map((item) => [item.id, item]));
@@ -328,6 +332,14 @@ export class EntityScene {
 
   consume(event) {
     if (!event) return;
+    if (event.type === 'registry') {
+      if (event.id && Array.isArray(event.entries)) this.registries.set(event.id, event.entries);
+      for (const [id, registry] of Object.entries(event.codec || {})) {
+        const entries = registry?.value || registry?.entries;
+        if (Array.isArray(entries)) this.registries.set(id, entries);
+      }
+      this.dirty = true; return;
+    }
     if (event.type === 'tags') {
       const items = event.tags?.find(entry => entry.tagType === 'minecraft:item');
       if (items) this.itemTags = new Map(items.tags.map(tag => [tag.tagName, new Set(tag.entries)]));
@@ -426,7 +438,7 @@ export class EntityScene {
   visible(track, position, camera) {
     if (track.entity.id === this.localEntityId && !camera.thirdPerson) return false;
     const invisible = meta(track.entity, track.definition, 'shared_flags') & 32;
-    if (HIDDEN.has(track.definition.name) || invisible && !track.definition.name.includes('item_frame') && !(HUMANOIDS.test(track.definition.name) && track.entity.equipment?.some(entry => (entry.item || entry.equipment)?.present))) return false;
+    if (HIDDEN.has(track.definition.name) || invisible && !track.definition.name.includes('item_frame') && !INVISIBLE_LAYERS.has(track.definition.name) && !(HUMANOIDS.test(track.definition.name) && track.entity.equipment?.some(entry => (entry.item || entry.equipment)?.present))) return false;
     if (track.definition.name === 'item' && !meta(track.entity, track.definition, 'item', {})?.present) return false;
     const width = track.definition.width || 0.6, height = track.definition.height || 1;
     const delta = [position.x - this.eye[0], position.y + height / 2 - this.eye[1], position.z - this.eye[2]];
@@ -447,6 +459,8 @@ export class EntityScene {
 
   skinFor(name, entity, definition) {
     let skin = SKINS[name], model = NATIVE_MODELS[name], slim = false;
+    const modern = resolveModernEntity(name, (key, fallback) => meta(entity, definition, key, fallback), this.registries, this.minecraftVersion);
+    if (modern) { model = modern.model; skin = [modern.assetId, modern.height]; }
     if (name === 'player') {
       const profile = this.players.get(entity.uuid), account = this.skinCache.request(profile);
       if (account?.state === 'ready') { this.stats.accountSkins++; return { model: account.slim ? 'player_slim' : 'player', skin: { tile: account.tile, sheet: [64, 64], slim: account.slim } }; }
@@ -478,7 +492,7 @@ export class EntityScene {
     if (name === 'shulker') { const color = meta(entity, definition, 'color', 16), colors = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'light_gray', 'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black']; if (color >= 0 && color < 16) skin = [`shulker/shulker_${colors[color]}`, 64]; }
     if (name === 'ghast' && meta(entity, definition, 'is_charging', false)) skin = ['ghast/ghast_shooting', 32];
     if (name === 'wither') { const inv = meta(entity, definition, 'inv', 0); if (inv > 0 && !(inv <= 80 && Math.floor(inv / 5) % 2 === 1)) skin = ['wither/wither_invulnerable', 64]; }
-    let tile = skin ? this.atlas?.entityTiles?.get(`minecraft:entity/${skin[0]}`) : undefined;
+    let tile = skin ? this.atlas?.entityTiles?.get(skin[0].includes(':') ? skin[0] : `minecraft:entity/${skin[0]}`) : undefined;
     if (name === 'player' && tile === undefined) { tile = this.atlas?.entityTiles?.get('minecraft:entity/player/wide/steve'); slim = false; model = 'player'; }
     const rectangle = tile !== undefined ? this.atlas?.tiles?.[tile] : null;
     const sheet = tile !== undefined ? [rectangle?.width || (['cod', 'salmon', 'pufferfish', 'tropical_fish'].includes(name) ? 32 : name === 'iron_golem' ? 128 : 64), rectangle?.height || skin[1]] : null;
@@ -496,6 +510,8 @@ export class EntityScene {
   }
 
   equipment(track, context, input, native) {
+    // The native equipment renderer always submits OverlayTexture.NO_OVERLAY.
+    context = { ...context, hurt: false };
     for (const entry of track.entity.equipment || []) {
       const item = entry.item || entry.equipment, data = this.itemMaterial(item);
       if (!data) continue;
@@ -515,25 +531,60 @@ export class EntityScene {
         });
         this.stats.equipmentParts++; continue;
       }
-      const match = /^(leather|chainmail|iron|golden|diamond|netherite|turtle)_(helmet|chestplate|leggings|boots)$/.exec(data.definition.name);
+      const match = /^(leather|chainmail|copper|iron|golden|diamond|netherite|turtle)_(helmet|chestplate|leggings|boots)$/.exec(data.definition.name);
       if (!match) continue;
       const material = match[1] === 'golden' ? 'gold' : match[1], layer = slot === 3 ? 2 : 1;
-      const tile = this.atlas?.entityTiles?.get(`minecraft:entity/armor/${material}_layer_${layer}`);
+      const modernPath = `minecraft:entity/equipment/${layer === 2 ? 'humanoid_leggings' : 'humanoid'}/${material === 'turtle' ? 'turtle_scute' : material}`;
+      const tile = this.atlas?.entityTiles?.get(modernPath) ?? this.atlas?.entityTiles?.get(`minecraft:entity/armor/${material}_layer_${layer}`);
       if (tile === undefined) continue;
       const parts = new Set(slot === 5 ? ['head'] : slot === 4 ? ['body', 'right_arm', 'left_arm'] : slot === 3 ? ['body', 'right_leg', 'left_leg'] : ['right_leg', 'left_leg']);
       const tint = material === 'leather' ? leatherTint(item) : [1, 1, 1];
       const model = track.definition.name === 'armor_stand' ? layer === 2 ? 'armor_stand_armor_inner' : 'armor_stand_armor_outer' : layer === 2 ? 'armor_inner' : 'armor_outer';
       drawEntityModel(this.writer, model, context, input, { tile, parts, hat: false, tint });
       if (material === 'leather') {
-        const overlay = this.atlas?.entityTiles?.get(`minecraft:entity/armor/leather_layer_${layer}_overlay`);
+        const overlay = this.atlas?.entityTiles?.get(`${modernPath}_overlay`) ?? this.atlas?.entityTiles?.get(`minecraft:entity/armor/leather_layer_${layer}_overlay`);
         if (overlay !== undefined) drawEntityModel(this.writer, model, context, input, { tile: overlay, parts, hat: false, inflation: 0.001 });
       }
       this.stats.equipmentParts++;
     }
   }
 
+  modernEquipment(track, context, input, bodyItem, saddleItem) {
+    const name = track.definition.name;
+    if (!['happy_ghast', 'nautilus', 'zombie_nautilus'].includes(name)) return;
+    const draw = (model, path) => {
+      const tile = this.atlas?.entityTiles?.get(`minecraft:entity/${path}`);
+      if (tile === undefined) return;
+      drawEntityModel(this.writer, model, { ...context, hurt: false }, input, { tile });
+      this.stats.equipmentParts++;
+    };
+    const bodyName = bodyItem?.present ? this.items.get(bodyItem.itemId)?.name : null;
+    if (name === 'happy_ghast') {
+      const color = /^(white|orange|magenta|light_blue|yellow|lime|pink|gray|light_gray|cyan|purple|blue|brown|green|red|black)_harness$/.exec(bodyName || '')?.[1];
+      if (color) {
+        draw(input.young ? 'happy_ghast_baby_harness' : 'happy_ghast_harness', `equipment/happy_ghast_body/${color}_harness`);
+        const harness = this.itemTags.get('minecraft:harnesses')?.has(bodyItem.itemId) ?? true;
+        if (harness && meta(track.entity, track.definition, 'is_leash_holder', false))
+          draw(input.young ? 'happy_ghast_baby_ropes' : 'happy_ghast_ropes', 'ghast/happy_ghast_ropes');
+      }
+      return;
+    }
+    // SimpleEquipmentLayer has no baby equipment model for native nautiluses.
+    if (input.young && name === 'nautilus') return;
+    const material = /^(iron|golden|diamond|netherite|copper)_nautilus_armor$/.exec(bodyName || '')?.[1];
+    if (material) draw('nautilus_armor', `equipment/nautilus_body/${material === 'golden' ? 'gold' : material}`);
+    if (saddleItem?.present && this.items.get(saddleItem.itemId)?.name === 'saddle') draw('nautilus_saddle', 'equipment/nautilus_saddle/saddle');
+  }
+
   layers(track, context, input, model) {
     const { entity, definition } = track, name = definition.name;
+    const eyes = path => {
+      const tile = this.atlas?.entityTiles?.get(`minecraft:entity/${path}`);
+      if (tile !== undefined) drawEntityModel(this.writer, model, { ...context, hurt: false }, input, { tile, flags: actorEyeFlags(this.minecraftVersion) });
+    };
+    if (name === 'enderman') eyes('enderman/enderman_eyes');
+    if (name.includes('spider')) eyes('spider_eyes');
+    if (meta(entity, definition, 'shared_flags') & 32) return;
     const layer = (path, options = {}) => {
       const tile = this.atlas?.entityTiles?.get(`minecraft:entity/${path}`);
       if (tile !== undefined) drawEntityModel(this.writer, model, context, input, { tile, inflation: 0.0005, ...options });
@@ -562,12 +613,6 @@ export class EntityScene {
       if (profession !== 'none') layer(`${name}/profession/${profession}`, { inflation: 0.001 });
       if (!['none', 'nitwit'].includes(profession)) layer(`${name}/profession_level/${VILLAGER_LEVELS[clamp((data.level || 1) - 1, 0, 4)]}`, { inflation: 0.0015 });
     }
-    const eyes = path => {
-      const tile = this.atlas?.entityTiles?.get(`minecraft:entity/${path}`);
-      if (tile !== undefined) drawEntityModel(this.writer, model, { ...context, hurt: false }, input, { tile, flags: actorEyeFlags(this.minecraftVersion) });
-    };
-    if (name === 'enderman') eyes('enderman/enderman_eyes');
-    if (name.includes('spider')) eyes('spider_eyes');
   }
 
   model(track, position, time) {
@@ -578,7 +623,7 @@ export class EntityScene {
       if (result.importedModel || result.map) this.stats.nativeModels++; else this.stats.approximateModels++;
       this.stats.equipmentParts += result.items; return;
     }
-    const baby = meta(entity, definition, 'baby', false) || name === 'armor_stand' && Boolean(meta(entity, definition, 'client_flags') & 1);
+    const baby = name !== 'zombie_nautilus' && (meta(entity, definition, 'baby', false) || name === 'armor_stand' && Boolean(meta(entity, definition, 'client_flags') & 1));
     const invisible = Boolean(meta(entity, definition, 'shared_flags') & 32);
     const pose = meta(entity, definition, 'pose');
     const context = { position: [position.x, position.y, position.z].map((value, axis) => value - this.meshOrigin[axis]), rotation: [0, -position.yaw, 0], scale: baby ? 0.5 : 1, hurt: time < track.hurtUntil };
@@ -618,11 +663,21 @@ export class EntityScene {
       if ([1, 2, 3, 4].includes(pose)) { context.rotation[0] = Math.PI / 2; context.position[1] += 0.3; }
       if (pose === 7 || time < track.deathAt + 1) context.rotation[2] = Math.min(Math.PI / 2, Math.sqrt(Math.max(0, time - track.deathAt) * 1.6) * Math.PI / 2);
       const attack = time - track.attackAt < 0.3 ? clamp((time - track.attackAt) / 0.3, 0, 1) : 0;
-      const input = { swing, phase: track.phase, speed: Math.min(1, speed * 0.15), time, young: baby, pitch: position.pitch, headYaw: angleDelta(position.yaw, position.headYaw), crouching: pose === 5 || Boolean(meta(entity, definition, 'shared_flags', 0) & 2), zombie: /zombie|husk|drowned/.test(name), attack, leftHanded: meta(entity, definition, 'player_main_hand', 1) === 0, humanoid: HUMANOIDS.test(name), sitting: Number.isInteger(entity.vehicleId) || ['wolf', 'cat'].includes(name) && Boolean(meta(entity, definition, 'flags', 0) & 1), paddleLeft: Boolean(meta(entity, definition, 'paddle_left', false)), paddleRight: Boolean(meta(entity, definition, 'paddle_right', false)), family: name.includes('spider') ? 'spider' : name.includes('squid') ? 'squid' : ['cod', 'salmon', 'tropical_fish', 'pufferfish'].includes(name) ? 'fish' : name === 'bat' ? 'bat' : name };
+      const input = { swing, phase: track.phase, speed: Math.min(1, speed * 0.15), time, young: baby, pitch: position.pitch, headYaw: angleDelta(position.yaw, position.headYaw), crouching: pose === 5 || Boolean(meta(entity, definition, 'shared_flags', 0) & 2), zombie: /zombie|husk|drowned/.test(name), attack, leftHanded: meta(entity, definition, 'player_main_hand', 1) === 0, humanoid: HUMANOIDS.test(name), sitting: Number.isInteger(entity.vehicleId) || ['wolf', 'cat'].includes(name) && Boolean(meta(entity, definition, 'flags', 0) & 1), paddleLeft: Boolean(meta(entity, definition, 'paddle_left', false)), paddleRight: Boolean(meta(entity, definition, 'paddle_right', false)), family: name === 'camel_husk' ? 'camel' : name.includes('spider') ? 'spider' : name.includes('squid') ? 'squid' : ['cod', 'salmon', 'tropical_fish', 'pufferfish'].includes(name) ? 'fish' : name === 'bat' ? 'bat' : name };
       const hiddenParts = new Set();
-      if (['camel', 'ravager', 'sniffer', 'breeze'].includes(name)) {
+      input.nativeCamelBaby = resolved.model === 'camel_baby_modern';
+      input.nativeAdultOnly = name === 'camel_husk' && Number.parseInt(this.minecraftVersion, 10) >= 26;
+      if (['camel', 'camel_husk', 'ravager', 'sniffer', 'breeze'].includes(name)) {
         input.worldSpeed = speed;
         prepareSpecialEntity(track, input, (key, fallback) => meta(entity, definition, key, fallback), this.gameTime);
+      }
+      const equipmentItem = slot => { const entry = entity.equipment?.find(entry => (entry.slot & 127) === slot); return entry?.item || entry?.equipment; };
+      const bodyItem = equipmentItem(6);
+      input.modernFarm = ['cow', 'pig', 'chicken'].includes(name) && resolved.model !== name;
+      if (['happy_ghast', 'nautilus', 'zombie_nautilus'].includes(name) || input.modernFarm) {
+        input.worldSpeed = speed;
+        prepareModernEntity(track, input, { bodyItem, ridden: Boolean(entity.passengers?.length) });
+        if (name === 'zombie_nautilus' && bodyItem?.present) hiddenParts.add('corals');
       }
       if (name === 'ender_dragon') {
         input.minecraftVersion = this.minecraftVersion;
@@ -634,13 +689,13 @@ export class EntityScene {
         const shifted = transform([0, 0, 1], context.rotationMatrix);
         context.position = context.position.map((value, axis) => value + shifted[axis]);
       }
-      if (name === 'camel') {
+      if (name === 'camel' || name === 'camel_husk') {
         const saddleItem = entity.equipment?.some(entry => (entry.slot & 127) === 7 && this.items.get((entry.item || entry.equipment)?.itemId)?.name === 'saddle');
         const saddled = Boolean(meta(entity, definition, 'flags', 0) & 4) || saddleItem;
         if (!saddled) { hiddenParts.add('saddle'); hiddenParts.add('bridle'); }
         if (!saddled || !entity.passengers?.length) hiddenParts.add('reins');
         input.camelSaddled = saddled; input.camelRidden = Boolean(entity.passengers?.length);
-        input.camelSaddleTile = this.atlas?.entityTiles?.get('minecraft:entity/equipment/camel_saddle/saddle');
+        input.camelSaddleTile = this.atlas?.entityTiles?.get(`minecraft:entity/equipment/${name}_saddle/saddle`);
         if (input.camelSaddleTile !== undefined) { hiddenParts.add('saddle'); hiddenParts.add('bridle'); hiddenParts.add('reins'); }
       }
       if (name.includes('llama') && (baby || !meta(entity, definition, 'chest', false))) { hiddenParts.add('left_chest'); hiddenParts.add('right_chest'); }
@@ -689,16 +744,16 @@ export class EntityScene {
       if (name === 'tropical_fish') tint = DYE_RGB[(meta(entity, definition, 'type_variant', 0) >>> 16) & 15];
       if (!context.skin) tint = /zombie|creeper|slime/.test(name) ? [0.3, 0.55, 0.22] : name === 'pig' ? [0.84, 0.49, 0.5] : /skeleton/.test(name) ? [0.76, 0.76, 0.69] : [0.65, 0.43, 0.3];
       const native = drawEntityModel(this.writer, resolved.model, context, input, { playerCustomization: name === 'player' ? meta(entity, definition, 'player_mode_customisation', 127) : undefined, tint, hiddenParts, parts: invisible ? new Set() : undefined });
-      if (!invisible && name === 'camel' && input.camelSaddled && input.camelSaddleTile !== undefined) {
-        drawEntityModel(this.writer, 'camel', context, input, { tile: input.camelSaddleTile,
+      if (['camel', 'camel_husk'].includes(name) && !input.nativeCamelBaby && !(input.nativeAdultOnly && baby) && input.camelSaddled && input.camelSaddleTile !== undefined) {
+        drawEntityModel(this.writer, 'camel', { ...context, hurt: false }, input, { tile: input.camelSaddleTile,
           parts: new Set(input.camelRidden ? ['saddle', 'bridle', 'reins'] : ['saddle', 'bridle']) });
       }
-      if (!invisible && name === 'breeze') {
+      if (name === 'breeze') {
         const wind = this.atlas?.entityTiles?.get('minecraft:entity/breeze/breeze_wind'), eyes = this.atlas?.entityTiles?.get('minecraft:entity/breeze/breeze_eyes');
         if (wind !== undefined) drawEntityModel(this.writer, 'breeze_wind', { ...context, hurt: false }, input, { tile: wind, flags: 32 | WIND_TRANSLUCENT, uvOffset: [(time * 20 * .02) % 1, 0] });
         if (eyes !== undefined) drawEntityModel(this.writer, 'breeze_eyes', { ...context, hurt: false }, input, { tile: eyes, flags: 32 | FULLBRIGHT | EMISSIVE_TRANSLUCENT });
       }
-      if (!invisible && name === 'ender_dragon') {
+      if (name === 'ender_dragon') {
         const eyes = this.atlas?.entityTiles?.get('minecraft:entity/enderdragon/dragon_eyes');
         if (eyes !== undefined) drawEntityModel(this.writer, 'ender_dragon', { ...context, hurt: false }, input, { tile: eyes, flags: actorEyeFlags(this.minecraftVersion) });
       }
@@ -708,7 +763,8 @@ export class EntityScene {
         if (overlay !== undefined) drawEntityModel(this.writer, name === 'drowned' ? 'drowned_outer' : 'skeleton_outer', context, input, { tile: overlay });
       }
       if (name === 'slime' && context.skin) drawEntityModel(this.writer, 'slime_outer', context, input, { flags: 64 });
-      if (!invisible) this.layers(track, context, input, resolved.model);
+      this.modernEquipment(track, context, input, bodyItem, equipmentItem(7));
+      this.layers(track, context, input, resolved.model);
       if (HUMANOIDS.test(name)) this.equipment(track, context, input, native);
       this.stats.nativeModels++;
     } else if (name === 'arrow' || name === 'spectral_arrow') {
@@ -762,7 +818,7 @@ export class EntityScene {
       if (lightFlags !== track.lightFlags) this.dirty = true;
       track.lightFlags = lightFlags;
       candidates.push({ track, position, lightFlags, distance: this.distance(position) });
-      if (time - track.start < 0.08 || (track.speed > 0 && time - track.lastPacket < 0.3) || time < track.hurtUntil + 0.05 || time < track.attackAt + 0.35 || time < track.deathAt + 1 || ['item', 'bee', 'squid', 'glow_squid', 'bat', 'cod', 'salmon', 'pufferfish', 'tropical_fish', 'ghast', 'blaze', 'guardian', 'elder_guardian', 'endermite', 'silverfish', 'wither', 'piglin', 'piglin_brute', 'zombified_piglin', 'camel', 'sniffer', 'breeze', 'ender_dragon'].includes(track.definition.name) || track.definition.name === 'ravager' && time < (track.stunnedAt ?? -Infinity) + 3.05 || ['slime', 'magma_cube'].includes(track.definition.name) && (Boolean(track.entity.onGround) !== track.animationState?.ground || Math.abs(track.animationState?.targetSquish || 0) > .001 || Math.abs(track.animationState?.squish || 0) > .001)) animated = true;
+      if (time - track.start < 0.08 || (track.speed > 0 && time - track.lastPacket < 0.3) || time < track.hurtUntil + 0.05 || time < track.attackAt + 0.35 || time < track.deathAt + 1 || ['item', 'bee', 'squid', 'glow_squid', 'bat', 'cod', 'salmon', 'pufferfish', 'tropical_fish', 'ghast', 'blaze', 'guardian', 'elder_guardian', 'endermite', 'silverfish', 'wither', 'piglin', 'piglin_brute', 'zombified_piglin', 'camel', 'camel_husk', 'happy_ghast', 'nautilus', 'zombie_nautilus', 'sniffer', 'breeze', 'ender_dragon'].includes(track.definition.name) || ['cow', 'pig', 'chicken'].includes(track.definition.name) && ((track.specialWalk?.speed || 0) > .001 || (track.specialWalk?.oldSpeed || 0) > .001) || track.definition.name === 'chicken' && ((track.entity.grounded ?? track.entity.onGround ?? true) === false || (track.chickenFlap?.speed || 0) > .001 || (track.chickenFlap?.oldSpeed || 0) > .001) || track.definition.name === 'ravager' && time < (track.stunnedAt ?? -Infinity) + 3.05 || ['slime', 'magma_cube'].includes(track.definition.name) && (Boolean(track.entity.onGround) !== track.animationState?.ground || Math.abs(track.animationState?.targetSquish || 0) > .001 || Math.abs(track.animationState?.squish || 0) > .001)) animated = true;
     }
     if (!this.dirty && !animated) return this.stats;
     candidates.sort((a, b) => a.distance - b.distance);
@@ -795,10 +851,10 @@ export class EntityScene {
   }
 }
 
-export function buildEntityPreview({ name, position = [0, 0, 0], origin = [0, 0, 0], yaw = 0, scale = 1, time = 0, metadata = [], nbt = null }, { registry = {}, atlas = null, materials = null } = {}) {
+export function buildEntityPreview({ name, position = [0, 0, 0], origin = [0, 0, 0], yaw = 0, scale = 1, time = 0, metadata = [], nbt = null }, { registry = {}, registries = new Map(), atlas = null, materials = null } = {}) {
   const definition = registry.entities?.find(entity => entity.name === name.replace(/^minecraft:/, ''));
   if (!definition) return null;
-  const scene = new EntityScene({ registry, atlas, materials, renderer: { uploadDynamicMesh() {}, removeMesh() {} } });
+  const scene = new EntityScene({ registry, registries, atlas, materials, renderer: { uploadDynamicMesh() {}, removeMesh() {} } });
   const sample = { x: position[0], y: position[1], z: position[2], yaw, pitch: 0, headYaw: yaw };
   const saved = previewEntityData(nbt, definition, registry), byKey = new Map(saved.metadata.map(entry => [entry.key, entry]));
   for (const entry of metadata || []) byKey.set(entry.key, entry);

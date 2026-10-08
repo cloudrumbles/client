@@ -25,6 +25,8 @@ import { EntityScene } from './entities.js';
 import { ServerGameplay } from './gameplay.js';
 import { storeResourcePack, restoreResourcePack } from './pack-store.js';
 import { AuthorityWorldBridge } from '../authority/bridge.js';
+import { BreakingOverlay } from './breaking-overlay.js';
+import { readSourceLevelInventory, unavailableSourceLevelInventory, storeSourceLevelInventory, restoreSourceLevelInventory } from './source-level-inventory.js';
 
 const $ = id => document.getElementById(id);
 const seed = 1650;
@@ -45,6 +47,8 @@ let resourcePackSaving = Promise.resolve();
 let serverMapKey = '';
 let importedAuthority = null, authorityEpoch = 0, authorityClosing = Promise.resolve(), authoritySaveTimer;
 let localInventory = null, inventoryEpoch = 0, inventoryClosing = Promise.resolve();
+let sourceInventorySaving = Promise.resolve();
+let breaking = null, localBreakingId = null, breakingClock = 0;
 let worldResetting = Promise.resolve();
 let authoritySaving = null, authorityIngestDepth = 0, authorityColumnsRunning = false;
 const authorityColumns = new Map();
@@ -63,18 +67,25 @@ async function saveImportedInventory() {
   try { await inventory.save(); }
   catch (error) { if (localInventory === inventory && !inventory.closed) throw error; }
 }
-async function openImportedInventory(guard = () => true) {
+async function openImportedInventory(guard = () => true, sourceInventory) {
   await inventoryClosing;
   if (!guard() || mode !== 'import' || session) return null;
   const epoch = connectionEpoch, generation = world.generation, token = ++inventoryEpoch;
   const current = () => guard() && connectionEpoch === epoch && world.generation === generation && inventoryEpoch === token && mode === 'import' && !session;
+  await sourceInventorySaving.catch(error => { if (current()) status(`Source inventory cache unavailable: ${error.message}`); });
+  if (!current()) return null;
+  if (sourceInventory == null) {
+    try { sourceInventory = await restoreSourceLevelInventory(world.worldKey, { isCurrent: current }); }
+    catch (error) { if (current()) status(`Source inventory unavailable: ${error.message}`); return null; }
+  }
+  if (!current()) return null;
   const file = userPackFile || await restoreResourcePack();
   if (!current() || !file) return null;
   let inventory;
   try {
     const { LocalInventory } = await import('./local-inventory.js');
     if (!current()) return null;
-    inventory = await LocalInventory.open({ registry, jar: file, worldKey: world.worldKey, player, world, assets: pack,
+    inventory = await LocalInventory.open({ registry, jar: file, worldKey: world.worldKey, player, world, assets: pack, sourceInventory,
       isCurrent: current, onStatus: message => { if (current()) status(message); },
       onSelectedBlock: id => { if (current()) select(id); } });
     if (!current()) { await inventory?.close({ save: false }); return null; }
@@ -89,6 +100,22 @@ async function openImportedInventory(guard = () => true) {
     if (current()) status(`Local inventory unavailable: ${error.message}`);
     return null;
   }
+}
+
+function clearBreaking() {
+  breaking?.destroy(); breaking = null; localBreakingId = null; breakingClock = 0;
+}
+function updateBreaking(dt) {
+  if (!breaking) return;
+  breakingClock += dt * 20;
+  const tick = Math.floor(breakingClock), id = session?.state.entityId;
+  const digging = mode === 'server' && locked && !benchmark && !gameplay?.blocking && !signEditor?.blocking ? gameplay?.digging : null;
+  if (localBreakingId !== null && (!digging || id !== localBreakingId)) { breaking.progress(localBreakingId, null, -1, tick); localBreakingId = null; }
+  if (digging && Number.isInteger(id)) {
+    localBreakingId = id;
+    breaking.localProgress(id, [digging.x, digging.y, digging.z], digging.elapsed / digging.duration, tick);
+  }
+  breaking.update({ eye: player.eye, tick });
 }
 
 function retireAuthorityOverlays(blocks) {
@@ -358,14 +385,19 @@ function configureMaps({ resetAtlas = false } = {}) {
   if (resetAtlas || maps?.atlas !== pack?.atlas) maps?.setAssets(pack?.atlas);
 }
 function refreshScenes() {
+  clearBreaking();
   blockEntities?.clear(); effects?.destroy();
   setLanguage(pack?.languages ?? null);
   const materials = world.materialRegistry?.materials ?? pack?.materials;
+  if (materials && pack?.atlas && renderer.uploadBreakingMesh && renderer.removeBreakingMesh) breaking = new BreakingOverlay({
+    world, renderer, materials, atlas: pack.atlas, version: registry?.version.minecraftVersion ?? '1.20.4',
+  });
   const playerType = registry?.entities.find(definition => definition.name === 'player')?.id;
   configureMaps();
   player.setMaterials(mode === 'demo' ? null : materials);
   blockEntities = registry ? new BlockEntityScene({ renderer, registry, materials, atlas: pack?.atlas,
     maxY: world.bounds().max[1], getGameTime: gameTime,
+    getPartialTick: () => Math.max(0, (performance.now() - worldAgeAt) % 50) / 50,
     getTint: (x, y, z, kind) => world.tintAt(x, y, z, kind), getLight: sceneLight,
     getNearbyPlayers: () => [player.position, ...[...(session?.entities.values() ?? [])].filter(entity => entity.entityType === playerType).map(entity => [entity.x, entity.y, entity.z])],
     getState: (x, y, z) => core.block_get(x, y, z), setVisualOverride: (...args) => world.setVisualOverride(...args) }) : null;
@@ -391,6 +423,7 @@ function refreshScenes() {
   for (const column of world.columns.values()) blockEntities?.loadColumn(column);
 }
 async function resetWorld(options, guard = () => true) {
+  clearBreaking();
   const closing = closeImportedAuthority();
   // World.reset closes several stores asynchronously. Serialize resets so an
   // older import cannot finish rebuilding the core after a newer connection.
@@ -499,7 +532,7 @@ async function installPack(next, cacheWarning = '', { guard = () => true, nextRe
     }
     entities?.clear();
     if (mode === 'server' && session) {
-      entities = new EntityScene({ renderer, registry, materials: next?.materials ?? world.materialRegistry.materials, atlas: next?.atlas,
+      entities = new EntityScene({ renderer, registry, registries: session.adapter.registries, materials: next?.materials ?? world.materialRegistry.materials, atlas: next?.atlas,
         getLight: position => sceneLight(...position.map(Math.floor)) });
       entities.maps = maps;
       for (const profile of session.players.values()) entities.consume({ type: 'player-info', player: profile });
@@ -521,6 +554,7 @@ function updateFireworkBoost() {
   })));
 }
 function detachServer() {
+  clearBreaking();
   void closeImportedAuthority().catch(authorityWarning);
   const epoch = ++connectionEpoch;
   const previous = session, previousPacks = serverPacks; session = null; serverPacks = null;
@@ -587,6 +621,18 @@ async function importFiles(files, { version, minY, height, hasSkylight = true } 
   const level = [...files].find(file => file.name === 'level.dat');
   const metadata = level ? await importLevelDat(level) : null;
   if (!active()) return null;
+  let sourceInventory = null;
+  if (level) {
+    try { sourceInventory = await readSourceLevelInventory(level); }
+    catch (error) {
+      if (!active()) return null;
+      // Preserve a defer marker so resume cannot treat a source parse failure
+      // as an absent inventory and write starter slots over that source.
+      sourceInventory = unavailableSourceLevelInventory(error, { version: metadata?.version, dataVersion: metadata?.dataVersion });
+      status(`Source inventory preserved for later loading: ${error.message}`);
+    }
+  }
+  if (!active()) return null;
   const targetVersion = version ?? (BROWSER_PROTOCOL_VERSIONS.includes(metadata?.version) ? metadata.version : registry?.version.minecraftVersion ?? '1.20.4');
   if (!await selectRegistryVersion(targetVersion, { guard: active })) return null;
   const explicitBounds = minY !== undefined || height !== undefined;
@@ -598,6 +644,11 @@ async function importFiles(files, { version, minY, height, hasSkylight = true } 
   mode = 'import'; serverDimension = null;
   const dimensionKey = explicitBounds ? `${dimension.minY}:${dimension.height}` : 'source-bounds';
   const worldKey = `import:${targetVersion}:${dimensionKey}:${hasSkylight ? 'sky' : 'no-sky'}:${regions.map(file => `${file.name}:${file.size}:${file.lastModified}`).sort().join('|')}`;
+  if (sourceInventory) {
+    const saving = storeSourceLevelInventory(worldKey, sourceInventory, { isCurrent: active });
+    sourceInventorySaving = Promise.all([sourceInventorySaving.catch(() => {}), saving]).then(() => {});
+    void sourceInventorySaving.catch(() => {});
+  }
   switchSaveKey(`pomme-web-edits:${worldKey}`);
   loadingWorld = true; ready = false; $('play').disabled = true;
   const biomeSeed = metadata?.seed === undefined ? 0n : await hashBiomeSeed(metadata.seed);
@@ -681,7 +732,7 @@ async function importFiles(files, { version, minY, height, hasSkylight = true } 
   phase = metadata?.dayTime != null ? Number(BigInt(metadata.dayTime) % 24000n) / 24000 : 0.22;
   await openImportedAuthority(active);
   if (!active()) return null;
-  await openImportedInventory(active);
+  await openImportedInventory(active, sourceInventory);
   if (!active()) return null;
   loadingWorld = false; ready = true;
   await updateAuthorityRunning();
@@ -771,7 +822,8 @@ async function connectServer(options) {
         return;
       }
       gameplay?.event(event);
-      if (event.type === 'tags') entities?.consume(event);
+      if (event.type === 'tags' || event.type === 'registry') entities?.consume(event);
+      if (event.type === 'break-progress') breaking?.event(event, Math.floor(breakingClock));
       if (event.type === 'resource-pack' || event.type === 'remove-resource-pack') {
         if (event.type === 'resource-pack' && (options.resourcePacks || $('server-packs').value) === 'prompt') { keys.clear(); if (document.pointerLockElement) document.exitPointerLock(); }
         void serverPacks?.event(event).catch(error => status(error.message));
@@ -812,7 +864,7 @@ async function connectServer(options) {
     getEntity: (x, y, z) => blockEntities?.entities.get(`${x},${y},${z}`),
     getMaterial: (x, y, z) => world.materialRegistry?.materials.get(core.block_get(x, y, z)),
     onClose: () => { keys.clear(); } });
-  entities = new EntityScene({ renderer, registry, materials: pack?.materials, atlas: pack?.atlas,
+  entities = new EntityScene({ renderer, registry, registries: session.adapter.registries, materials: pack?.materials, atlas: pack?.atlas,
     getLight: position => sceneLight(...position.map(Math.floor)) });
   entities.maps = maps;
   gameplay.setAssets?.({ atlas: pack?.atlas, materials: pack?.materials, maps });
@@ -918,6 +970,8 @@ function frame(now) {
       }
     }
   } } catch (error) { fail(error); return; }
+  try { if (ready && !document.hidden) updateBreaking(dt); }
+  catch (error) { fail(error); return; }
   // The renderer tracks actual geometry changes; empty worker results only
   // advance the application's diagnostic revision and preserve HDR history.
   try {
@@ -950,8 +1004,8 @@ async function boot() {
   world = new BrowserWorld({ core, renderer,
     onMesh: () => { revision++; },
     onColumn: column => { blockEntities?.loadColumn(column); queueAuthorityColumn(column); },
-    onBlock: block => blockEntities?.consume({ type: 'block', ...block }),
-    onUnload: column => blockEntities?.removeColumn(column.x, column.z),
+    onBlock: block => { breaking?.blockChanged(block, block.stateId); blockEntities?.consume({ type: 'block', ...block }); },
+    onUnload: column => { breaking?.removeColumn(column.x, column.z); blockEntities?.removeColumn(column.x, column.z); },
     onReady: () => {
       ready = mode === 'demo' || (mode === 'server' && session?.state.status === 'playing') || (mode === 'import' && !loadingWorld);
       $('play').disabled = !ready; $('world-status').textContent = mode === 'server' ? 'World ready' : 'World ready · edits saved on this device';
@@ -960,7 +1014,7 @@ async function boot() {
   });
   world.initDemo(seed, stored);
   try { $('resume-import').hidden = !localStorage.getItem('pomme-last-import'); } catch {}
-  window.pomme = { get core() { return core; }, get player() { return player; }, get renderer() { return renderer; }, get world() { return world; }, get authority() { return importedAuthority; }, get localInventory() { return localInventory; }, get session() { return session; }, get gameplay() { return gameplay; }, get entities() { return entities; }, get blockEntities() { return blockEntities; }, get signEditor() { return signEditor; }, get serverPacks() { return serverPacks; }, get firstPerson() { return firstPerson; }, get maps() { return maps; }, get effects() { return effects; }, get audio() { return audio; }, get registry() { return registry; }, get assets() { return pack; }, get mode() { return mode; }, connectServer, importFiles, resumeImported, loadPack, edit, useBlock: useImportedBlock, place: placeImported, saveAuthority: persistAuthority, saveInventory: saveImportedInventory, startBenchmark, get benchmark() { return lastResult; }, get ready() { return ready; }, get revision() { return revision; } };
+  window.pomme = { get core() { return core; }, get player() { return player; }, get renderer() { return renderer; }, get breaking() { return breaking; }, get world() { return world; }, get authority() { return importedAuthority; }, get localInventory() { return localInventory; }, get session() { return session; }, get gameplay() { return gameplay; }, get entities() { return entities; }, get blockEntities() { return blockEntities; }, get signEditor() { return signEditor; }, get serverPacks() { return serverPacks; }, get firstPerson() { return firstPerson; }, get maps() { return maps; }, get effects() { return effects; }, get audio() { return audio; }, get registry() { return registry; }, get assets() { return pack; }, get mode() { return mode; }, connectServer, importFiles, resumeImported, loadPack, edit, useBlock: useImportedBlock, place: placeImported, saveAuthority: persistAuthority, saveInventory: saveImportedInventory, startBenchmark, get benchmark() { return lastResult; }, get ready() { return ready; }, get revision() { return revision; } };
   requestAnimationFrame(frame);
 }
 
@@ -968,6 +1022,7 @@ $('play').addEventListener('click', lock); $('resume').addEventListener('click',
 $('world').addEventListener('click', () => { if (!locked) lock(); });
 document.addEventListener('pointerlockchange', () => {
   locked = document.pointerLockElement === $('world'); keys.clear();
+  if (!locked) gameplay?.mouseUp();
   if (locked) $('world').focus();
   $('welcome').hidden = locked || ready || !!benchmark; $('pause').hidden = locked || !ready || !!benchmark;
 });
@@ -989,7 +1044,7 @@ document.addEventListener('keydown', event => {
   if (index >= 0 && index < buttons.length) select(Number(buttons[index].dataset.block));
 });
 document.addEventListener('keyup', event => { gameplay?.key(event); const inputCode = gameplay ? gameplay.controlCode(event.code) : event.code; if (inputCode) keys.delete(inputCode); });
-window.addEventListener('blur', () => keys.clear());
+window.addEventListener('blur', () => { keys.clear(); gameplay?.mouseUp(); });
 window.addEventListener('pagehide', flushSave);
 window.addEventListener('pagehide', saveImportedLocation);
 window.addEventListener('pagehide', () => {
@@ -1002,7 +1057,7 @@ window.addEventListener('pageshow', () => { void updateAuthorityRunning().catch(
 setInterval(() => { saveImportedLocation(); void persistAuthority().catch(authorityWarning); void saveImportedInventory().catch(authorityWarning); }, 10000);
 document.addEventListener('visibilitychange', () => {
   lastTime = 0; frames = [];
-  if (document.hidden) { keys.clear(); finishBenchmark(true); }
+  if (document.hidden) { keys.clear(); gameplay?.mouseUp(); finishBenchmark(true); }
   void updateAuthorityRunning().catch(authorityWarning);
 });
 $('world').addEventListener('contextmenu', event => event.preventDefault());

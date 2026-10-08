@@ -2,6 +2,8 @@
 //! item and remainder data are registered by the caller; no item IDs are assumed.
 use std::collections::BTreeMap;
 use std::sync::Mutex;
+mod menu;
+mod transfer;
 
 const MAX_ITEMS: usize = 65536;
 const MAX_RECIPES: usize = 8192;
@@ -46,6 +48,7 @@ struct Item {
     registered: bool,
     limit: u32,
     remainder: Option<u32>,
+    equipment: u32,
 }
 struct Recipe {
     key: u32,
@@ -55,7 +58,7 @@ struct Recipe {
     ingredients: Vec<Vec<u32>>,
     output: Stack,
 }
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 struct State {
     width: usize,
     height: usize,
@@ -89,6 +92,7 @@ struct Inventory {
     state: State,
     staging: Vec<u32>,
     output: Vec<u32>,
+    drag: menu::Drag,
 }
 impl Default for Inventory {
     fn default() -> Self {
@@ -101,6 +105,7 @@ impl Default for Inventory {
             state: State::default(),
             staging: vec![0; STAGE_WORDS],
             output: Vec::new(),
+            drag: menu::Drag::default(),
         }
     }
 }
@@ -430,6 +435,7 @@ impl Inventory {
         next.height = height;
         next.revision = next.revision.wrapping_add(1);
         self.state = next;
+        self.drag = menu::Drag::default();
         true
     }
     fn click(&mut self, area: u32, index: usize, button: u32) -> bool {
@@ -538,6 +544,7 @@ impl Inventory {
             }
         }
         self.state = next;
+        self.drag = menu::Drag::default();
         true
     }
 }
@@ -569,6 +576,7 @@ pub extern "C" fn inventory_register_item(id: u32, limit: u32, remainder: u32) -
             registered: true,
             limit,
             remainder: (remainder != u32::MAX).then_some(remainder),
+            equipment: inventory.items[id as usize].equipment,
         };
         1
     })
@@ -598,6 +606,7 @@ pub extern "C" fn inventory_reset(width: u32, height: u32) -> u32 {
             height: height as usize,
             ..State::default()
         };
+        inventory.drag = menu::Drag::default();
         1
     })
 }
@@ -699,6 +708,7 @@ mod tests {
                 registered: true,
                 limit: 64,
                 remainder: None,
+                equipment: 0,
             };
         }
         result

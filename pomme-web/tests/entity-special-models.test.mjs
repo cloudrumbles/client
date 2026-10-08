@@ -157,6 +157,9 @@ test('dragon flight uses historical renderer yaw and tilt plus the modern body-b
   assert.deepEqual(input.dragonTransforms.get('dragon_body').offset,[0,3,8]);
   assert.deepEqual(input.dragonTransforms.get('body').offset,[0,1,0]);
   assert.deepEqual(input.dragonTransforms.get('left_wing').offset,[12,2,-6]);
+  const calendar = { time: 2, minecraftVersion: '26.1' };
+  prepareDragon(track,calendar,sampleAt(2),()=>0,sampleAt);
+  assert.deepEqual(calendar.dragonTransforms, input.dragonTransforms);
   const legacy = { time: 2, minecraftVersion: '1.20.4' };
   prepareDragon(track,legacy,sampleAt(2),()=>0,sampleAt);
   assert.equal(legacy.dragonTransforms.get('dragon_body').offset,null);

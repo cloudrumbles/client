@@ -22,6 +22,7 @@ the camera image from them.
 | Dynamic shadows | Static depth copied; only entity casters drawn, at most 30 Hz | Dynamic geometry/light coverage; removal restores static depth |
 | Sky/cloud environment | Retained HDR direction map sampled by sky/water | Sun bucket, cloud-wind bucket, camera region or quality |
 | Animated texture pixels | Predecoded native frame sequences | Their `.mcmeta` clock advances to a different frame |
+| Block-breaking overlays | Separate retained mesh and native destruction stage | A tracked block, stage or baked model changes; terrain and shadow buffers stay cached |
 | Map terrain, decorations and labels | Persisted color bytes and held/frame atlas tiles | Map patches, decoration updates, world identity or resource-pack reload |
 | Temporal HDR history | Reprojected previous samples at output resolution | Depth mismatch/disocclusion, edits, cuts, lighting jumps, world/atlas/resolution changes |
 | Visible HDR color/depth and reflection rays | Scaled rasterization with temporal accumulation | Current camera frame |
@@ -43,6 +44,12 @@ Entity animation leaves static terrain depth intact; its separate combined depth
 layer is refreshed with bounded dynamic draws. Transparent glass does not become
 an opaque shadow caster.
 
+Fullbright beacon/gateway beams are omitted from dynamic shadow draws. Animating
+these meshes preserves cached shadows, including when an opaque actor shares the
+scene. Mixed or unknown mesh flags remain conservative shadow casters. Breaking
+overlays retain depth and use a local temporal rejection mask; removing a crack
+rejects its last visible footprint for one frame without resetting all history.
+
 First-person arms/items render after the world with separate depth behavior.
 They do not enter world visibility or shadow-caster lists. Stationary hand
 geometry is retained, while animation and item changes update only its buffer.
@@ -60,6 +67,11 @@ Distant light remains approximate: compact LOD uses exposed full-sky lighting an
 does not retain the complete propagated near light field. Terrain reductions are
 conservative and column boundaries are closed, but transitions are stepped rather
 than a full watertight Voxy hierarchy. Unknown terrain is never invented.
+
+Coarse edits update retained mip arrays incrementally. Unchanged selected mip
+levels preserve their mesh revisions, and known solid neighbors within each
+regional batch remove shared interior faces. Unknown, partial and mixed cells
+retain their conservative boundaries.
 
 The colored-light cache preserves native scalar block-light intensity. It adds
 artistic source hues and one material-colored sun bounce using nearby voxel
@@ -99,8 +111,8 @@ resident coarse voxel records at 32 MiB. Full imported chunk storage uses a
 32 MiB decoded LRU and a 512 MiB disk budget; the active near window is separate.
 Renderer statistics expose actual geometry, render-target and atlas allocations.
 
-GPU profiling records thirteen ordered rendering stages using a fixed query
-set and three asynchronous readback buffers, totaling 832 bytes of GPU buffer
+GPU profiling records fourteen ordered rendering stages using a fixed query
+set and three asynchronous readback buffers, totaling 896 bytes of GPU buffer
 storage. Cache hits omit the corresponding pass timestamps. Benchmark exports
 retain frame IDs, submission times, exact nanosecond strings and per-pass
 durations; pending readbacks and dropped samples are reported separately.

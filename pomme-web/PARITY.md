@@ -185,3 +185,29 @@ arms, swords, held maps and entity previews at Y=0 and Y=±2,000,000,000; vertic
 and HDR pixels remain identical. Font checks cover native spaces, ordered pack
 fallback and bounded provider-reference expansion. Per-pass GPU profiling
 proves cache-hit omissions and identical color/depth with profiling enabled.
+
+Additional original-JAR 1.21.11 and 26.1 proofs cover adult/baby Happy Ghast,
+Nautilus, Zombie Nautilus, Camel Husk and farm-animal variants, equipment and
+version-specific texture/animation selection. Source-backed conduit/beam checks
+cover native wind phase boundaries, cage backfaces, beam heights/alpha and cached
+shadow omission. These compare feature-specific geometry and GPU readbacks;
+they are not complete Java-renderer screenshot comparisons.
+
+Block destruction checks exercise all ten native texture stages, native
+source/destination blending, depth preservation, retained mesh uploads and local
+temporal rejection. Actual main-app protocol fixtures cover local mining,
+remote stages, cancellation, replacement, reload and disconnect. Animated
+block-entity destruction templates and all partial occlusion cases remain
+incomplete.
+
+Typed player inventory bootstrap and native menu actions pass actual DOM,
+worker, WASM and IndexedDB checks with both 1.20.4 and 1.21.11 recipe sources.
+Supported source metadata is retained; unsupported components defer initialization.
+Atomic inventory/item-sidecar storage checks cover exact rollback and durable
+reopen, but local dropped-item gameplay is not connected in this checkpoint.
+
+Incremental LOD tests cover retained mip arrays, unchanged-level revisions,
+conservative shared-face culling and original-JAR GPU checks across six dimension
+bounds. Removing physically interior faces changes a small number of shadow-edge
+pixels relative to the old closed-cell baseline; the independent exposed-surface
+reference retains identical color and depth.

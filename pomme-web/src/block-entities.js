@@ -6,6 +6,7 @@ import { buildEntityPreview, MeshWriter as EntityMeshWriter } from './entities.j
 import { bakeEntityCube } from './entity-models.js';
 import { ItemMeshLibrary } from './item-geometry.js';
 import { HandPose } from './first-person.js';
+import { nativeBeamProfile, nativeBeamTexture, nativeBeamTime, nativeBeamQuads, nativeBeamColorMix, nativeGatewayExtent, nativeSin } from './native-beams.js';
 
 // Fullbright sign flags contain only multiples of 32, retaining exact Float32
 // storage even with bit 24 set; they never inherit the low SOLID/emission bits.
@@ -88,9 +89,10 @@ class MeshWriter extends EntityMeshWriter {
 }
 
 export class BlockEntityScene {
-  constructor({ renderer, registry, materials, atlas = null, getState = null, setVisualOverride = null, fetchSkin, getGameTime = null, getNearbyPlayers = null, getTint = null, getLight = null, random = Math.random, maxY = 320, maxTracked = 8192, maxVisible = 128, maxDistance = 96, uploadHz = 30 } = {}) {
+  constructor({ renderer, registry, materials, atlas = null, getState = null, setVisualOverride = null, fetchSkin, getGameTime = null, getPartialTick = null, getNearbyPlayers = null, getTint = null, getLight = null, random = Math.random, maxY = 320, maxTracked = 8192, maxVisible = 128, maxDistance = 96, uploadHz = 30 } = {}) {
     if (!renderer?.uploadDynamicMesh || !registry) throw new Error('BlockEntityScene requires a renderer and native registry.');
     this.renderer = renderer; this.registry = registryStates(registry); this.materials = materials; this.atlas = atlas;
+    this.version = registry.version; this.beamProfile = nativeBeamProfile(registry.version); this.getPartialTick = getPartialTick;
     this.getState = getState; this.setVisualOverride = setVisualOverride; this.maxTracked = clamp(maxTracked, 1, 65536); this.maxVisible = clamp(maxVisible, 1, 1024); this.maxDistance = clamp(maxDistance, 8, 256); this.interval = 1 / clamp(uploadHz, 10, 60);
     this.getGameTime = getGameTime; this.getNearbyPlayers = getNearbyPlayers; this.getTint = getTint; this.getLight = getLight; this.random = random; this.maxY = clamp(maxY, -2147483648, 2147483648);
     this.itemLibrary = new ItemMeshLibrary({ registry, materials, atlas }); this.itemsByName = new Map((registry.items || []).map(item => [item.name.replace(/^minecraft:/, ''), item]));
@@ -237,8 +239,12 @@ export class BlockEntityScene {
       if (track.kind === 'piston' || current > previous) this.enqueueMotion(track, previous, current, tick);
     }
   }
-  beacon(track, origin) {
-    const tile = this.atlas?.entityTiles?.get('minecraft:entity/beacon_beam'); if (tile === undefined) { this.stats.unavailable++; return; }
+  partialTick(camera = {}) { return Math.fround(clamp(this.getPartialTick?.() ?? camera.partialTick ?? fraction(this.time * 20), 0, 1)); }
+  beam(origin, track, tile, color, options) {
+    for (const quad of nativeBeamQuads(options)) this.writer.quad(quad.positions, quad.normal, quad.uv, tile, color, quad.flags, [track.x, track.y, track.z], origin, quad.alpha);
+  }
+  beacon(track, origin, camera = {}) {
+    const tile = this.atlas?.entityTiles?.get(nativeBeamTexture(this.version)); if (tile === undefined) { this.stats.unavailable++; return; }
     if (track.beamAt === undefined || this.time - track.beamAt >= 1) {
       track.beamAt = this.time; track.beamSections = [];
       let levels = 0;
@@ -249,25 +255,20 @@ export class BlockEntityScene {
       if (levels) {
         let current = { color: [1, 1, 1], height: 1, y: 0 }; track.beamSections.push(current);
         for (let y = track.y + 1; y < Math.min(this.maxY, track.y + 16384); y++) {
-          const material = this.materials?.get(this.stateAt(track.x, y, track.z)), name = material?.name?.replace(/^minecraft:/, '') || 'air', match = /^(.*)_stained_glass(?:_pane)?$/.exec(name), color = match ? DYES[DYE_NAMES.indexOf(match[1])] : null;
+          const material = this.materials?.get(this.stateAt(track.x, y, track.z)), name = material?.name?.replace(/^minecraft:/, '') || 'air', match = /^(.*)_stained_glass(?:_pane)?$/.exec(name), dye = match ? DYES[DYE_NAMES.indexOf(match[1])] : null;
+          const color = dye && (this.beamProfile.modern ? dye : dye.map(Math.fround));
           if (color) {
-            if (track.beamSections.length === 1 || color.some((v, a) => v !== current.color[a])) { const nextColor = track.beamSections.length === 1 ? color : color.map((v, a) => (v + current.color[a]) / 2); current = { color: nextColor, height: 1, y: y - track.y }; track.beamSections.push(current); } else current.height++;
+            if (track.beamSections.length === 1 || color.some((v, a) => v !== current.color[a])) { const nextColor = track.beamSections.length === 1 ? color : nativeBeamColorMix(current.color, color, this.beamProfile.modern); current = { color: nextColor, height: 1, y: y - track.y }; track.beamSections.push(current); } else current.height++;
           } else if ((material?.opacity ?? 0) < 15 || name === 'bedrock') current.height++;
           else { track.beamSections = []; break; }
         }
       }
     }
-    const age = this.getGameTime?.() ?? this.time * 20, ticks = typeof age === 'bigint' ? Number(age % 40n) : ((Number(age) % 40) + 40) % 40, scrollValue = -ticks * .2 - Math.floor(-ticks * .1), scroll = scrollValue - Math.floor(scrollValue) - 1;
-    const sections = track.beamSections;
+    const age = this.getGameTime?.() ?? Math.floor(this.time * 20), animationTime = nativeBeamTime(age, this.partialTick(camera)), sections = track.beamSections;
+    const profile = nativeBeamProfile(this.version, Math.hypot(track.x + .5 - this.eye[0], track.z + .5 - this.eye[2]), camera.scoping);
     for (let index = 0; index < sections.length; index++) {
-      const section = sections[index], height = index === sections.length - 1 ? 1024 : section.height, bottom = section.y, top = bottom + height;
-      for (const outer of [false, true]) {
-        const points = outer ? [[-.25, -.25], [.25, -.25], [.25, .25], [-.25, .25]] : [[0, .2], [-.2, 0], [0, -.2], [.2, 0]].map(([x, z]) => { const p = rotate([x, 0, z], 1, (ticks * 2.25 - 45) * Math.PI / 180); return [p[0], p[2]]; });
-        for (let side = 0; side < 4; side++) {
-          const [x, z] = points[side], [X, Z] = points[(side + 1) % 4], normal = [Z - z, 0, x - X], length = Math.hypot(...normal), p = [[x + .5, bottom, z + .5], [x + .5, top, z + .5], [X + .5, top, Z + .5], [X + .5, bottom, Z + .5]], uv = [[0, scroll], [0, scroll + height * (outer ? 1 : 2.5)], [1, scroll + height * (outer ? 1 : 2.5)], [1, scroll]];
-          this.writer.quad(p, normal.map(v => v / length), uv, tile, section.color, 8 | (outer ? 64 | 4194304 : 0), [track.x, track.y, track.z], origin, outer ? .125 : 1);
-        }
-      }
+      const section = sections[index], height = index === sections.length - 1 ? profile.finalHeight : section.height;
+      this.beam(origin, track, tile, section.color, { bottom: section.y, height, animationTime, innerRadius: Math.fround(Math.fround(.2) * profile.radiusScale), outerRadius: Math.fround(.25 * profile.radiusScale), outerAlpha: profile.outerAlpha });
       this.stats.beaconSegments++;
     }
   }
@@ -403,9 +404,10 @@ export class BlockEntityScene {
     for (let i = this.writer.length - material.templateVertices.length + 12; i < this.writer.length; i += STRIDE) this.writer.data[i] = skin.tile;
     this.stats.customHeads++;
   }
-  nativePart(track, origin, pose, geometry, tile, { tint = [1, 1, 1], flags = 32, inflation = 0 } = {}) {
+  nativePart(track, origin, pose, geometry, tile, { tint = [1, 1, 1], flags = 32, inflation = 0, noCull = false } = {}) {
     const posed = clonePose(pose).scale(1, -1, 1), context = { position: [track.x - origin[0], track.y - origin[1], track.z - origin[2]], rotation: [0, 0, 0], scale: 1 };
     this.writer.triangles(geometry, context, { matrix: posed.matrix, normalMatrix: posed.normalMatrix(), position: posed.position, tile, tint, flags, inflation, reversed: true });
+    if (noCull) this.writer.triangles(geometry, context, { matrix: posed.matrix, normalMatrix: posed.normalMatrix(), position: posed.position, tile, tint, flags, inflation, reversed: false });
   }
   bell(track, origin) {
     const tile = this.atlas?.entityTiles?.get('minecraft:entity/bell/bell_body'); if (tile === undefined) { this.stats.unavailable++; return; }
@@ -454,32 +456,32 @@ export class BlockEntityScene {
     state.remainder += Math.min(elapsed, 1) * 20; const ticks = Math.floor(state.remainder + 1e-9); state.remainder = Math.max(0, state.remainder - ticks);
     const gameTime = this.getGameTime?.() ?? Math.floor(this.time * 20);
     for (let step = 0; step < ticks; step++) {
-      state.ticks++; const age = typeof gameTime === 'bigint' ? gameTime - BigInt(ticks - step - 1) : Math.floor(Number(gameTime)) - ticks + step + 1;
+      state.ticks = (state.ticks + 1) | 0; const age = typeof gameTime === 'bigint' ? gameTime - BigInt(ticks - step - 1) : Math.floor(Number(gameTime)) - ticks + step + 1;
       if (typeof age === 'bigint' ? age % 40n === 0n : age % 40 === 0) this.refreshConduit(track);
-      if (state.active) state.activeRotation++;
+      if (state.active) state.activeRotation = Math.fround(state.activeRotation + 1);
     }
     return state.active;
   }
   conduit(track, origin, camera) {
     const state = track.conduit, getTile = name => this.atlas?.entityTiles?.get(`minecraft:entity/conduit/${name}`);
     if (!this.override(track, true) || getTile(state.active ? 'cage' : 'base') === undefined) { this.stats.unavailable++; return; }
-    if (!state.active) this.nativePart(track, origin, new HandPose().translate(.5, .5, .5).rotate('y', state.activeRotation * -.0375), CONDUIT_GEOMETRY.shell, getTile('base'), { flags: 1 });
+    if (!state.active) this.nativePart(track, origin, new HandPose().translate(.5, .5, .5).rotate('y', Math.fround(state.activeRotation * Math.fround(-.0375))), CONDUIT_GEOMETRY.shell, getTile('base'), { flags: 1 });
     else {
-      const age = state.ticks + state.remainder, wave = Math.sin(age * .1) / 2 + .5, bob = .3 + (wave * wave + wave) * .2;
-      const cage = new HandPose().translate(.5, bob, .5), angle = (state.activeRotation + state.remainder) * -.0375, c = Math.cos(angle), s = Math.sin(angle), t = 1 - c, [x, y, z] = [.5, 1, .5].map(value => value / Math.sqrt(1.5));
+      const age = Math.fround(Math.fround(state.ticks) + Math.fround(state.remainder)), wave = Math.fround(nativeSin(Math.fround(age * Math.fround(.1)), this.beamProfile.modern) / 2 + .5), bob = Math.fround(Math.fround(.3) + Math.fround(Math.fround(Math.fround(wave * wave) + wave) * Math.fround(.2)));
+      const cage = new HandPose().translate(.5, bob, .5), activeRotation = Math.fround(Math.fround(state.activeRotation + Math.fround(state.remainder)) * Math.fround(-.0375)), angle = Math.fround(Math.fround(activeRotation * Math.fround(57.295776)) * Math.fround(Math.PI / 180)), c = Math.cos(angle), s = Math.sin(angle), t = 1 - c, [x, y, z] = [.5, 1, .5].map(value => Math.fround(value / Math.sqrt(1.5)));
       cage.matrix = [t * x * x + c, t * x * y - s * z, t * x * z + s * y, t * x * y + s * z, t * y * y + c, t * y * z - s * x, t * x * z - s * y, t * y * z + s * x, t * z * z + c];
-      this.nativePart(track, origin, cage, CONDUIT_GEOMETRY.cage, getTile('cage'));
-      const phase = Math.floor(state.ticks / 66) % 3, windTile = getTile(phase === 1 ? 'wind_vertical' : 'wind');
+      this.nativePart(track, origin, cage, CONDUIT_GEOMETRY.cage, getTile('cage'), { noCull: true });
+      const phase = Math.trunc(state.ticks / 66) % 3, windTile = getTile(phase === 1 ? 'wind_vertical' : 'wind');
       if (windTile !== undefined) {
         const wind = new HandPose().translate(.5, .5, .5); if (phase === 1) wind.rotate('x', 90); else if (phase === 2) wind.rotate('z', 90);
-        this.nativePart(track, origin, wind, CONDUIT_GEOMETRY.wind, windTile);
-        this.nativePart(track, origin, new HandPose().translate(.5, .5, .5).scale(.875).rotate('x', 180).rotate('z', 180), CONDUIT_GEOMETRY.wind, windTile);
+        this.nativePart(track, origin, wind, CONDUIT_GEOMETRY.wind, windTile, { noCull: true });
+        this.nativePart(track, origin, new HandPose().translate(.5, .5, .5).scale(.875).rotate('x', 180).rotate('z', 180), CONDUIT_GEOMETRY.wind, windTile, { noCull: true });
       } else this.stats.unavailable++;
       const eyeTile = getTile(state.hunting ? 'open_eye' : 'closed_eye');
       if (eyeTile !== undefined) {
         const direction = camera.direction || [0, 0, -1], yaw = Math.atan2(direction[0], -direction[2]), pitch = Math.asin(clamp(direction[1], -1, 1));
         const eye = new HandPose().translate(.5, bob, .5).scale(.5).rotate('y', -degrees(yaw) - 180).rotate('x', -degrees(pitch)).rotate('z', 180).scale(1.3333334);
-        this.nativePart(track, origin, eye, CONDUIT_GEOMETRY.eye, eyeTile);
+        this.nativePart(track, origin, eye, CONDUIT_GEOMETRY.eye, eyeTile, { noCull: true });
       } else this.stats.unavailable++;
       this.stats.activeConduits++;
     }
@@ -489,17 +491,11 @@ export class BlockEntityScene {
     if (!this.materials?.get(track.state)?.name?.endsWith('end_gateway')) return;
     const spawning = track.gatewayAge < 200n, cooling = track.gatewayCooldown > 0;
     if (!spawning && !cooling) return;
-    const tile = this.atlas?.entityTiles?.get('minecraft:entity/end_gateway_beam'); if (tile === undefined) { this.stats.unavailable++; return; }
-    const partial = track.gatewayRemainder, progress = spawning ? clamp((Number(track.gatewayAge) + partial) / 200, 0, 1) : 1 - clamp((track.gatewayCooldown - partial) / 40, 0, 1), intensity = Math.sin(progress * Math.PI), extent = Math.floor(intensity * (spawning ? this.maxY : 50));
-    if (extent <= 0) return;
-    const age = this.getGameTime?.() ?? this.time * 20, ticks = (typeof age === 'bigint' ? Number((age % 40n + 40n) % 40n) : (Number(age) % 40 + 40) % 40) + partial, scroll = fraction(-ticks * .2 - Math.floor(-ticks * .1)) - 1, color = DYES[spawning ? 2 : 10];
-    for (const outer of [false, true]) {
-      const radius = outer ? .175 : .15, points = outer ? [[-radius, -radius], [radius, -radius], [radius, radius], [-radius, radius]] : [[0, radius], [-radius, 0], [0, -radius], [radius, 0]].map(([x, z]) => { const point = rotate([x, 0, z], 1, (ticks * 2.25 - 45) * Math.PI / 180); return [point[0], point[2]]; });
-      for (let side = 0; side < 4; side++) {
-        const [x, z] = points[side], [X, Z] = points[(side + 1) % 4], normal = [Z - z, 0, x - X], length = Math.hypot(...normal), topV = scroll + extent * 2 * intensity * (outer ? 1 : .5 / radius);
-        this.writer.quad([[x + .5, -extent, z + .5], [x + .5, extent, z + .5], [X + .5, extent, Z + .5], [X + .5, -extent, Z + .5]], normal.map(value => value / length), [[0, scroll], [0, topV], [1, topV], [1, scroll]], tile, color, 8 | (outer ? 64 | 4194304 : 0), [track.x, track.y, track.z], origin, outer ? .125 : 1);
-      }
-    }
+    const tile = this.atlas?.entityTiles?.get(nativeBeamTexture(this.version, true)); if (tile === undefined) { this.stats.unavailable++; return; }
+    const partial = track.gatewayRemainder, extent = nativeGatewayExtent({ age: track.gatewayAge, cooldown: track.gatewayCooldown, partial, maxY: this.maxY, modern: this.beamProfile.modern });
+    if (this.beamProfile.modern ? extent.extent <= 0 : extent.extent === 0) return;
+    const age = this.getGameTime?.() ?? Math.floor(this.time * 20), color = DYES[spawning ? 2 : 10];
+    this.beam(origin, track, tile, color, { bottom: extent.bottom, height: extent.height, intensity: extent.intensity, animationTime: nativeBeamTime(age, partial), innerRadius: Math.fround(.15), outerRadius: Math.fround(.175), outerAlpha: this.beamProfile.outerAlpha });
     this.stats.gatewayBeams++;
   }
   updateColliders() {
@@ -694,7 +690,7 @@ export class BlockEntityScene {
       const material = this.materials?.get(track.state); if (!material) continue;
       const light = this.getLight?.(track.x, track.y, track.z); this.writer.light = { sky: clamp(Math.floor(light?.sky ?? light?.skyLight ?? 15), 0, 15), block: clamp(Math.floor(light?.block ?? light?.blockLight ?? 0), 0, 15) };
       if (track.kind === 'piston') this.piston(track, origin);
-      else if (track.kind === 'beacon') this.beacon(track, origin);
+      else if (track.kind === 'beacon') this.beacon(track, origin, camera);
       else if (track.kind === 'head') this.head(track, material, origin);
       else if (track.kind === 'animated-head') this.animatedHead(track, material, origin);
       else if (track.kind === 'bell') this.bell(track, origin);

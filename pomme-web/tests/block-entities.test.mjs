@@ -102,8 +102,18 @@ test('beacon beams require actual pyramid blocks, mix native stained-glass secti
   states.set('0,2,0', 11); states.set('0,4,0', 12); states.set('0,6,0', 13); visual.consume({ type: 'block', x: 0, y: -1, z: 0, stateId: 10 }); visual.update(.1, [0, 2, 3]);
   assert.equal(visual.stats.beaconSegments, 3); assert.deepEqual(visual.entities.get('0,0,0').beamSections.map(section => [section.y, section.height]), [[0, 2], [2, 2], [4, 4]]);
   const vertices = uploads[0].vertices; assert.ok(vertices.some((value, index) => index % 14 === 9 && value === .125), 'outer layer uses native alpha'); assert.ok(uploads[0].bounds.max[1] > 1024);
-  for (let i = 0; i < vertices.length; i += 42) { const a = vertices.slice(i, i + 3), b = vertices.slice(i + 14, i + 17), c = vertices.slice(i + 28, i + 31), u = b.map((v, k) => v - a[k]), v = c.map((n, k) => n - a[k]), n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]]; assert.ok(n.reduce((sum, value, k) => sum + value * vertices[i + 3 + k], 0) > 0, 'outward beam winding'); }
+  for (let i = 0; i < vertices.length; i += 42) { const a = vertices.slice(i, i + 3), b = vertices.slice(i + 14, i + 17), c = vertices.slice(i + 28, i + 31), u = b.map((v, k) => v - a[k]), v = c.map((n, k) => n - a[k]), n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]], dot = n[0] * ((a[0] + b[0] + c[0]) / 3 - .5) + n[2] * ((a[2] + b[2] + c[2]) / 3 - .5); assert.deepEqual(Array.from(vertices.slice(i + 3, i + 6)), [0, 1, 0], 'native beam vertices retain the up normal'); assert.ok(vertices[i + 9] < 1 ? dot < 0 : dot > 0, 'native glow winds inward and the opaque core outward'); }
   states.set('0,7,0', 1); visual.consume({ type: 'block', x: 0, y: 7, z: 0, stateId: 1 }); visual.update(.2, [0, 2, 3]); assert.equal(visual.stats.beaconSegments, 0);
+});
+
+test('legacy beacon sections compare native Float32 dye channels after repeated glass colors converge', () => {
+  const materials = new Map(pack.materials); materials.set(11, { ...materials.get(11), name: 'minecraft:light_gray_stained_glass' });
+  const { scene: visual, add, states } = scene({ materials, maxY: 90 }); add(9);
+  for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++) states.set(`${x},-1,${z}`, 10);
+  states.set('0,1,0', 11); states.set('0,2,0', 12); for (let y = 3; y < 90; y++) states.set(`0,${y},0`, 11);
+  visual.update(0, [0, 2, 3]); const sections = visual.entities.get('0,0,0').beamSections;
+  assert.deepEqual(sections.at(-1).color, [157, 157, 151].map(value => Math.fround(value / 255)));
+  assert.ok(sections.length < 40 && sections.at(-1).height > 50, 'Converged native colors extend the current section instead of making one new section per glass block.');
 });
 
 test('enchanting books use the native seven parts and 20 Hz nearby-player open and flip spring', () => {
@@ -225,6 +235,38 @@ test('gateway spawn and cooldown beams use native Age/event one and release the 
   visual.consume({ type: 'block-entity', x: 0, y: 0, z: 0, nbt: { Age: 1000n } }); visual.update(.1, [0, 2, 3]); assert.equal(visual.stats.gatewayBeams, 0); assert.equal(removed.length, 1);
   visual.consume({ type: 'block-action', x: 0, y: 0, z: 0, actionId: 1, actionParam: 0 }); visual.update(.6, [0, 2, 3]); assert.equal(visual.entities.get('0,0,0').gatewayCooldown, 30); assert.equal(visual.stats.gatewayBeams, 1); assert.equal(uploads.at(-1).bounds.max[1], 35);
   visual.update(1.1, [0, 2, 3]); visual.update(1.6, [0, 2, 3]); visual.update(2.1, [0, 2, 3]); assert.equal(visual.entities.get('0,0,0').gatewayCooldown, 0); assert.equal(visual.stats.gatewayBeams, 0); assert.equal(visual.stats.vertices, 0); assert.equal(removed.length, 2);
+});
+
+test('native active conduit parts remain no-cull across all wind phases and eye states', () => {
+  for (const ticks of [0, 65, 66, 131, 132, 197, 198]) for (const hunting of [false, true]) {
+    const { scene: visual, add, uploads } = scene(); add(20);
+    Object.assign(visual.entities.get('0,0,0').conduit, { active: true, hunting, ticks, activeRotation: 10 });
+    visual.update(0, [0, 2, 3], { direction: [.2, -.3, -.9] }); const vertices = uploads[0].vertices;
+    assert.equal(vertices.length / 14, 288); const tiles = [];
+    for (let part = 0; part < 4; part++) {
+      const start = part * 72 * 14; tiles.push(vertices[start + 12]);
+      for (let triangle = 0; triangle < 36; triangle += 3) for (const [corner, reversed] of [[0, 0], [1, 2], [2, 1]]) assert.deepEqual(vertices.subarray(start + (triangle + corner) * 14, start + (triangle + corner + 1) * 14), vertices.subarray(start + (36 + triangle + reversed) * 14, start + (37 + triangle + reversed) * 14));
+    }
+    const wind = Math.trunc(ticks / 66) % 3 === 1 ? 'wind_vertical' : 'wind';
+    assert.deepEqual(tiles, ['cage', wind, wind, hunting ? 'open_eye' : 'closed_eye'].map(name => pack.atlas.entityTiles.get(`minecraft:entity/conduit/${name}`)));
+  }
+});
+
+test('conduit ticks retain native signed-int rollover and active float-counter saturation', () => {
+  const { scene: visual, add } = scene({ getGameTime: () => 41n }); add(20); const state = visual.entities.get('0,0,0').conduit;
+  Object.assign(state, { active: true, ticks: 2147483647, activeRotation: 16777216 }); visual.update(0, [0, 2, 3]); visual.update(.05, [0, 2, 3]);
+  assert.equal(state.ticks, -2147483648); assert.equal(state.activeRotation, 16777216);
+});
+
+test('modern beacon/gateway profile preserves source height, distance width, scoping, alpha and integer color averages', () => {
+  const options = { registry: { ...registry, version: { minecraftVersion: '1.21.11' } }, maxY: 8, getGameTime: () => -1n, getPartialTick: () => .5 };
+  const { scene: visual, add, states, uploads } = scene(options); add(9); for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++) states.set(`${x},-1,${z}`, 10);
+  visual.update(0, [192.5, 2, .5]); assert.equal(uploads[0].bounds.max[1], 2048); assert.deepEqual(uploads[0].bounds.min.slice(0, 1), [0]); assert.equal(uploads[0].bounds.max[0], 1);
+  assert.equal(uploads[0].vertices[24 * 14 + 9], Math.fround(32 / 255)); assert.equal(uploads[0].vertices[13] & 8, 0);
+  visual.update(.1, [192.5, 2, .5], { scoping: true }); assert.equal(uploads.at(-1).bounds.min[0], .25); assert.equal(uploads.at(-1).bounds.max[0], .75);
+  states.set('0,2,0', 11); states.set('0,4,0', 12); visual.dirty = true; visual.entities.get('0,0,0').beamAt = -Infinity; visual.update(.2, [0, 2, 3]);
+  assert.deepEqual(visual.entities.get('0,0,0').beamSections[2].color, [118, 57, 104].map(value => value / 255));
+  const gateway = scene({ ...options, maxY: 320 }); gateway.add(21, 0, 0, 0, { Age: 100n }); gateway.scene.update(0, [0, 2, 3]); assert.equal(gateway.uploads[0].bounds.max[1], 319); assert.equal(gateway.uploads[0].bounds.min[1], -319);
 });
 
 

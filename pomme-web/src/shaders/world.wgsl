@@ -70,7 +70,7 @@ fn portal_color(tile_id: f32, position: vec3<f32>, metadata: vec4<f32>) -> vec3<
     return output;
 }
 
-@fragment fn fs_terrain(input: TerrainVarying) -> TerrainOutput {
+@fragment fn fs_terrain(input: TerrainVarying, @builtin(front_facing) front_facing: bool) -> TerrainOutput {
     if (input.tile_id >= 0.0) {
         let metadata = tile_rectangles[min(u32(input.tile_id), arrayLength(&tile_rectangles) - 1u)].animation;
         if (metadata.y >= 15.0) {
@@ -81,11 +81,15 @@ fn portal_color(tile_id: f32, position: vec3<f32>, metadata: vec4<f32>) -> vec3<
         }
     }
     let material_flags = u32(input.flags);
+    let native_beam = (material_flags & 536870912u) != 0u;
+    // Native opaque/glow beam pipelines both retain backface culling. The
+    // shared sorted-translucent pipeline is no-cull, so enforce it here.
+    if (native_beam && !front_facing) { discard; }
     let eye_layer = (material_flags & 100663296u) != 0u;
     let texel = block_texel(input.tile_id, input.face_uv);
     // Original eye shaders preserve even the lowest-alpha texels. Breeze eyes
     // and wind retain the native 0.1 alpha cutout.
-    if (texel.a < 0.1 && !eye_layer) { discard; }
+    if (texel.a < 0.1 && !eye_layer && !native_beam) { discard; }
     let normal = normalize(input.normal);
     // World-anchored texels survive greedy meshing and never shimmer with time.
     let anchored_xz = fract((input.world_position.xz + frame.jitter_info.zw) / 4096.0) * 4096.0;
@@ -106,7 +110,7 @@ fn portal_color(tile_id: f32, position: vec3<f32>, metadata: vec4<f32>) -> vec3<
             // atmospheric color here would make transparent black glow.
             color -= fog_color(input.world_position, vec3<f32>(0.0));
         }
-        fullbright.color = vec4<f32>(color, select(1.0, texel.a, actor_alpha));
+        fullbright.color = vec4<f32>(color, select(select(1.0, texel.a, actor_alpha), texel.a * input.ambient_occlusion, native_beam));
         fullbright.reactive = vec4<f32>(0.9, 0.0, 0.0, 0.0);
         return fullbright;
     }

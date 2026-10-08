@@ -44,7 +44,16 @@
     "test:local-inventory": "node tests/local-inventory.browser.mjs",
     "test:hanging-signs": "node tests/browser.hanging-signs.mjs",
     "test:gpu-profile": "node tests/browser.gpu-profile.mjs",
-    "test:first-person-dimensions": "node tests/browser.first-person-dimensions.mjs"
+    "test:first-person-dimensions": "node tests/browser.first-person-dimensions.mjs",
+    "test:breaking-overlay": "node tests/browser.breaking-overlay.mjs",
+    "test:breaking-renderer": "node tests/browser.breaking-renderer.mjs",
+    "test:breaking-main": "node tests/browser.breaking-main.mjs",
+    "test:shadow-casters": "node tests/browser.shadow-casters.mjs",
+    "test:source-inventory": "node tests/source-inventory.browser.mjs",
+    "test:native-menu-ui": "node tests/native-menu-ui.browser.mjs",
+    "test:inventory-items": "node authority/tests/inventory-items.browser.mjs",
+    "test:entity-modern-models": "node tests/browser.entity-modern-models.mjs",
+    "test:conduit-beams": "node tests/browser.conduit-beams.mjs"
   },
   "devDependencies": {
     "fake-indexeddb": "6.2.5",

@@ -6,23 +6,36 @@ Java, sockets or a native process. Its state includes a 2×2 or 3×3 crafting gr
 36 ordinary player inventory slots, four retained armor slots, a retained offhand
 slot, the cursor, selected hotbar slot and an acknowledged drop queue.
 
-Implemented operations are ordinary left/right pickup and placement in the grid
-and main inventory, shaped and shapeless recipe matching, taking a complete
-crafting result onto the cursor, and repeated result quick moves into the player
-inventory. Input consumption, remainder placement/merging, inventory overflow,
-and partial output moves follow the native result-slot call chain. Equipment
-slots are retained through saves but their placement rules are not simulated.
+Implemented operations include ordinary left/right pickup and placement,
+shift moves, hotbar/offhand swaps, dragging, creative cloning, two-pass stack
+collection, shaped/shapeless recipe matching, complete result pickup and repeated
+result quick moves. Input consumption, remainders and partial result moves follow
+the native result-slot call chain. Native default equipment destinations and
+armor storage limits are registered from independently verified item data.
+Equipment effects and noncreative binding restrictions are not ported, so the
+local UI retains armor through saves and leaves direct armor controls disabled.
 Changing or closing a crafting grid returns the cursor and inputs through native
 live-player menu-close rules before the atomic grid change.
 
 Imported worlds use this worker through `src/local-inventory.js` and the existing
 inventory/container UI. E opens the native 2×2 player grid; using an imported
 crafting-table block opens the native 3×3 grid. Creative item selection, ordinary
-clicks, result quick moves, selected hand and saves use confirmed WASM state.
+menu actions, selected hand and saves use confirmed WASM state. Number keys swap
+the hovered slot with a hotbar slot; F swaps with offhand. World drop controls
+remain disabled until a persistent item-entity consumer exists. A native action
+which would create an unhandled drop rejects atomically in production.
 The production loader reads recipes from the cached original client JAR. A
 texture-only pack without these recipes leaves the existing building controls
 available. Local mode remains creative building; health, food and experience are
 not simulated or displayed by this adapter.
+
+Typed original `level.dat` player inventory bootstraps an empty unsaved authority
+before starter building slots. A confirmed native save always wins. Source armor,
+offhand, selected slot, explicit empty slots, typed legacy NBT and supported
+modern save-codec patches survive the boundary. Unported codecs remain deferred;
+malformed source data stores a bounded blocking marker. Both cases leave building
+available without saving replacement starter items. See
+[`SOURCE_LEVEL_INVENTORY.md`](../src/SOURCE_LEVEL_INVENTORY.md).
 
 The native recipe/tag loader reads the user's matching original Java client JAR.
 It supports 1.20.4 and 1.21.11 and returns an explicit list of unsupported special
@@ -35,11 +48,10 @@ data comes from the user-provided JAR.
 
 This module is an inventory foundation, not a complete single-player server.
 Special crafting/transmutation, recipe-book placement/unlocking, survival
-permissions, equipment effects, creative click modes, dragging, quick-moving
-ordinary input slots, bundles, container interactions, furnaces, brewing,
-statistics, advancements and dropped-item entity spawning are not implemented
-here. Advanced click modes and the remaining gameplay rules still require native
-authority before claiming complete imported-world gameplay parity.
+permissions, equipment effects, bundle click overrides, general container
+simulation, furnaces, brewing, statistics, advancements and connected dropped-item
+gameplay are not implemented here. The remaining gameplay rules still require
+native authority before claiming complete imported-world gameplay parity.
 
 ## Source verification
 
@@ -80,6 +92,7 @@ const inventory = await InventoryAuthority.open({
 await inventory.setSlot('player', 0, originalNativeStack);
 await inventory.click('player', 0, 0);
 await inventory.click('grid', 3, 1);
+await inventory.menuClick(9, { mode: 1, width: 2 }); // Native player-menu shift move.
 const result = await inventory.craft({ destination: 'cursor', batches: 1 });
 await inventory.switchGrid(3); // Returns cursor/grid inputs before opening 3×3.
 await inventory.save();
@@ -111,7 +124,10 @@ stack references is rejected before committing a restore.
 
 The Rust engine bounds native item IDs at 65,536, recipes at 8,192, ingredient
 memberships at 262,144, each ingredient at 4,096 alternatives, a transaction at
-64 recipe batches and pending drops at 64 stacks. Shapeless assignment visits at
+64 explicit recipe batches and pending drops at 64 stacks. Native menu repetition
+is bounded at99 operations by the accepted source-stack count. Dragging retains
+at most46 transient slot flags and resets when menus close or saves restore.
+Shapeless assignment visits at
 most 9×512 bounded states per recipe. A full drop queue rejects the complete
 transaction atomically. The JS component table has at most 4,096 entries and a
 4 MiB bound for stored component payload and canonical identity keys, plus the
@@ -126,7 +142,10 @@ From `pomme-web`, after `node authority/build.mjs`:
 node --test authority/tests/inventory.test.mjs
 node authority/tests/inventory.browser.mjs
 node --test tests/local-inventory.test.mjs
+node --test authority/tests/native-menu-actions.test.mjs tests/source-level-inventory.test.mjs
 node tests/local-inventory.browser.mjs
+node tests/native-menu-ui.browser.mjs
+node tests/source-inventory.browser.mjs
 POMME_MINECRAFT_JAR=/private/minecraft-1.21.11-client.jar \
   node authority/tests/inventory.browser.mjs
 POMME_MINECRAFT_JAR=/private/minecraft-1.20.4-client.jar \
@@ -147,3 +166,9 @@ selected-hand persistence, native menu close, stale-bootstrap cancellation and
 optional recipe fallback. Its report explicitly distinguishes generated mechanical
 CI fixtures from recipes loaded out of a private original JAR. The main imported
 world proof also exercises this production UI against the actual saved world.
+The common-action DOM proof additionally exercises shift moves, number keys,
+hovered/world offhand swaps, a three-slot drag, native double collection, whole
+right-click recipe results and saved hand swaps. Both original recipe JAR versions
+passed. The separate source proof uses generated mechanical player NBT and labels
+that input explicitly. Native result helper bytecode and equipment-default
+declarations have independent optional original-JAR Java proofs.

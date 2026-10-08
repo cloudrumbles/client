@@ -1,6 +1,4 @@
-import { nativeInventoryStackLimit } from '../authority/inventory.js';
 const empty = () => ({ present: false });
-const present = stack => stack?.present !== false && (stack?.itemCount ?? 0) > 0;
 
 /** Session-shaped adapter for local creative inventory; no network packets. */
 export class LocalInventorySession {
@@ -46,19 +44,10 @@ export class LocalInventorySession {
   }
   clickWindow(index, { button = 0, mode = 0, windowId = this.windowId } = {}) {
     if (!this.owner.current() || windowId !== this.windowId || !this.windows.has(windowId)) return false;
-    if (index === 0 && (mode === 0 || mode === 1)) {
-      return this.owner.dispatch(() => this.owner.authority.craft({ destination: mode === 1 ? 'inventory' : 'cursor', batches: mode === 1 ? 64 : 1 }));
-    }
-    const slot = this.slot(windowId, index);
-    if (mode === 0 && slot && (button === 0 || button === 1)) return this.owner.dispatch(() => this.owner.authority.click(...slot, button));
-    if (mode === 3 && slot && !present(this.native.cursor)) {
-      const stack = this.windows.get(windowId).slots[index], definition = this.items.get(stack?.itemId);
-      if (!present(stack) || !definition) return false;
-      const limit = nativeInventoryStackLimit(stack, definition, this.registry.version.minecraftVersion);
-      return this.owner.dispatch(() => this.owner.authority.setSlot('cursor', 0, { ...stack, itemCount: limit }));
-    }
-    if (mode !== 5) this.owner.status('Use left or right click to move this stack. Shift click the crafting result to make more.');
-    return false;
+    if (!Number.isInteger(index) || index !== -999 && (index < 0 || index > 45) || !Number.isInteger(mode) || mode < 0 || mode > 6 || !Number.isInteger(button) || button < 0 || button > 40) return false;
+    if (mode === 4 || index === -999 && mode !== 5) { this.owner.status('World item drops are not available yet. Move this stack into a slot.'); return false; }
+    if (windowId === 0 && index >= 5 && index <= 8) return false;
+    return this.owner.dispatch(() => this.owner.authority.menuClick(index, { mode, button, width: windowId === 1 ? 3 : 2, creative: true, allowDrops: false }));
   }
   setCreativeSlot(itemId, count, selected = this.state.selectedSlot) {
     if (!this.owner.current() || !this.items.has(itemId) || !Number.isInteger(selected) || selected < 0 || selected > 8 || !Number.isInteger(count) || count < 1 || count > 99) return false;
@@ -70,8 +59,20 @@ export class LocalInventorySession {
   }
   closeWindow() {
     if (!this.owner.current()) return false;
-    this.windowId = 0; this.state.windowId = 0; this.menus.clear(); this.owner.gameplay?.state(this.state);
-    this.owner.run(() => this.owner.authority.switchGrid(2), { closingMenu: true }); return true;
+    if (!this.owner.canRun({ closingMenu: true })) return false;
+    const closing = this.owner.run(async () => {
+      const state = await this.owner.authority.switchGrid(2, 2, { allowDrops: false });
+      if (this.owner.current()) {
+        this.windowId = 0; this.state.windowId = 0; this.menus.clear(); this.owner.gameplay?.state(this.state);
+      }
+      return state;
+    }, { closingMenu: true });
+    void closing.catch(() => {
+      if (!this.owner.current()) return;
+      this.accept(this.owner.authority.state);
+      this.owner.gameplay?.openPanel('inventory');
+    });
+    return true;
   }
   setFlying(value) {
     if (!this.owner.current()) return false;
@@ -85,7 +86,13 @@ export class LocalInventorySession {
   selectBundleItem() { return false; }
   respawn() { return false; }
   dropItem() { return false; }
-  swapHands() { return false; }
+  swapHands() {
+    if (!this.owner.current()) return false;
+    return this.owner.dispatch(() => {
+      const state = this.owner.authority.state;
+      return this.owner.authority.menuClick(state.selected + (state.width === 3 ? 37 : 36), { mode: 2, button: 40, creative: true, allowDrops: false });
+    });
+  }
   dig() { return false; }
   place() { return false; }
   cancelDig() { return false; }

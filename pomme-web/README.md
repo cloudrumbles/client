@@ -66,6 +66,11 @@ provide creative building with a bounded Rust/WASM simulation for buttons,
 levers, redstone lamps and their scheduled updates. A separate WASM inventory
 uses native recipes and tags from the selected matching client JAR, with 2×2
 player crafting, 3×3 crafting tables and persistent native stack components.
+When `level.dat` contains a supported player inventory, its selected slot,
+explicit empty slots, armor, offhand and typed stack metadata initialize an
+unsaved browser inventory. A saved browser inventory takes precedence. Unsupported
+source components remain cached and defer inventory initialization, preserving
+the imported builder instead of replacing source contents with starter items.
 Server-side world generation, mobs and survival simulation come from a connected
 server. [authority/README.md](./authority/README.md) and
 [authority/INVENTORY.md](./authority/INVENTORY.md) describe the browser authority's scope.
@@ -110,6 +115,9 @@ Keyboard and mouse are required.
   and source-derived animation data. Eye blending follows the selected version;
   Breeze wind uses native alpha and depth writes. Translucent actor faces sort
   with the camera, while stable views reuse the sorted buffers.
+  Matching 1.21.11 and 26.1 assets also provide Happy Ghast, Nautilus, Zombie
+  Nautilus and Camel Husk adult/baby models and gear, plus native farm-animal
+  variant geometry and version-specific baby textures/animations.
 - Native block-entity NBT/actions, animated chest/shulker lids, front/back sign
   glyphs and editing, banner patterns, decorated-pot sherds, moving pistons,
   player heads and beacon beams. Visual replacement meshes preserve the
@@ -119,11 +127,21 @@ Keyboard and mouse are required.
   Hanging signs use native wall, ceiling and attached chain meshes, UVs and
   two-sided alpha behavior. Bitmap and spacing fonts follow provider and pack
   priority, with bounded reference expansion and fallback glyphs.
+  Active conduits use native cage, wind and eye layers. Beacon and gateway beams
+  use version-specific heights, textures, blending and timing, including 26.1
+  asset paths; fullbright beam animation preserves shadow caches.
 - Imported OGG positional audio, streaming music, native sound categories,
   particles, block fragments, rain/snow and lightning, with bounded caches.
 - Titles/action bars, boss bars, scoreboards, player list, experience, effects,
   native container layouts/actions, trades, recipes, advancements/statistics,
   readable/editable books and key rebinding.
+- Imported WASM inventory menus support native shift moves, hotbar/offhand
+  swaps, drag distribution, double-click collection and full crafting-result
+  transfers. World-item drops remain disabled until their actor lifecycle is
+  connected; the worker already saves inventory and its item sidecar atomically.
+- Server and local block-breaking stages use retained destruction meshes with
+  native texture blending, depth bias and local temporal rejection. Supported
+  baked block models retain terrain and shadow geometry throughout crack changes.
 - Source-derived fixed-tick movement for fluids, surfaces, status effects,
   climbing, swimming/crawling, elytra/fireworks, sleeping and supported mounts.
 - Native map color patches, held/frame decorations and labels, and persistent
@@ -140,6 +158,8 @@ Keyboard and mouse are required.
   Unknown terrain stays empty. Sparse visited terrain can span kilometers; dense
   coverage is limited by these budgets. Coarse transitions can show steps, custom
   models become cubes, and distant lighting/materials remain approximate.
+  Coarse mip arrays update incrementally; unchanged selected levels skip uploads
+  and known neighbors remove shared interior faces within regional batches.
 - HDR sunlight/fog, cached directional shadows and sky/cloud lighting, High
   volumetric clouds, animated reflective/refractive water, bounded screen-space
   terrain reflections, emissive lava, bloom and tone mapping. Balanced/High use
@@ -187,6 +207,13 @@ npm run test:import-authority # Imported app ticks/inventory and reload boundari
 npm run test:actor-layers # Native blending, face sorting, depth and origin changes
 npm run test:fullbright   # Glowing glyph HDR without sunlight/material emission
 npm run test:gpu-profile  # Per-pass timestamps, cache omissions and pixel equivalence
+npm run test:breaking-overlay # Native stage textures, bounds and retained buffers
+npm run test:breaking-renderer # Crack blending/depth, temporal rejection and caches
+npm run test:breaking-main # Actual main app local/remote stages and lifecycle
+npm run test:shadow-casters # Fullbright omissions, mixed casters and camera poles
+npm run test:source-inventory # Typed level.dat bootstrap, precedence and persistence
+npm run test:native-menu-ui # Actual DOM actions, WASM worker and save/reopen
+npm run test:inventory-items # Atomic inventory/item records and worker rollback
 npm run test:recipes      # Modern recipe displays and actual outgoing wire codecs
 npm run test:text-ui      # Styled native text across HUD, chat, books and signs
 npm run test:browser      # Demo, cache invalidation, controls and benchmark
@@ -196,7 +223,8 @@ Native asset checks also accept `POMME_MINECRAFT_JAR` and run with
 `npm run test:block-entities`, `npm run test:block-entity-completion`,
 `npm run test:contained-fluid`, `npm run test:entity-special-models`,
 `npm run test:hanging-signs`, `npm run test:first-person-dimensions`,
-`npm run test:distant-dimensions` and `npm run test:near-dimensions`.
+`npm run test:distant-dimensions`, `npm run test:near-dimensions`,
+`npm run test:entity-modern-models` and `npm run test:conduit-beams`.
 The dimension and hanging-sign suites require that private JAR
 and verify small geometry, native biome tints and cache reuse across ordinary
 and extreme valid vertical bounds. Original assets are read locally.

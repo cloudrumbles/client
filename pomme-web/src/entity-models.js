@@ -1,7 +1,8 @@
 import { ENTITY_MODELS } from './entity-model-data.js';
 import { SPECIAL_ENTITY_MODELS } from './entity-special-model-data.js';
+import { MODERN_ENTITY_MODELS } from './entity-modern-model-data.js';
 
-const MODEL_DEFINITIONS = { ...ENTITY_MODELS, ...SPECIAL_ENTITY_MODELS };
+const MODEL_DEFINITIONS = { ...ENTITY_MODELS, ...SPECIAL_ENTITY_MODELS, ...MODERN_ENTITY_MODELS };
 
 const TRIANGLES = [0, 1, 2, 0, 2, 3];
 const CACHE = new Map();
@@ -83,9 +84,10 @@ const AGEABLE = {
   piglin: [.75, 16, 0, .5, 24], zombified_piglin: [.75, 16, 0, .5, 24], armor_stand: [.75, 16, 0, .5, 24],
   camel: [.45, 29.35, 0, .45, 29.35], sniffer: [.5, 24, 0, .5, 24],
 };
-export const hasNativeBabyTransform = family => Object.hasOwn(AGEABLE, family) || ['rabbit', 'llama', 'trader_llama'].includes(family);
+export const hasNativeBabyTransform = family => Object.hasOwn(AGEABLE, family) || ['rabbit', 'llama', 'trader_llama', 'camel_husk', 'happy_ghast', 'nautilus'].includes(family);
 function ageTransform(part, model, input) {
-  const family = input.family;
+  if (input.nativeAdultOnly) return null;
+  const family = input.family === 'camel_husk' ? 'camel' : input.family;
   let head = false, ancestor = part;
   while (ancestor) {
     if (['head', 'head_parts', 'beak', 'red_thing', 'hat', 'hat_rim', 'nose', 'left_ear', 'right_ear'].includes(ancestor.name)) { head = true; break; }
@@ -94,7 +96,7 @@ function ageTransform(part, model, input) {
   if (family === 'rabbit') return input.young ? { scale: head ? [.56666666, .56666666, .56666666] : [.4, .4, .4], offset: head ? [0, 22, 2] : [0, 36, 0] } : { scale: [.6, .6, .6], offset: [0, 16, 0] };
   if (!input.young) return null;
   if (family === 'llama' || family === 'trader_llama') return head ? { scale: [.71428573, .64935064, .7936508], offset: [0, 21, 3.52] } : part.name === 'body' ? { scale: [.625, .45454544, .45454544], offset: [0, 33, 0] } : { scale: [.45454544, .41322312, .45454544], offset: [0, 33, 0] };
-  const values = AGEABLE[family]; if (!values) return null;
+  const values = model.nativeBabyTransform ?? AGEABLE[family]; if (!values) return null;
   const factor = head ? values[0] : values[3]; return { scale: [factor, factor, factor], offset: head ? [0, values[1], values[2]] : [0, values[4], 0] };
 }
 
@@ -102,7 +104,7 @@ function partAnimation(part, input) {
   let rotation = [...part.rotation], translation = [0, 0, 0];
   const age = (input.time || 0) * 20;
   const side = part.name.startsWith('left') ? -1 : 1;
-  if (part.name === 'head' || part.name === 'head_parts' || input.family === 'chicken' && ['beak', 'red_thing'].includes(part.name)) rotation = [(part.name === 'head_parts' ? part.rotation[0] : 0) + (input.pitch || 0), input.headYaw || 0, 0];
+  if (part.name === 'head' || part.name === 'head_parts' || input.family === 'chicken' && !input.modernFarm && ['beak', 'red_thing'].includes(part.name)) rotation = [(part.name === 'head_parts' ? part.rotation[0] : 0) + (input.pitch || 0), input.headYaw || 0, 0];
   if (part.name.includes('leg')) rotation[0] = input.swing * (part.name.includes('hind') ? -side : side);
   if (part.name.includes('arm')) {
     rotation[0] = input.zombie ? -Math.PI / 2.25 : -input.swing * side;
@@ -251,6 +253,11 @@ function partAnimation(part, input) {
       : stunned > 0 ? Math.PI * .05 : roar > 0 ? Math.PI / 2 * Math.sin((20 - roar) / 20 * Math.PI / 4) : Math.PI * .01;
   }
   if (['camel', 'sniffer', 'breeze'].includes(input.family) && part.name.includes('leg')) rotation = [...part.rotation];
+  if (input.modernFarm && part.name.includes('leg')) {
+    const opposite = ['left_hind_leg', 'right_front_leg', 'left_leg'].includes(part.name);
+    rotation[0] = Math.cos((input.walkPhase || 0) * .6662 + (opposite ? Math.PI : 0)) * 1.4 * (input.walkSpeed || 0);
+  }
+  if (input.family === 'chicken' && input.chickenFlapAngle !== undefined && part.name.includes('wing')) rotation[2] = side * input.chickenFlapAngle;
   const keyframes = input.keyframes?.get(part.name);
   if (keyframes) {
     rotation = rotation.map((value, axis) => value + keyframes.rotation[axis]);

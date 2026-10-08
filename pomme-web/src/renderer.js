@@ -5,6 +5,9 @@
 // bounded render bundles retain the terrain draw commands between frames.
 import { ACTOR_LAYERS, partitionActorLayers, sortActorQuads } from './actor-layers.js';
 import { GpuPassProfiler } from './gpu-profile.js';
+import { BreakingMeshStore } from './breaking-mesh-store.js';
+import { CRUMBLING_RENDER_STATE } from './breaking-overlay.js';
+import { opaqueGeometryCastsShadow } from './shadow-casters.js';
 
 const VERTEX_FLOATS = 14;
 const VERTEX_BYTES = VERTEX_FLOATS * 4;
@@ -52,6 +55,7 @@ const shaderURLs = {
   post: new URL('./shaders/post.wgsl', import.meta.url),
   temporal: new URL('./shaders/temporal.wgsl', import.meta.url),
   material: new URL('./shaders/material.wgsl', import.meta.url),
+  breaking: new URL('./shaders/breaking.wgsl', import.meta.url),
 };
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -268,9 +272,9 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     return [name, await response.text()];
   })));
   const modules = {};
-  for (const name of ['world', 'sky', 'environment', 'water', 'shadow', 'bloom', 'post', 'temporal']) {
-    const shared = ['world', 'sky', 'environment', 'water'].includes(name) ? shaderText.common + '\n' : '';
-    const material = ['world', 'shadow'].includes(name) ? shaderText.material + '\n' : (name === 'water' ? shaderText.material.replaceAll('@group(1)', '@group(2)') + '\n' : '');
+  for (const name of ['world', 'sky', 'environment', 'water', 'shadow', 'bloom', 'post', 'temporal', 'breaking']) {
+    const shared = ['world', 'sky', 'environment', 'water', 'breaking'].includes(name) ? shaderText.common + '\n' : '';
+    const material = ['world', 'shadow', 'breaking'].includes(name) ? shaderText.material + '\n' : (name === 'water' ? shaderText.material.replaceAll('@group(1)', '@group(2)') + '\n' : '');
     const module = device.createShaderModule({ label: `${name}.wgsl`, code: shared + material + shaderText[name] });
     const compilation = await module.getCompilationInfo();
     const errors = compilation.messages.filter(message => message.type === 'error');
@@ -355,11 +359,13 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
   device.pushErrorScope('validation');
   let pipelines;
   try {
+    // Ordinary materials write the original red reactivity channel. Preserve
+    // the green full-rejection footprint of cracks through glass/water/hands.
     const pipelineList = await Promise.all([
       device.createRenderPipelineAsync({
         label: 'HDR opaque terrain', layout: worldPipelineLayout,
         vertex: { module: modules.world, entryPoint: 'vs_terrain', buffers: [vertexLayout] },
-        fragment: { module: modules.world, entryPoint: 'fs_terrain', targets: [{ format: HDR_FORMAT }, { format: 'rgba8unorm' }] },
+        fragment: { module: modules.world, entryPoint: 'fs_terrain', targets: [{ format: HDR_FORMAT }, { format: 'rgba8unorm', writeMask: GPUColorWrite.RED }] },
         primitive: { topology: 'triangle-list', cullMode: 'back' },
         depthStencil: { format: DEPTH_FORMAT, depthWriteEnabled: true, depthCompare: 'less' },
       }),
@@ -368,7 +374,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
         vertex: { module: modules.world, entryPoint: 'vs_terrain', buffers: [vertexLayout] },
         fragment: { module: modules.world, entryPoint: 'fs_terrain', targets: [
           { format: HDR_FORMAT, blend: { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' } } },
-          { format: 'rgba8unorm' },
+          { format: 'rgba8unorm', writeMask: GPUColorWrite.RED },
         ] },
         primitive: { topology: 'triangle-list', cullMode: 'none' },
         depthStencil: { format: DEPTH_FORMAT, depthWriteEnabled: false, depthCompare: 'less' },
@@ -376,7 +382,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
       device.createRenderPipelineAsync({
         label: 'Procedural atmosphere', layout: skyPipelineLayout,
         vertex: { module: modules.sky, entryPoint: 'vs_sky' },
-        fragment: { module: modules.sky, entryPoint: 'fs_sky', targets: [{ format: HDR_FORMAT }, { format: 'rgba8unorm' }] },
+        fragment: { module: modules.sky, entryPoint: 'fs_sky', targets: [{ format: HDR_FORMAT }, { format: 'rgba8unorm', writeMask: GPUColorWrite.RED }] },
         primitive: { topology: 'triangle-list' },
         depthStencil: { format: DEPTH_FORMAT, depthWriteEnabled: false, depthCompare: 'always' },
       }),
@@ -389,7 +395,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
       device.createRenderPipelineAsync({
         label: 'Reflective refractive water', layout: waterPipelineLayout,
         vertex: { module: modules.water, entryPoint: 'vs_water', buffers: [vertexLayout] },
-        fragment: { module: modules.water, entryPoint: 'fs_water', targets: [{ format: HDR_FORMAT }, { format: 'rgba8unorm' }] },
+        fragment: { module: modules.water, entryPoint: 'fs_water', targets: [{ format: HDR_FORMAT }, { format: 'rgba8unorm', writeMask: GPUColorWrite.RED }] },
         primitive: { topology: 'triangle-list', cullMode: 'none' },
         depthStencil: { format: DEPTH_FORMAT, depthWriteEnabled: true, depthCompare: 'less-equal' },
       }),
@@ -429,10 +435,20 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
         vertex: { module: modules.world, entryPoint: 'vs_terrain', buffers: [vertexLayout] },
         fragment: { module: modules.world, entryPoint: 'fs_terrain', targets: [
           { format: HDR_FORMAT, ...(blended ? { blend: { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' } } } : {}) },
-          { format: 'rgba8unorm' },
+          { format: 'rgba8unorm', writeMask: GPUColorWrite.RED },
         ] },
         primitive: { topology: 'triangle-list', cullMode: blended ? 'none' : 'back' },
         depthStencil: { format: DEPTH_FORMAT, depthWriteEnabled: !blended, depthCompare: 'less-equal' },
+      })),
+      ...[false, true].map(removed => device.createRenderPipelineAsync({
+        label: removed ? 'Removed breaking temporal footprint' : 'Native crumbling destination modulation', layout: worldPipelineLayout,
+        vertex: { module: modules.breaking, entryPoint: 'vs_breaking', buffers: [vertexLayout] },
+        fragment: { module: modules.breaking, entryPoint: removed ? 'fs_breaking_removed' : 'fs_breaking', targets: [
+          { format: HDR_FORMAT, ...(removed ? { writeMask: 0 } : { blend: CRUMBLING_RENDER_STATE.blend }) }, { format: 'rgba8unorm' },
+        ] },
+        primitive: { topology: 'triangle-list', cullMode: CRUMBLING_RENDER_STATE.cullMode },
+        depthStencil: { format: DEPTH_FORMAT, depthWriteEnabled: false, depthCompare: CRUMBLING_RENDER_STATE.depthCompare,
+          depthBias: CRUMBLING_RENDER_STATE.depthBias, depthBiasSlopeScale: CRUMBLING_RENDER_STATE.depthBiasSlopeScale },
       })),
       ...ACTOR_LAYERS.map(layer => device.createRenderPipelineAsync({
         label: `Native actor ${layer.name}`, layout: worldPipelineLayout,
@@ -441,13 +457,13 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
           { format: HDR_FORMAT, blend: layer.additive
             ? { color: { srcFactor: 'one', dstFactor: 'one' }, alpha: { srcFactor: 'one', dstFactor: 'one' } }
             : { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' } } },
-          { format: 'rgba8unorm' },
+          { format: 'rgba8unorm', writeMask: GPUColorWrite.RED },
         ] },
         primitive: { topology: 'triangle-list', cullMode: layer.cull },
         depthStencil: { format: DEPTH_FORMAT, depthWriteEnabled: layer.depthWrite, depthCompare: 'less-equal' },
       })),
     ]);
-    pipelines = Object.fromEntries(['world', 'transparent', 'sky', 'environment', 'water', 'shadow', 'bloomExtract', 'bloomBlur', 'temporal', 'post', 'firstPerson', 'firstPersonTransparent', ...ACTOR_LAYERS.map(layer => layer.name)].map((name, i) => [name, pipelineList[i]]));
+    pipelines = Object.fromEntries(['world', 'transparent', 'sky', 'environment', 'water', 'shadow', 'bloomExtract', 'bloomBlur', 'temporal', 'post', 'firstPerson', 'firstPersonTransparent', 'breaking', 'breakingRemoved', ...ACTOR_LAYERS.map(layer => layer.name)].map((name, i) => [name, pipelineList[i]]));
   } catch (error) {
     await device.popErrorScope();
     device.destroy();
@@ -522,10 +538,12 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
   let renderedVertices = 0;
   let shadowDrawCalls = 0;
   let shadowCpuMs = 0;
-  let atlasTexture = null, tileBuffer = null, materialGroup = null;
+  let atlasTexture = null, tileBuffer = null, materialGroup = null, breakingMaterialGroup = null;
   let atlasBytes = 0, atlasTileCount = 0, atlasState = null;
   let atlasAnimations = [], animationUpdates = 0, animationUploadBytes = 0, animationCPUBytes = 0;
   let worldConfig = { min: [0, 0, 0], max: [128, 64, 128], farPlane: 360, fogDensity: 0.000013, renderOrigin: [0, 0, 0], hasSkylight: true };
+  const breakingMeshes = new BreakingMeshStore(device, worldConfig.renderOrigin);
+  let breakingDrawCalls = 0;
   let geometryRebases = 0;
   let historyIndex = 0, historyValid = false, historyUsed = false;
   let temporalResets = 0, lastTemporalReset = 'initial', previousFrame = null;
@@ -676,6 +694,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
         if (mesh.dynamic) mesh.actorSortEye = null;
       }
       geometryRebases++;
+      breakingMeshes.rebase(renderOrigin);
     }
     shadowKey = null;
     skyKey = null;
@@ -720,7 +739,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     }
     const { animations: nextAnimations, bytes: animationBytes } = prepareTextureAnimations(animations, rectangleMap);
     for (const animation of nextAnimations) rectangles[animation.tile * 8 + 4] = 1;
-    const newTexture = device.createTexture({ label: 'Minecraft block texture atlas', size: [atlasWidth, atlasHeight], format: 'rgba8unorm-srgb', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
+    const newTexture = device.createTexture({ label: 'Minecraft block texture atlas', size: [atlasWidth, atlasHeight], format: 'rgba8unorm-srgb', viewFormats: ['rgba8unorm'], usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
     const newTileBuffer = device.createBuffer({ label: 'Block atlas tile rectangles', size: rectangles.byteLength, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST });
     device.queue.writeTexture({ texture: newTexture }, data, { bytesPerRow: atlasWidth * 4 }, [atlasWidth, atlasHeight]);
     device.queue.writeBuffer(newTileBuffer, 0, rectangles);
@@ -731,6 +750,9 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     tileBuffer = newTileBuffer;
     materialGroup = device.createBindGroup({ layout: materialLayout, entries: [
       { binding: 0, resource: atlasSampler }, { binding: 1, resource: atlasTexture.createView() }, { binding: 2, resource: { buffer: tileBuffer } },
+    ] });
+    breakingMaterialGroup = device.createBindGroup({ layout: materialLayout, entries: [
+      { binding: 0, resource: atlasSampler }, { binding: 1, resource: atlasTexture.createView({ format: 'rgba8unorm' }) }, { binding: 2, resource: { buffer: tileBuffer } },
     ] });
     atlasBytes = data.byteLength + rectangles.byteLength;
     atlasTileCount = tileCount;
@@ -1038,6 +1060,8 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     }
     if (![...bounds.min, ...bounds.max].every(Number.isFinite)) throw new Error(`Dynamic mesh ${key} has invalid bounds.`);
     const previous = dynamicMeshes.get(key) || { opaqueCapacity: 0, waterCapacity: 0, transparentCapacity: 0, ...Object.fromEntries(ACTOR_LAYERS.map(layer => [`${layer.name}Capacity`, 0])), bytes: 0 };
+    const previousCastsShadow = Boolean(previous.castsShadow);
+    const castsShadow = !firstPerson && opaqueGeometryCastsShadow(opaque);
     const updateBuffer = (input, kind) => {
       if (!input.length) return;
       // Moving geometry has no per-vertex motion vectors yet. Mark it reactive
@@ -1074,12 +1098,12 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     previous.waterCount = water.length / VERTEX_FLOATS;
     previous.transparentCount = transparent.length / VERTEX_FLOATS;
     previous.bytes = previous.opaqueCapacity + previous.waterCapacity + previous.transparentCapacity + ACTOR_LAYERS.reduce((sum, layer) => sum + previous[`${layer.name}Capacity`], 0);
-    previous.dynamic = true; previous.firstPerson = firstPerson;
+    previous.dynamic = true; previous.firstPerson = firstPerson; previous.castsShadow = castsShadow;
     dynamicMeshes.set(key, previous);
     dynamicGeometryBytes += previous.bytes;
     if (firstPerson) firstPersonUploads++;
     else dynamicMeshUploads++;
-    if (!firstPerson) dynamicGeometryRevision++;
+    if (previousCastsShadow || castsShadow) dynamicGeometryRevision++;
   }
 
   function uploadFirstPersonMesh(opaque = [], transparent = [], bounds, options = {}) {
@@ -1088,6 +1112,8 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     return uploadDynamicMesh('__first_person', vertices, [], bounds, { ...options, firstPerson: true });
   }
   function clearFirstPersonMesh() { removeMesh('__first_person'); }
+  function uploadBreakingMesh(key, vertices, bounds, options) { ensureAlive(); return breakingMeshes.upload(key, vertices, bounds, options); }
+  function removeBreakingMesh(key) { ensureAlive(); return breakingMeshes.remove(key); }
 
   function removeMesh(key) {
     ensureAlive();
@@ -1099,7 +1125,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     for (const { name } of ACTOR_LAYERS) mesh[`${name}Buffer`]?.destroy();
     dynamicGeometryBytes -= mesh.bytes;
     dynamicMeshes.delete(key);
-    if (!mesh.firstPerson) dynamicGeometryRevision++;
+    if (mesh.castsShadow) dynamicGeometryRevision++;
   }
 
   function updateShadowCache(eye, dayPhase) {
@@ -1171,6 +1197,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
 
   function render({ eye = [64, 38, 100], yaw = 0, pitch = 0, timeSeconds = 0, gameTime = null, dayPhase = 0.22, revision = 0, quality = qualityName, scale: requestedScale = scale, reflections = true, terrainBundles = true, weather = {} } = {}) {
     ensureAlive();
+    if (breakingMeshes.fullReactive) invalidateTemporal('breaking removal overflow');
     const started = performance.now();
     renderBundleEnabled = Boolean(terrainBundles);
     renderBundleEncodeCpuMs = 0;
@@ -1209,7 +1236,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     const projection = perspective(renderWidth / renderHeight, fieldOfView, 0.08, worldConfig.farPlane);
     projection[8] = -2 * jitter[0] / renderWidth;
     projection[9] = 2 * jitter[1] / renderHeight;
-    const viewProjection = multiply(projection, lookAt(renderEye, target));
+    const viewProjection = multiply(projection, lookAt(renderEye, target, up));
     const inverseViewProjection = inverse(viewProjection);
     const sun = normalize([Math.cos(normalizedPhase * TAU) * 0.75, Math.sin(normalizedPhase * TAU), -Math.cos(normalizedPhase * TAU) * 0.45]);
     const sunY = sun[1];
@@ -1275,6 +1302,9 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
       return distance(b) - distance(a);
     });
     const firstPersonMesh = dynamicMeshes.get('__first_person');
+    const breakingVisible = [...breakingMeshes.meshes.values()].filter(mesh => intersectsFrustum(mesh.renderBounds, planes));
+    const breakingRemovals = breakingMeshes.removals.filter(mesh => intersectsFrustum(mesh.renderBounds, planes));
+    breakingDrawCalls = 0;
     const actorMeshes = visible.filter(mesh => mesh.dynamic && ACTOR_LAYERS.some(layer => mesh[`${layer.name}Count`] > 0));
     actorMeshes.sort((a, b) => {
       const distance = mesh => mesh.bounds.min.reduce((sum, value, axis) => sum + ((value + mesh.bounds.max[axis]) / 2 - eye[axis]) ** 2, 0);
@@ -1290,10 +1320,10 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
       }
       mesh.actorSortEye = [...eye];
     }
-    const hasComposite = hasWater || transparentMeshes.length > 0 || actorMeshes.length > 0 || Boolean(firstPersonMesh);
+    const hasComposite = hasWater || transparentMeshes.length > 0 || actorMeshes.length > 0 || Boolean(firstPersonMesh) || breakingVisible.length > 0 || breakingRemovals.length > 0;
     translucentTriangles = transparentMeshes.reduce((sum, mesh) => sum + mesh.transparentCount / 3, 0);
     const lightPlanes = frustumPlanes(lightViewProjection);
-    const dynamicCasters = worldConfig.hasSkylight ? [...dynamicMeshes.values()].filter(mesh => !mesh.firstPerson && mesh.opaqueCount && intersectsFrustum(mesh.renderBounds, lightPlanes)) : [];
+    const dynamicCasters = worldConfig.hasSkylight ? [...dynamicMeshes.values()].filter(mesh => mesh.castsShadow && mesh.opaqueCount && intersectsFrustum(mesh.renderBounds, lightPlanes)) : [];
     const dynamicShadowUpdated = dynamicCasters.length > 0 && (shadowUpdated || !dynamicShadowValid || (dynamicShadowRevision !== dynamicGeometryRevision && started - dynamicShadowAt >= 1000 / 30));
     if (!dynamicCasters.length) dynamicShadowValid = false;
     dynamicShadowDrawCalls = 0;
@@ -1399,6 +1429,20 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
             pass.setVertexBuffer(0, mesh[`${name}Buffer`]); pass.draw(mesh[`${name}Count`]);
             drawCalls++; renderedVertices += mesh[`${name}Count`];
           }
+        }
+        pass.end();
+        if (hasWater) encoder.copyTextureToTexture({ texture: targets.composite.texture }, { texture: targets.opaque.texture }, [renderWidth, renderHeight]);
+      }
+      if (breakingVisible.length || breakingRemovals.length) {
+        const pass = encoder.beginRenderPass({
+          label: 'Native breaking modulation and removed temporal footprints', timestampWrites: gpuProfiler.timestampWrites(timingFrame, 'breaking'),
+          colorAttachments: [{ view: targets.composite.view, loadOp: 'load', storeOp: 'store' }, { view: targets.reactive.view, loadOp: 'load', storeOp: 'store' }],
+          depthStencilAttachment: { view: targets.depth.view, depthLoadOp: 'load', depthStoreOp: 'store' },
+        });
+        pass.setBindGroup(0, activeFrameGroup); pass.setBindGroup(1, breakingMaterialGroup);
+        for (const [meshes, pipeline] of [[breakingRemovals, pipelines.breakingRemoved], [breakingVisible, pipelines.breaking]]) {
+          pass.setPipeline(pipeline);
+          for (const mesh of meshes) { pass.setVertexBuffer(0, mesh.buffer); pass.draw(mesh.count); breakingDrawCalls++; drawCalls++; renderedVertices += mesh.count; }
         }
         pass.end();
         if (hasWater) encoder.copyTextureToTexture({ texture: targets.composite.texture }, { texture: targets.opaque.texture }, [renderWidth, renderHeight]);
@@ -1518,7 +1562,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
       drawCalls++;
       gpuProfiler.resolve(encoder, timingFrame);
       device.queue.submit([encoder.finish()]);
-      submitted = true; gpuProfiler.submitted(timingFrame);
+      submitted = true; gpuProfiler.submitted(timingFrame); breakingMeshes.finishFrame();
     } finally { if (!submitted) gpuProfiler.cancel(timingFrame); }
     lastSceneSource = temporalEnabled ? targets.historyColor[historyIndex].texture : (hasComposite ? targets.composite.texture : targets.opaque.texture);
     lastSceneWidth = temporalEnabled ? width : renderWidth;
@@ -1552,6 +1596,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
       translucentTriangles, transparencySorting: 'chunk back-to-front',
       dynamicGeometryBytes, dynamicMeshUploads, dynamicMeshes: [...dynamicMeshes.values()].filter(mesh => !mesh.firstPerson).length,
       firstPersonUploads, firstPersonMeshes: Number(dynamicMeshes.has('__first_person')), entityTriangles, actorLayerTriangles, actorLayerSorts, actorLayerSortBytes, dynamicShadows: worldConfig.hasSkylight,
+      breaking: { ...breakingMeshes.stats(), drawCalls: breakingDrawCalls },
       dynamicShadowUpdates, dynamicShadowDrawCalls, dynamicShadowRateLimitHz: 30,
       meshUploadCount, meshUploadBytes, frameCount,
       renderBundleEnabled, renderBundleEncodes, renderBundleReuses, renderBundleExecutions,
@@ -1565,7 +1610,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
       skyAgeFrames, lastSkyReason, skyResolution: [environmentTarget.width, environmentTarget.height],
       skyCacheBytes: environmentTarget.width * environmentTarget.height * 8,
       quality: qualityName, scale, width, height, renderWidth, renderHeight,
-      renderTargetBytes: renderWidth * renderHeight * (targets.firstPersonDepth ? 32 : 28) + width * height * 24 + Math.ceil(width / 4) * Math.ceil(height / 4) * 16 + shadowSize * shadowSize * 8 + environmentTarget.width * environmentTarget.height * 8,
+      renderTargetBytes: targets ? renderWidth * renderHeight * (targets.firstPersonDepth ? 32 : 28) + width * height * 24 + Math.ceil(width / 4) * Math.ceil(height / 4) * 16 + shadowSize * shadowSize * 8 + environmentTarget.width * environmentTarget.height * 8 : 0,
       lastError: fatalError?.message || null,
     };
   }
@@ -1611,6 +1656,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     chunks.clear();
     for (const mesh of dynamicMeshes.values()) { mesh.opaqueBuffer?.destroy(); mesh.waterBuffer?.destroy(); mesh.transparentBuffer?.destroy(); for (const { name } of ACTOR_LAYERS) mesh[`${name}Buffer`]?.destroy(); }
     dynamicMeshes.clear();
+    breakingMeshes.destroy();
     destroyTargets();
     shadowTexture?.destroy();
     dynamicShadowTexture?.destroy();
@@ -1637,5 +1683,5 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
   setTextureAtlas({ pixels: new Uint8Array([255, 255, 255, 255]), width: 1, height: 1 });
   resize(1);
   onStatus(`WebGPU ready · ${adapterInfo.description}${gpuProfiler.supported ? ' · GPU timestamps enabled' : ''}`);
-  return { uploadChunk, removeChunk, uploadDynamicMesh, uploadFirstPersonMesh, clearFirstPersonMesh, removeMesh, render, resize, configureWorld, setTextureAtlas, appendAtlasTile, updateAtlasTile, setIrradianceVolume, readPixels, stats, destroy };
+  return { uploadChunk, removeChunk, uploadDynamicMesh, uploadFirstPersonMesh, clearFirstPersonMesh, uploadBreakingMesh, removeBreakingMesh, removeMesh, render, resize, configureWorld, setTextureAtlas, appendAtlasTile, updateAtlasTile, setIrradianceVolume, readPixels, stats, destroy };
 }

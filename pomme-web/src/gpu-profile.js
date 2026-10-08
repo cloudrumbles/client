@@ -1,5 +1,5 @@
 export const GPU_PROFILE_STAGES = Object.freeze([
-  'sky', 'staticShadow', 'dynamicShadow', 'opaque', 'actorLayers', 'transparent',
+  'sky', 'staticShadow', 'dynamicShadow', 'opaque', 'actorLayers', 'breaking', 'transparent',
   'water', 'firstPerson', 'temporal', 'bloomExtract', 'bloomHorizontal', 'bloomVertical', 'post',
 ]);
 

@@ -16,9 +16,12 @@ export class InventoryStorage {
     const record = await request(transaction.objectStore('inventories').get(this.key(version, worldKey))); await done; return record?.snapshot ?? null;
   }
   async put(worldKey, snapshot) {
-    const key = this.key(snapshot.version, worldKey), byteLength = structuredBytes(snapshot, 5 * 1024 * 1024);
+    const key = this.key(snapshot.version, worldKey);
+    structuredBytes(snapshot, 13 * 1024 * 1024);
     const transaction = this.database.transaction('inventories', 'readwrite'), done = complete(transaction), store = transaction.objectStore('inventories');
     const records = await request(store.getAll()), previous = records.find(record => record.key === key);
+    if (snapshot.worldItems === undefined && previous?.snapshot.worldItems !== undefined) snapshot = { ...snapshot, worldItems: previous.snapshot.worldItems };
+    const byteLength = structuredBytes(snapshot, 13 * 1024 * 1024);
     store.put({ key, snapshot, byteLength, updated: Math.max(Date.now(), (previous?.updated ?? 0) + 1) });
     const other = records.filter(record => record.key !== key).sort((a, b) => a.updated - b.updated);
     let bytes = byteLength + other.reduce((sum, record) => sum + record.byteLength, 0), count = other.length + 1;

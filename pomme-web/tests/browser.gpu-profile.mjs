@@ -54,7 +54,7 @@ try {
       const completed = profiler.stats();
       check(completed.gpuPassSampleCounts.sky === 1 && completed.gpuPassSampleCounts.water === 2 && completed.gpuPassSampleCounts.opaque === 3, 'Only active queries may be accumulated.');
       check(completed.lastGpuPassMs.sky === null && completed.lastGpuPassMs.temporal === null, 'Skipped cached passes must have null raw timings.');
-      check(completed.gpuProfiler.bufferBytes === 832 && completed.gpuProfiler.queryCount === 26, 'GPU profiler resources must remain fixed.');
+      check(completed.gpuProfiler.bufferBytes === 896 && completed.gpuProfiler.queryCount === 28, 'GPU profiler resources must remain fixed.');
       for (const sample of samples) {
         check(Number.isFinite(sample.totalMs) && sample.totalMs >= 0 && sample.totalMs < 10000, 'Frame duration must be a finite native GPU sample.');
         for (const value of Object.values(sample.passMs)) check(value === null || Number.isFinite(value) && value >= 0 && value < 10000, 'Pass durations must be valid or inactive.');
@@ -94,24 +94,28 @@ try {
         captures.push({ hdr: Array.from(hdr.pixels), depth: Array.from(depth.pixels), stats: renderer.stats(), sample: nativeSamples.at(-1) ?? null });
       };
       try {
-        renderer.setTextureAtlas({ pixelsRGBA: new Uint8Array([255,255,255,255,255,255,255,128]), width: 2, height: 1,
-          tiles: [{ id: 0,x: 0,y: 0,width: 1,height: 1 },{ id: 1,x: 1,y: 0,width: 1,height: 1 }] });
+        renderer.setTextureAtlas({ pixelsRGBA: new Uint8Array([255,255,255,255,255,255,255,128,128,128,128,255]), width: 3, height: 1,
+          tiles: [{ id: 0,x: 0,y: 0,width: 1,height: 1 },{ id: 1,x: 1,y: 0,width: 1,height: 1 },{ id: 2,x: 2,y: 0,width: 1,height: 1 }] });
         renderer.configureWorld(worldBounds);
         renderer.uploadChunk('ground', quad(groundPoints,[0,1,0],[.2,.6,.2]), [], worldBounds, { stride: 14 });
         renderer.uploadChunk('water', [], quad(waterPoints,[0,1,0],[.1,.3,.5],4), worldBounds, { stride: 14 });
         renderer.uploadChunk('glass', quad(wall(-1,.2,-1,1.5),[0,0,1],[.4,.7,.9],64,1), [], wallBounds, { stride: 14 });
         renderer.uploadDynamicMesh('mob', concat(quad(wall(-.5,0,-2),[0,0,1],[.8,.2,.1]),quad(wall(-.4,.6,-1.99,.3),[0,0,1],[.2,.2,.4],FULLBRIGHT | EYES_TRANSLUCENT,1)), [], wallBounds, { stride: 14 });
         renderer.uploadFirstPersonMesh(quad(wall(.15,1.3,3,.2),[0,0,1],[.7,.5,.3],FULLBRIGHT), [], { min: [.15,1.3,3], max: [.35,1.5,3] });
+        renderer.uploadBreakingMesh('crumbling', quad(wall(-.5,0,-2),[0,0,1],[1,1,1],0,2), wallBounds, { origin: [0,0,0], stage: 0 });
         await capture(); await capture();
         if (enabled) {
-          check(GPU_PROFILE_STAGES.every(stage => captures[0].sample.passMs[stage] !== null), 'The actual first renderer frame must exercise all 13 native stage pairs.');
+          check(GPU_PROFILE_STAGES.every(stage => captures[0].sample.passMs[stage] !== null), 'The actual first renderer frame must exercise all 14 native stage pairs.');
           for (const stage of ['sky','staticShadow','dynamicShadow']) check(captures[1].sample.passMs[stage] === null && captures[1].sample.passTimestamps[stage] === null, `${stage} must be omitted after cache reuse.`);
           check(captures[1].stats.gpuProfile.gpuPassSampleCounts.staticShadow === 1, 'Cached static shadow queries must not increment their count.');
         }
-        renderer.removeChunk('water'); renderer.removeChunk('glass'); renderer.removeMesh('mob'); renderer.clearFirstPersonMesh();
+        renderer.removeChunk('water'); renderer.removeChunk('glass'); renderer.removeMesh('mob'); renderer.clearFirstPersonMesh(); renderer.removeBreakingMesh('crumbling');
         await capture({ quality: 'low' });
         if (enabled) for (const stage of ['actorLayers','transparent','water','firstPerson','temporal','bloomExtract','bloomHorizontal','bloomVertical']) check(captures[2].sample.passMs[stage] === null, `${stage} must be omitted when disabled or absent.`);
+        if (enabled) check(captures[2].sample.passMs.breaking !== null && captures[2].stats.breaking.drawCalls === 1, 'The removal footprint must retain one measured breaking pass.');
         check(captures.every(value => value.depth.some(depth => depth < .999)), 'The actual renderer proof must draw depth-writing world geometry.');
+        await capture({ quality: 'low' });
+        if (enabled) check(captures[3].sample.passMs.breaking === null, 'Consumed removal footprints must not leave a breaking pass active.');
         runs.push({ enabled, captures, stats: renderer.stats() });
       } finally { renderer.destroy(); canvas.remove(); }
     }

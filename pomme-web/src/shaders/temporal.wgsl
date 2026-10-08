@@ -146,10 +146,12 @@ fn temporal_from_ycocg(color: vec3<f32>) -> vec3<f32> {
         * (1.0 - 0.55 * smoothstep(0.4, 12.0, motion_pixels));
     let luminance_delta = abs(current_ycocg.x - clipped_history.x) / max(max(current_ycocg.x, clipped_history.x), 0.06);
     history_weight *= 1.0 - 0.5 * smoothstep(0.1, 0.65, luminance_delta);
-    let reactive = clamp(textureSampleLevel(current_reactive, temporal_sampler, current_uv, 0.0).r, 0.0, 1.0);
+    let reactive_mask = clamp(textureSampleLevel(current_reactive, temporal_sampler, current_uv, 0.0).rg, vec2<f32>(0.0), vec2<f32>(1.0));
+    let reactive = reactive_mask.r;
     // Water moves even with a stationary camera. Keep at least 92% of its
     // current sample so waves and glints do not leave trails in the history.
     history_weight = mix(history_weight, min(history_weight, 0.08), reactive);
+    history_weight *= 1.0 - reactive_mask.g;
     output.color = vec4<f32>(temporal_safe_hdr(mix(current_color, stable_history, history_weight)), 1.0);
     return output;
 }
