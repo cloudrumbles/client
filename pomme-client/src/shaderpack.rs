@@ -1,6 +1,9 @@
 //! Replaceable original packs on the game Vulkan device; optional GL reference.
 use std::sync::{Arc, OnceLock};
 
+mod capture;
+use capture::Capture;
+
 use glam::Vec3;
 use pomme_shaderpack::live::{LiveAtlas, LiveSection, LiveWorld, SharedWorld, WorldSnapshot};
 use pomme_shaderpack::runtime::FrameInput;
@@ -295,6 +298,16 @@ impl Bridge {
         };
         native.prepare(&self.shared, slot, extent, rp, format, scene)
     }
+    pub fn submitted(&mut self, slot: usize) {
+        if let Some(native) = &mut self.native {
+            native.capture.submitted(slot);
+        }
+    }
+    pub fn cancel_prepared(&mut self, slot: usize) {
+        if let Some(native) = &mut self.native {
+            native.capture.cancel(slot);
+        }
+    }
     pub fn record(&mut self, cmd: &pyronyx::vk::CommandBuffer, slot: usize) -> anyhow::Result<()> {
         if let Some(n) = &mut self.native {
             n.record(cmd, slot)
@@ -308,7 +321,7 @@ impl Bridge {
         if let Some(n) = &mut self.native {
             n.presenter = None;
             n.engine = None;
-            n.pending.fill(None);
+            n.capture.finish();
             n.failed = true;
         }
         tracing::error!("Shader pack disabled after failure; F6 retries the selected pack");
@@ -363,10 +376,7 @@ struct NativePack {
     frame: u32,
     start: std::time::Instant,
     last: std::time::Instant,
-    pending: Vec<Option<serde_json::Value>>,
-    samples: Vec<serde_json::Value>,
-    reloads: Vec<serde_json::Value>,
-    saved: bool,
+    capture: Capture,
     reload: bool,
     next_pack: bool,
     failed: bool,
@@ -386,10 +396,10 @@ impl NativePack {
             frame: 0,
             start: std::time::Instant::now(),
             last: std::time::Instant::now(),
-            pending: vec![None; crate::renderer::MAX_FRAMES_IN_FLIGHT],
-            samples: Vec::new(),
-            reloads: Vec::new(),
-            saved: false,
+            capture: Capture::new(
+                OPTIONS.get().unwrap().frames,
+                crate::renderer::MAX_FRAMES_IN_FLIGHT,
+            ),
             reload: false,
             next_pack: false,
             failed: false,
@@ -411,32 +421,26 @@ impl NativePack {
             return Ok(false);
         }
         let options = OPTIONS.get().unwrap();
-        if let Some(mut sample) = self.pending[slot].take()
+        if let Some(mut sample) = self.capture.completed(slot)
             && let Some(e) = &self.engine
         {
             sample["passes"] = serde_json::to_value(e.timings(slot)?)?;
-            if !self.saved {
-                self.samples.push(sample);
-            }
+            self.capture.collect(sample);
         }
-        if !self.saved
-            && options
-                .frames
-                .is_some_and(|n| self.samples.len() >= n as usize)
-        {
+        if self.capture.ready() {
             let e = self.engine.as_ref().unwrap();
             self.gpu.device.wait_idle()?;
             let output = std::path::Path::new(&options.output);
             std::fs::create_dir_all(output)?;
             e.screenshot(&output.join("vulkan-live.png"))?;
-            self.samples.sort_by_key(|s| s["frame"].as_u64());
+            self.capture.samples.sort_by_key(|s| s["frame"].as_u64());
             std::fs::write(
                 output.join("vulkan-live.json"),
                 serde_json::to_vec_pretty(
-                    &serde_json::json!({"backend":"Vulkan in native game window","device":unsafe{std::ffi::CStr::from_ptr(self.gpu.physical.get_properties().device_name.as_ptr())}.to_string_lossy(),"revision":pomme_shaderpack::BUILD_REVISION,"pack_hash":e.pack.digest,"options":e.pack.options,"size":self.size,"passes":e.pass_names(),"measurement":"Vulkan pack-pass timestamp queries; excludes forward actors, UI and presentation; not gameplay FPS","samples":self.samples,"reloads":self.reloads}),
+                    &serde_json::json!({"backend":"Vulkan in native game window","device":unsafe{std::ffi::CStr::from_ptr(self.gpu.physical.get_properties().device_name.as_ptr())}.to_string_lossy(),"revision":pomme_shaderpack::BUILD_REVISION,"pack_hash":e.pack.digest,"options":e.pack.options,"size":self.size,"passes":e.pass_names(),"measurement":"Vulkan pack-pass timestamp queries; excludes forward actors, UI and presentation; not gameplay FPS","samples":self.capture.samples,"reloads":self.capture.reloads}),
                 )?,
             )?;
-            self.saved = true;
+            self.capture.finish();
             tracing::info!("Vulkan shader capture completed: {}", options.output);
         }
         let immediate;
@@ -468,12 +472,10 @@ impl NativePack {
             self.gpu.device.wait_idle()?;
             // Collect every outstanding old query before replacing its pool.
             if let Some(e) = &self.engine {
-                for sample_slot in 0..self.pending.len() {
-                    if let Some(mut s) = self.pending[sample_slot].take() {
+                for sample_slot in 0..self.capture.slots() {
+                    if let Some(mut s) = self.capture.completed(sample_slot) {
                         s["passes"] = serde_json::to_value(e.timings(sample_slot)?)?;
-                        if !self.saved {
-                            self.samples.push(s);
-                        }
+                        self.capture.collect(s);
                     }
                 }
             }
@@ -520,7 +522,7 @@ impl NativePack {
             match result {
                 Ok((engine, presenter)) => {
                     tracing::info!(frame=self.frame, path, pack_hash=%engine.pack.digest, dimension, "Vulkan shader pack activated");
-                    self.reloads.push(serde_json::json!({"frame":self.frame,"pack_hash":engine.pack.digest,"path":path,"dimension":dimension}));
+                    self.capture.reload(|| serde_json::json!({"frame":self.frame,"pack_hash":engine.pack.digest,"path":path,"dimension":dimension}));
                     self.engine = Some(engine);
                     self.presenter = Some(presenter);
                     self.size = size;
@@ -561,10 +563,10 @@ impl NativePack {
         self.last = now;
         self.input = Some(input);
         let input = self.input.as_ref().unwrap();
-        self.pending[slot] = Some(
+        self.capture.prepare(slot, ||
             serde_json::json!({"frame":self.frame,"world_time":input.world_time,"world_day":input.world_day,"rain":input.rain,"eye_in_water":input.eye_in_water,"world_revision":input.world_revision,"camera":input.camera.to_array(),"pack_hash":e.pack.digest,"history_invalidations":e.invalidations,"game":state.game}),
         );
-        if let Some(sample) = &mut self.pending[slot] {
+        if let Some(sample) = self.capture.sample_mut(slot) {
             sample["renderer_path"] = serde_json::to_value(crate::renderer::scene::path())?;
             if let Some(scene) = scene {
                 sample["scene_snapshot"] = scene.evidence();
@@ -577,7 +579,7 @@ impl NativePack {
     fn record(&mut self, cmd: &pyronyx::vk::CommandBuffer, slot: usize) -> anyhow::Result<()> {
         let e = self.engine.as_mut().unwrap();
         e.record(cmd, slot, self.input.as_ref().unwrap())?;
-        if let Some(s) = &mut self.pending[slot] {
+        if let Some(s) = self.capture.sample_mut(slot) {
             s["history_invalidations"] = e.invalidations.into();
         }
         self.presenter
