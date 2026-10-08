@@ -381,6 +381,8 @@ pub struct ChunkBufferStore {
     /// Post-cull section draw count read back from the GPU (lags a few frames);
     /// exposed for the debug overlay so occlusion's effect is visible.
     last_draw_count: u32,
+    draw_indirect_count: bool,
+    max_indirect_count: u32,
 
     /// Monotonic frame counter, bumped once per rendered frame in
     /// `begin_frame`.
@@ -397,12 +399,18 @@ impl ChunkBufferStore {
         physical_device: vk::PhysicalDevice,
         graphics_family: u32,
         allocator: &Arc<Mutex<Allocator>>,
+        draw_indirect_count: bool,
     ) -> Self {
         let total_buckets = compute_bucket_count(physical_device);
         let vertex_size = total_buckets as u64 * BUCKET_VERTICES as u64 * VERTEX_SIZE;
         let index_size = total_buckets as u64 * BUCKET_INDICES as u64 * INDEX_SIZE;
 
         let dev_props = physical_device.get_properties();
+        let max_indirect_count = if physical_device.get_features().multi_draw_indirect == vk::TRUE {
+            dev_props.limits.max_draw_indirect_count.max(1)
+        } else {
+            1
+        };
         let use_staging = dev_props.device_type == vk::PhysicalDeviceType::DiscreteGpu;
 
         let (vertex_buffer, vertex_alloc, index_buffer, index_alloc) = if use_staging {
@@ -760,6 +768,8 @@ impl ChunkBufferStore {
             frustum_allocs,
             fade_enabled: false,
             last_draw_count: 0,
+            draw_indirect_count,
+            max_indirect_count,
             frame_seq: 0,
             pending_free: VecDeque::new(),
         }
@@ -1426,14 +1436,15 @@ impl ChunkBufferStore {
                 + read_and_clear(&mut self.count_cutout_allocs[frame]);
         }
 
-        // macOS draws the whole indirect buffer (no drawIndirectCount), so slots
-        // the cull shader leaves unfilled must read as no-op draws, not stale data.
-        #[cfg(target_os = "macos")]
-        for a in [
-            &mut self.indirect_allocs[frame],
-            &mut self.indirect_cutout_allocs[frame],
-        ] {
-            a.mapped_slice_mut().unwrap().fill(0);
+        // The fixed-count fallback draws every slot. Unfilled commands must
+        // remain no-ops after a camera move, unload or visibility change.
+        if !self.draw_indirect_count || count > self.max_indirect_count {
+            for a in [
+                &mut self.indirect_allocs[frame],
+                &mut self.indirect_cutout_allocs[frame],
+            ] {
+                a.mapped_slice_mut().unwrap().fill(0);
+            }
         }
 
         cmd.bind_pipeline(vk::PipelineBindPoint::Compute, self.compute_pipeline);
@@ -1492,8 +1503,16 @@ impl ChunkBufferStore {
         // instance for the section origin + fade (indexed by `first_instance`).
         cmd.bind_vertex_buffers(0, &[self.vertex_buffer, self.meta_buffers[frame]], &[0, 0]);
         cmd.bind_index_buffer(self.index_buffer, 0, vk::IndexType::Uint32);
-        if cfg!(target_os = "macos") {
-            cmd.draw_indexed_indirect(indirect, 0, max_draws, size_of::<DrawCommand>() as u32);
+        if !self.draw_indirect_count || max_draws > self.max_indirect_count {
+            let stride = size_of::<DrawCommand>() as u32;
+            for first in (0..max_draws).step_by(self.max_indirect_count as usize) {
+                cmd.draw_indexed_indirect(
+                    indirect,
+                    u64::from(first) * u64::from(stride),
+                    (max_draws - first).min(self.max_indirect_count),
+                    stride,
+                );
+            }
         } else {
             cmd.draw_indexed_indirect_count(
                 indirect,

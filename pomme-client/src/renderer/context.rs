@@ -71,6 +71,7 @@ pub struct VulkanContext {
 
     pub gpu_name: String,
     pub vulkan_version: String,
+    pub draw_indirect_count: bool,
 }
 
 impl VulkanContext {
@@ -193,12 +194,26 @@ impl VulkanContext {
             ]
         };
 
+        let supported = physical_device.get_features();
+        if supported.draw_indirect_first_instance == vk::FALSE {
+            return Err(ContextError::NoSuitableGpu);
+        }
+        let draw_indirect_count =
+            supports_indirect_count(physical_device) && supported.multi_draw_indirect == vk::TRUE;
+        let enabled = vk::PhysicalDeviceFeatures {
+            multi_draw_indirect: supported.multi_draw_indirect,
+            draw_indirect_first_instance: vk::TRUE,
+            ..Default::default()
+        };
+        tracing::info!(
+            "Indirect draws: count={draw_indirect_count}, multi={}",
+            supported.multi_draw_indirect == vk::TRUE
+        );
         let mut vk12_features = vk::PhysicalDeviceVulkan12Features {
-            // MoltenVK lacks drawIndirectCount; the chunk renderer has a macOS fallback.
-            draw_indirect_count: if cfg!(target_os = "macos") {
-                vk::FALSE
-            } else {
+            draw_indirect_count: if draw_indirect_count {
                 vk::TRUE
+            } else {
+                vk::FALSE
             },
             ..Default::default()
         };
@@ -211,6 +226,7 @@ impl VulkanContext {
             queue_create_infos: queue_create_infos.as_ptr(),
             enabled_extension_count: device_extension_names.len() as u32,
             enabled_extension_names: device_extension_names.as_ptr(),
+            enabled_features: &enabled,
             ..Default::default()
         }
         .next(&mut vk12_features);
@@ -279,6 +295,7 @@ impl VulkanContext {
             debug_messenger,
             gpu_name,
             vulkan_version,
+            draw_indirect_count,
         })
     }
 
@@ -331,6 +348,11 @@ fn pick_physical_device(
                 return None;
             }
             let props = pd.get_properties();
+            if props.api_version < vk::API_VERSION_1_2
+                || pd.get_features().draw_indirect_first_instance == vk::FALSE
+            {
+                return None;
+            }
             let score = match props.device_type {
                 vk::PhysicalDeviceType::DiscreteGpu => 100,
                 vk::PhysicalDeviceType::IntegratedGpu => 50,
@@ -358,6 +380,23 @@ fn supports_required_extensions(device: &vk::PhysicalDevice) -> bool {
             .iter()
             .any(|ext| unsafe { CStr::from_ptr(ext.extension_name.as_ptr()) == required })
     })
+}
+
+pub(super) fn supports_indirect_count(device: vk::PhysicalDevice) -> bool {
+    if device.get_properties().api_version < vk::API_VERSION_1_2 {
+        return false;
+    }
+    let mut vk12 = vk::PhysicalDeviceVulkan12Features::default();
+    let mut features = vk::PhysicalDeviceFeatures2::default().next(&mut vk12);
+    // The query must receive an initialized sType and pNext chain.
+    unsafe {
+        if let Some(query) = device.fns().v1_1.get_physical_device_features2 {
+            query(device.handle(), &mut features);
+        } else {
+            return false;
+        }
+    }
+    vk12.draw_indirect_count == vk::TRUE
 }
 
 fn find_queue_families(device: &vk::PhysicalDevice, surface: vk::SurfaceKHR) -> Option<(u32, u32)> {

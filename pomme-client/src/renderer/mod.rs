@@ -423,6 +423,7 @@ impl Renderer {
             ctx.physical_device,
             ctx.graphics_family,
             &ctx.allocator,
+            ctx.draw_indirect_count,
         );
 
         let mut item_entity_pipeline = pipelines::item_entity::ItemEntityPipeline::new(
