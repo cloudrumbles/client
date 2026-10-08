@@ -85,7 +85,8 @@ impl Headless {
             buffer_device_address: false,
             allocation_sizes: Default::default(),
         })?));
-        let name = unsafe { CStr::from_ptr(physical.get_properties().device_name.as_ptr()) }
+        let properties = physical.get_properties();
+        let name = unsafe { CStr::from_ptr(properties.device_name.as_ptr()) }
             .to_string_lossy()
             .into_owned();
         let gpu = Gpu {
