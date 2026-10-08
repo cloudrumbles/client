@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const wasm = await WebAssembly.compile(await readFile(new URL('../target/wasm32-unknown-unknown/release/pomme_web_core.wasm', import.meta.url)));
+const wasm = await WebAssembly.compile(await readFile(new URL('../../public/core.wasm', import.meta.url)));
 
 async function importedWorld() {
   const { exports: core } = await WebAssembly.instantiate(wasm, {});

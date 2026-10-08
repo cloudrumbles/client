@@ -6,7 +6,7 @@ import { sampleColormap, createBiomeTints, applyBiomeTints, createBiomeSampler, 
 import { reduceColumn, meshColumn } from '../src/distant.worker.js';
 import { fallbackMaterials } from '../src/registry.js';
 import { DISTANT_CACHE_VERSION, recordBytes, validCachedColumn, materialSignature } from '../src/distant.js';
-const compiled = await WebAssembly.compile(await readFile(new URL('../core/target/wasm32-unknown-unknown/release/pomme_web_core.wasm', import.meta.url)));
+const compiled = await WebAssembly.compile(await readFile(new URL('../public/core.wasm', import.meta.url)));
 async function coreWorld() { const { exports: core } = await WebAssembly.instantiate(compiled); assert.equal(core.world_reset(-64, 384, -2, -2, 4, 4), 1); return core; }
 function loadBiomes(core, x, y, z, values) { const pointer = core.world_stage_ptr(); new Uint32Array(core.memory.buffer, pointer, 64).set(values); return core.world_load_biomes(x, y, z, pointer, 64); }
 const configuration = { defaultBiome: 0, biomes: [
