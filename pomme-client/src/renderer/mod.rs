@@ -5,6 +5,7 @@ pub(crate) mod context;
 pub mod entity_model;
 pub(crate) mod packing;
 pub mod pipelines;
+pub mod scene;
 mod screenshot;
 pub(crate) mod shader;
 mod swapchain;
@@ -57,6 +58,8 @@ use crate::world::block::registry::BlockRegistry;
 
 #[derive(Error, Debug)]
 pub enum RendererError {
+    #[error("scene resource epoch changed before recording")]
+    SceneEpoch,
     #[cfg(feature = "shader-packs")]
     #[error("Vulkan shader pack: {0:#}")]
     ShaderPack(anyhow::Error),
@@ -107,6 +110,7 @@ fn preview_box_rect(rect: [f32; 4], extent: vk::Extent2D) -> Option<vk::Rect2D> 
 #[allow(clippy::large_enum_variant)]
 enum RenderMode<'a> {
     World {
+        scene: Option<Arc<scene::SceneSnapshot>>,
         overlay: Vec<MenuElement>,
         swing_progress: f32,
         use_anim: Option<pipelines::held_item::UseAnim>,
@@ -146,6 +150,7 @@ pub struct RenderTimings {
 }
 
 pub struct Renderer {
+    scene_publisher: scene::ScenePublisher,
     #[cfg(feature = "shader-packs")]
     shader_bridge: Option<crate::shaderpack::Bridge>,
     ctx: VulkanContext,
@@ -479,6 +484,7 @@ impl Renderer {
         #[cfg(feature = "shader-packs")]
         let shader_bridge = crate::shaderpack::Bridge::start(_events, &atlas, &ctx);
         Ok(Self {
+            scene_publisher: scene::ScenePublisher::default(),
             #[cfg(feature = "shader-packs")]
             shader_bridge,
             ctx,
@@ -694,6 +700,7 @@ impl Renderer {
     }
 
     fn recreate_swapchain(&mut self) -> Result<(), RendererError> {
+        self.scene_publisher.resources.surface += 1;
         let _ = self.ctx.device.wait_idle();
 
         for sem in self.render_finished_per_image.drain(..) {
@@ -1051,6 +1058,9 @@ impl Renderer {
         if let Some(bridge) = &self.shader_bridge {
             bridge.meshes(meshes);
         }
+        if !meshes.is_empty() {
+            self.scene_publisher.resources.terrain += 1;
+        }
         self.chunk_buffers.upload_batch(
             &self.ctx.device,
             &self.ctx.allocator,
@@ -1064,6 +1074,7 @@ impl Renderer {
         if let Some(bridge) = &self.shader_bridge {
             bridge.remove(pos);
         }
+        self.scene_publisher.resources.terrain += 1;
         self.chunk_buffers.remove(pos);
     }
 
@@ -1073,6 +1084,7 @@ impl Renderer {
             bridge.clear();
         }
         self.wait_for_all_frames();
+        self.scene_publisher.clear_world();
         self.chunk_buffers.clear();
     }
 
@@ -1154,11 +1166,21 @@ impl Renderer {
         book_preview: Option<BookPreview>,
         eyes_in_water: bool,
     ) -> Result<(), RendererError> {
+        // A surface recreation changes the resource epoch. Complete it before
+        // publishing this frame so a snapshot can never name the old surface.
+        if self.swapchain_dirty {
+            self.recreate_swapchain()?;
+        }
+        let shared_path = scene::path() == scene::RendererPath::Shared;
+        if shared_path {
+            self.camera.set_render_distance(render_distance);
+        }
+        let frozen_camera = self.camera.clone();
         #[cfg(feature = "shader-packs")]
         if let Some(bridge) = &mut self.shader_bridge {
-            bridge.frame(&self.camera, &sky, render_distance, eyes_in_water);
+            bridge.frame(&frozen_camera, &sky, render_distance, eyes_in_water);
         }
-        // Refresh the far plane before this frame's view/projection and fog.
+        // Preserve the prior camera update order for the comparison switch.
         self.camera.set_render_distance(render_distance);
         let held_item = held_item.map(|(name, light)| {
             let has_3d_model = self.ensure_item_mesh(&name).is_block_model;
@@ -1168,6 +1190,40 @@ impl Renderer {
                 has_3d_model,
             }
         });
+        let scene = shared_path.then(|| {
+            let near_terrain = self
+                .scene_publisher
+                .terrain(|| self.chunk_buffers.scene_draws());
+            Arc::new(scene::SceneSnapshot {
+                version: self.scene_publisher.next_version(),
+                camera: frozen_camera,
+                sky: sky.clone(),
+                near_terrain,
+                // Milestone 3 supplies actual distant geometry, never fabricated inputs.
+                distant_terrain: Arc::from([]),
+                entities: entities.to_vec().into(),
+                item_entities: item_entities.to_vec().into(),
+                block_entities: block_entities.to_vec().into(),
+                particles: particles.to_vec().into(),
+                weather: weather.to_vec().into(),
+                hands: scene::Hands {
+                    item: held_item.clone(),
+                    swing: swing_progress,
+                    use_anim,
+                    visible: render_first_person_hand,
+                },
+                render_distance,
+                eyes_in_water,
+                cloud_mode,
+                #[cfg(feature = "shader-packs")]
+                pack_world: self.shader_bridge.as_ref().map(|bridge| bridge.snapshot()),
+            })
+        });
+        if let Some(snapshot) = &scene
+            && snapshot.version.frame == 1
+        {
+            tracing::info!(scene = %snapshot.evidence(), "Shared scene contract active");
+        }
         // Clear to the sky color: the strip between the sky disc's edge and the
         // terrain shows the clear color, so it must match the sky/terrain or it
         // reads as a horizon band (visible at night). Underwater, clear to the
@@ -1182,6 +1238,7 @@ impl Renderer {
             hide_cursor,
             [clear_col[0], clear_col[1], clear_col[2], 1.0],
             RenderMode::World {
+                scene,
                 overlay,
                 swing_progress,
                 use_anim,
@@ -1269,6 +1326,7 @@ impl Renderer {
             Some(packs),
         )
         .expect("failed to rebuild atlas");
+        self.scene_publisher.resources.atlas += 1;
         #[cfg(feature = "shader-packs")]
         if let Some(bridge) = &self.shader_bridge {
             bridge.atlas(&self.atlas);
@@ -1376,6 +1434,7 @@ impl Renderer {
     }
 
     pub fn update_player_entity_skin(&mut self, uuid: &uuid::Uuid, skin: &SkinData) {
+        self.scene_publisher.resources.models += 1;
         self.entity_renderer.update_player_skin(
             &self.ctx.device,
             self.ctx.graphics_queue,
@@ -1387,11 +1446,13 @@ impl Renderer {
     }
 
     pub fn remove_player_entity_skin(&mut self, uuid: &uuid::Uuid) {
+        self.scene_publisher.resources.models += 1;
         self.entity_renderer
             .remove_player_skin(&self.ctx.device, &self.ctx.allocator, uuid);
     }
 
     pub fn clear_player_entity_skins(&mut self) {
+        self.scene_publisher.resources.models += 1;
         self.entity_renderer
             .clear_player_skins(&self.ctx.device, &self.ctx.allocator);
     }
@@ -1500,6 +1561,14 @@ impl Renderer {
             self.recreate_swapchain()?;
         }
 
+        let scene = match &mode {
+            RenderMode::World { scene, .. } => scene.as_deref(),
+            RenderMode::MainMenu { .. } => None,
+        };
+        if scene.is_some_and(|s| !s.accepts(self.scene_publisher.resources)) {
+            return Err(RendererError::SceneEpoch);
+        }
+        let camera = scene.map_or_else(|| self.camera.clone(), |s| s.camera.clone());
         let frame = self.ctx.frame_index;
         let fence = self.ctx.in_flight_fences[frame];
         let image_available = self.ctx.image_available_semaphores[frame];
@@ -1515,6 +1584,7 @@ impl Renderer {
                     self.swapchain.extent,
                     self.swapchain.render_pass,
                     self.swapchain.format.format,
+                    scene,
                 ) {
                     Ok(active) => active,
                     Err(error) => {
@@ -1567,12 +1637,11 @@ impl Renderer {
             ..
         } = mode
         {
-            let uniform = CameraUniform::new(
-                &self.camera,
-                sky.sky_color(),
-                render_distance,
-                eyes_in_water,
-            );
+            let sky = scene.map_or(sky, |s| &s.sky);
+            let render_distance = scene.map_or(render_distance, |s| s.render_distance);
+            let eyes_in_water = scene.map_or(eyes_in_water, |s| s.eyes_in_water);
+            let uniform =
+                CameraUniform::new(&camera, sky.sky_color(), render_distance, eyes_in_water);
             self.chunk_pipeline.update_camera(frame, &uniform);
             self.block_overlay_pipeline.update_camera(frame, &uniform);
             self.entity_renderer.update_camera(frame, &uniform);
@@ -1636,15 +1705,15 @@ impl Renderer {
         };
 
         if matches!(&mode, RenderMode::World { .. }) {
-            let frustum = self.camera.frustum_planes();
+            let frustum = camera.frustum_planes();
             // The eye (including the third-person offset) is the origin the chunk
             // vertex shader renders relative to, so the cull must use it too.
             self.chunk_buffers.dispatch_cull(
                 cmd,
                 frame,
                 &frustum,
-                self.camera.anchor(),
-                self.camera_render_position(),
+                camera.anchor(),
+                *camera.position + camera.third_person_offset().as_dvec3(),
             );
         }
 
@@ -1808,6 +1877,7 @@ impl Renderer {
 
         match &mode {
             RenderMode::World {
+                scene: snapshot,
                 overlay,
                 swing_progress,
                 use_anim,
@@ -1827,17 +1897,28 @@ impl Renderer {
                 book_preview,
                 eyes_in_water,
             } => {
+                let snapshot = snapshot.as_deref();
+                let entities = snapshot.map_or(*entities, |s| s.entities.as_ref());
+                let item_entities = snapshot.map_or(*item_entities, |s| s.item_entities.as_ref());
+                let block_entities =
+                    snapshot.map_or(*block_entities, |s| s.block_entities.as_ref());
+                let particles = snapshot.map_or(*particles, |s| s.particles.as_ref());
+                let weather = snapshot.map_or(*weather, |s| s.weather.as_ref());
+                let sky = snapshot.map_or(sky, |s| &s.sky);
+                let held_item = snapshot.map_or(held_item, |s| &s.hands.item);
+                let swing_progress = snapshot.map_or(swing_progress, |s| &s.hands.swing);
+                let use_anim = snapshot.map_or(use_anim, |s| &s.hands.use_anim);
+                let render_first_person_hand =
+                    snapshot.map_or(render_first_person_hand, |s| &s.hands.visible);
+                let render_distance = snapshot.map_or(render_distance, |s| &s.render_distance);
+                let eyes_in_water = snapshot.map_or(eyes_in_water, |s| &s.eyes_in_water);
+                let cloud_mode = snapshot.map_or(cloud_mode, |s| &s.cloud_mode);
                 // Vanilla water fog hides the sky dome and clouds; the framebuffer
                 // is cleared to the water fog color, so skipping them tints the view
                 // when looking up out of geometry.
                 if !pack_active && !*eyes_in_water {
-                    self.sky_pipeline.update_and_draw(
-                        &self.ctx.device,
-                        cmd,
-                        frame,
-                        &self.camera,
-                        sky,
-                    );
+                    self.sky_pipeline
+                        .update_and_draw(&self.ctx.device, cmd, frame, &camera, sky);
                 }
 
                 let t_cull = std::time::Instant::now();
@@ -1851,8 +1932,8 @@ impl Renderer {
                 }
                 let cull_ms = t_cull.elapsed().as_secs_f32() * 1000.0;
 
-                let anchor = self.camera.anchor();
-                let eye = self.camera_render_position();
+                let anchor = camera.anchor();
+                let eye = *camera.position + camera.third_person_offset().as_dvec3();
 
                 if let Some((block_pos, stage, state)) = destroy_info {
                     self.block_overlay_pipeline.draw(
@@ -1866,7 +1947,7 @@ impl Renderer {
                     );
                 }
 
-                let ent_frustum = self.camera.frustum_planes();
+                let ent_frustum = camera.frustum_planes();
                 // Entities aren't sent beyond the server's tracking range; a
                 // generous render-distance cap just trims anything stray.
                 let ent_cull_dist = (*render_distance * 16) as f32 + 16.0;
@@ -1891,7 +1972,7 @@ impl Renderer {
                 // particles after all translucents into a depth-sharing
                 // target).
                 self.particle_pipeline
-                    .update_and_draw(cmd, frame, &self.camera, particles);
+                    .update_and_draw(cmd, frame, &camera, particles);
 
                 // Translucent water draws after opaque terrain and entities so it
                 // blends over them; depth-tested (occluded by geometry in front)
@@ -1912,13 +1993,13 @@ impl Renderer {
                 // them) and before weather, depth-tested against the scene.
                 if !pack_active && !*eyes_in_water {
                     self.cloud_pipeline
-                        .update_and_draw(cmd, frame, &self.camera, sky, *cloud_mode);
+                        .update_and_draw(cmd, frame, &camera, sky, *cloud_mode);
                 }
 
                 // Weather draws after opaque world geometry (depth-tested against
                 // terrain) but before the depth clear for the hand pass.
                 self.weather_pipeline
-                    .update_and_draw(cmd, frame, &self.camera, sky, weather);
+                    .update_and_draw(cmd, frame, &camera, sky, weather);
 
                 if *show_chunk_borders {
                     self.chunk_border_pipeline.draw(cmd, frame);
@@ -1942,14 +2023,14 @@ impl Renderer {
                 cmd.clear_attachments(&[clear_attachment], &[clear_rect]);
 
                 if *render_first_person_hand
-                    && self.camera.mode == camera::CameraMode::FirstPerson
-                    && self.camera.top_down().is_none()
+                    && camera.mode == camera::CameraMode::FirstPerson
+                    && camera.top_down().is_none()
                 {
                     let aspect = sw / sh.max(1.0);
-                    let hud_fov = self.camera.hud_fov_radians();
+                    let hud_fov = camera.hud_fov_radians();
                     // Vanilla applies bobHurt (death + hurt) and bobView to the
                     // first-person arm/item pose stack as well as the world.
-                    let view_effect = self.camera.view_effect_matrix();
+                    let view_effect = camera.view_effect_matrix();
                     // Vanilla renderArmWithItem draws the arm only for an empty
                     // hand; a held item renders alone.
                     match held_item {

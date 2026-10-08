@@ -3,6 +3,10 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(name = "pomme", about = "Minecraft client")]
 pub struct LaunchArgs {
+    /// Compare the immutable shared scene with the previous immediate path.
+    #[arg(long, value_enum, default_value_t = crate::renderer::scene::RendererPath::Shared)]
+    pub renderer_path: crate::renderer::scene::RendererPath,
+
     /// Original pack directory/ZIP rendered by Vulkan in the game window.
     #[cfg(feature = "shader-packs")]
     #[arg(long)]

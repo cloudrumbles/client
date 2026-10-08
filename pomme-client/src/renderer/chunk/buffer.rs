@@ -1314,6 +1314,27 @@ impl ChunkBufferStore {
         self.chunks.len() as u32
     }
 
+    pub fn scene_draws(&self) -> Vec<crate::renderer::scene::TerrainDraw> {
+        let mut draws: Vec<_> = self
+            .chunks
+            .values()
+            .flat_map(|chunk| chunk.sections.iter())
+            .map(|s| crate::renderer::scene::TerrainDraw {
+                origin: s.origin,
+                lod: 0,
+                upload_epoch: s.epoch,
+                first_index: s.first_index,
+                vertex_offset: s.vertex_offset,
+                water_first_index: s.water_first_index,
+                solid_indices: s.solid_index_count,
+                cutout_indices: s.index_count - s.solid_index_count,
+                water_indices: s.water_index_count,
+            })
+            .collect();
+        draws.sort_by_key(|s| s.origin);
+        draws
+    }
+
     /// Push the CPU visibility graph's per-column visible-section masks.
     /// Columns not present default to fully visible, so the cull only omits
     /// sections the graph proved occluded.

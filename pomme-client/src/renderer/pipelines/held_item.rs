@@ -13,6 +13,7 @@ use crate::renderer::pipelines::item_entity::{
     self, ItemEntityPipeline, ItemPipelineShared, push_model_light,
 };
 
+#[derive(Clone)]
 pub struct HeldItemInfo {
     pub name: String,
     pub light: f32,

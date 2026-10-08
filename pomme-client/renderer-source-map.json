@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "inspected_utc": "2026-10-08",
+  "sources": {
+    "vitrail": {
+      "repository": "https://github.com/avpbynf/vitrail-shaders",
+      "revision": "f42e5489c6abff655781b40bebc70338bada3039",
+      "license": "LGPL-3.0-only",
+      "notice_hashes": {
+        "LICENSE": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+        "NOTICE": "10b7670f0d9a9c031f980719597f38a32e05ea1535bcff244011e1bd3d9ad9a8",
+        "GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+      }
+    },
+    "iris": {
+      "repository": "https://github.com/IrisShaders/Iris",
+      "revision": "bff1e69cb6c5519d8745784aa9c8b92984de67e7",
+      "license": "LGPL-3.0",
+      "notice_hashes": {
+        "LICENSE": "a5681bf9b05db14d86776930017c647ad9e6e56ff6bbcfdf21e5848288dfaf1b",
+        "LICENSE-DEPENDENCIES": "db0a4c1dc73667fe96f55d2741b5c503166900800dafbc21f413c631da8c4a77"
+      }
+    }
+  },
+  "mapping": [
+    {
+      "responsibility": "Geometry/stage identities and actor dispatch",
+      "assessment": "Stage ordinals are a pack ABI; native category IDs must not be passed as those ordinals. Native actor snapshots preserve current draw data, but no pack-stage lowering is implemented yet.",
+      "sources": [
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/pack/model/RenderStage.java",
+          "sha256": "524723ddff3f7796f982327dc8289c7755435510ee46765baf0914b5298600ca",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/pack/model/RenderStage.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/render/EntityDraw.java",
+          "sha256": "1ea63e16cdba6205180d6125f4d03e14cc500c2f9dc582ac55d6a4d6a5a0283a",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/render/EntityDraw.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/render/BlockEntityGeometry.java",
+          "sha256": "55103d1ac0e24d0db7ca7e18eec3feafa4ea222da8c299c781853938c35fd590",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/render/BlockEntityGeometry.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/render/HandDraw.java",
+          "sha256": "c2076273ae9274c414f70cce4d4fe63d7fd17d8beddebf149181d172e714fdfb",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/render/HandDraw.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/render/ParticleProgram.java",
+          "sha256": "20cbfe85d396cd6295db5e8e10ed8750c08dccc8c84fda220ff0401c66b1cfec",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/render/ParticleProgram.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/pipeline/WorldRenderingPhase.java",
+          "sha256": "b0f05d57aef28302a35501787da11f18cf9f7b73839c2b7955a90855d1366dc0",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/pipeline/WorldRenderingPhase.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/pipeline/programs/ShaderKey.java",
+          "sha256": "6ca27071e249a25e012a894c03bb9270827312dfb0bd6238e743f05881b41bef",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/pipeline/programs/ShaderKey.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/pathways/HandRenderer.java",
+          "sha256": "906e174a56422126766036c80b2c8609400a66bca15656160ac476de5afd9042",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/pathways/HandRenderer.java"
+        }
+      ],
+      "reuse_status": "inspected; no code ported or linked"
+    },
+    {
+      "responsibility": "Missing-stage inheritance",
+      "assessment": "Portable source table, with existing Vitrail attribution to Iris. Current native hard stage list is incomplete.",
+      "sources": [
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/pack/model/ProgramFallbacks.java",
+          "sha256": "3903914b782d31d47476fb11732d0a30a993f55607e0cb98b41827664c67876e",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/pack/model/ProgramFallbacks.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/shaderpack/loading/ProgramId.java",
+          "sha256": "e99647d0acd39a349ce2803481369c3cfb8816c494097a5dc6085bfdb5b91bbc",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/shaderpack/loading/ProgramId.java"
+        }
+      ],
+      "reuse_status": "inspected; no code ported or linked"
+    },
+    {
+      "responsibility": "Legacy GLSL to Vulkan",
+      "assessment": "Vitrail translates linked stages together, including common uniform/varying interfaces. Token/compiler modules can be evaluated separately from game hooks; they have not been ported or executed here.",
+      "sources": [
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/glsl/ProgramTranslator.java",
+          "sha256": "2eede5ebf98da0dfc8255cfdfd2fb61ce526aade465d2c978115293f83d76812",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/glsl/ProgramTranslator.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/glsl/LegacyGlsl.java",
+          "sha256": "9167ecb1f5879124db07e42d141123be334370f5319d88fbec139a0b2ea2b297",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/glsl/LegacyGlsl.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/glsl/VertexInputs.java",
+          "sha256": "15d322b2137ef2bf14fb2276ef5329308c46dd166b93a9f5aef64acc97da7068",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/glsl/VertexInputs.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/glsl/VaryingSplit.java",
+          "sha256": "c8233320991ccbd51090cfaf4e5585d568aa11d7738f9895596da4dad91294c8",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/glsl/VaryingSplit.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/glsl/SharedMemory.java",
+          "sha256": "b4c1c9aa56ededad4fe1566b85a7a3da864610ff33f16226211b81db60b4c0ee",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/glsl/SharedMemory.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/pipeline/transform/transformer/VanillaTransformer.java",
+          "sha256": "288d25b6401fd43c0d23e98998cb416e1d17b001cd650a6917d2c34589a736d1",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/pipeline/transform/transformer/VanillaTransformer.java"
+        }
+      ],
+      "reuse_status": "inspected; no code ported or linked"
+    },
+    {
+      "responsibility": "World vs per-draw view/projection",
+      "assessment": "World reprojection matrices and hand/pass matrices are distinct. Vitrail's source backend is **reversed** Vulkan Z: its `w-2z` conversion cannot be copied into this client's forward-Z backend.",
+      "sources": [
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/uniform/ViewSource.java",
+          "sha256": "ebbf9a4d9c6b7b364fbb4155fdf941d4763db3215999b52990b61d6ed944e740",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/uniform/ViewSource.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/uniform/ClipSpace.java",
+          "sha256": "b8b696ad5ef9de5c142c61229e497ffe16429cdf5735b4431a85f071107fdf7d",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/uniform/ClipSpace.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/render/ViewMatrices.java",
+          "sha256": "574478ebdaf1e52d3e9cff05c165904804e0c304deeb94cf8dbe15c6b14249b2",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/render/ViewMatrices.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/pipeline/transform/transformer/VanillaTransformer.java",
+          "sha256": "288d25b6401fd43c0d23e98998cb416e1d17b001cd650a6917d2c34589a736d1",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/pipeline/transform/transformer/VanillaTransformer.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/pathways/HandRenderer.java",
+          "sha256": "906e174a56422126766036c80b2c8609400a66bca15656160ac476de5afd9042",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/pathways/HandRenderer.java"
+        }
+      ],
+      "reuse_status": "inspected; no code ported or linked"
+    },
+    {
+      "responsibility": "Compute ordering and storage",
+      "assessment": "Chained computes run before their fullscreen stage, with storage/image/texture barriers. Vitrail's documented deferred-shadow scheduling and allocation limits are divergences to verify, not native acceptance evidence.",
+      "sources": [
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/render/PackCompute.java",
+          "sha256": "32edf96a4de0eda2f4408af896339116c8769855a47e128180b547d3cf8bad84",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/render/PackCompute.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/render/storage/StorageImages.java",
+          "sha256": "ebd681528818d7cb5a4aa1020344ca867ce64f970e3730771042f473cf3f23fc",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/render/storage/StorageImages.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/render/storage/StorageBuffers.java",
+          "sha256": "5b666016cca451667a24f22ece546734da41136cc06b6a5a1780e8dc20772f49",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/render/storage/StorageBuffers.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/render/storage/GpuRecording.java",
+          "sha256": "1a492ea1e9358fd0c7f923aa639f74cfc8ac49411ddae94acf3dbdae122c51cc",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/render/storage/GpuRecording.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/pipeline/CompositeRenderer.java",
+          "sha256": "58fdd0fa2c55815d936b348d0213d82ad1e33f544fddb428e60211ce4ed72d60",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/pipeline/CompositeRenderer.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/gl/program/ComputeProgram.java",
+          "sha256": "387b2e73840aca267287b1171c5c71f0c64189e1ab37a8c7d7446dea0403c3a6",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/gl/program/ComputeProgram.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/gl/buffer/ShaderStorageBufferHolder.java",
+          "sha256": "c4b8e28d41c424755706d6af20558e34cf490dc4ae73458610dd2357772e533b",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/gl/buffer/ShaderStorageBufferHolder.java"
+        }
+      ],
+      "reuse_status": "inspected; no code ported or linked"
+    },
+    {
+      "responsibility": "Formats, target flips and sampler aliases",
+      "assessment": "Portable contracts to compare against the existing runtime. No new format/alias/flip behavior is claimed here.",
+      "sources": [
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/pack/model/TargetFormat.java",
+          "sha256": "5f5cb0734089cdbeb9621b2687b09993a9900264e928523fd4fda5bd6999a138",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/pack/model/TargetFormat.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/pack/target/TargetSchedule.java",
+          "sha256": "8b20b5b725b4dbbb80fc7062aedeccafe3b910af6769c2083f4205cbf390c9c0",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/pack/target/TargetSchedule.java"
+        },
+        {
+          "source": "vitrail",
+          "path": "common/src/main/java/dev/vitrail/pack/target/SamplerPlan.java",
+          "sha256": "2a455e1f973a2adce8c928a584ca91b47a036d39c53c98c3c999687b3edad4ee",
+          "url": "https://github.com/avpbynf/vitrail-shaders/blob/f42e5489c6abff655781b40bebc70338bada3039/common/src/main/java/dev/vitrail/pack/target/SamplerPlan.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/gl/texture/InternalTextureFormat.java",
+          "sha256": "8bdea176642d4f1692c894653954f22e8a2b0341d48e27545b849820a0d4ac1b",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/gl/texture/InternalTextureFormat.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/targets/BufferFlipper.java",
+          "sha256": "3fcdc82ee3e4a70a0e821958a071c7f320e11e778b18c7dd8d6bbce200321b04",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/targets/BufferFlipper.java"
+        },
+        {
+          "source": "iris",
+          "path": "common/src/main/java/net/irisshaders/iris/samplers/IrisSamplers.java",
+          "sha256": "16927b3a1b89369d3fd8e3782fe50ddd8a8babf14dc577b38095a0ab0561e098",
+          "url": "https://github.com/IrisShaders/Iris/blob/bff1e69cb6c5519d8745784aa9c8b92984de67e7/common/src/main/java/net/irisshaders/iris/samplers/IrisSamplers.java"
+        }
+      ],
+      "reuse_status": "inspected; no code ported or linked"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 use std::sync::{Arc, OnceLock};
 
 use glam::Vec3;
-use pomme_shaderpack::live::{LiveAtlas, LiveSection, LiveWorld, SharedWorld};
+use pomme_shaderpack::live::{LiveAtlas, LiveSection, LiveWorld, SharedWorld, WorldSnapshot};
 use pomme_shaderpack::runtime::FrameInput;
 use pomme_shaderpack::scene::Vertex;
 
@@ -211,6 +211,9 @@ impl Bridge {
     pub fn clear(&self) {
         self.shared.lock().unwrap().clear();
     }
+    pub fn snapshot(&self) -> Arc<WorldSnapshot> {
+        Arc::new(self.shared.lock().unwrap().snapshot())
+    }
     pub fn environment(&mut self, game: &crate::app::phases::in_game::GameState, position: Vec3) {
         let chunks = &game.chunk_store;
         let climates = &game.biome_climate;
@@ -285,11 +288,12 @@ impl Bridge {
         extent: pyronyx::vk::Extent2D,
         rp: pyronyx::vk::RenderPass,
         format: pyronyx::vk::Format,
+        scene: Option<&crate::renderer::scene::SceneSnapshot>,
     ) -> anyhow::Result<bool> {
         let Some(native) = &mut self.native else {
             return Ok(false);
         };
-        native.prepare(&self.shared, slot, extent, rp, format)
+        native.prepare(&self.shared, slot, extent, rp, format, scene)
     }
     pub fn record(&mut self, cmd: &pyronyx::vk::CommandBuffer, slot: usize) -> anyhow::Result<()> {
         if let Some(n) = &mut self.native {
@@ -398,6 +402,7 @@ impl NativePack {
         extent: pyronyx::vk::Extent2D,
         rp: pyronyx::vk::RenderPass,
         format: pyronyx::vk::Format,
+        scene: Option<&crate::renderer::scene::SceneSnapshot>,
     ) -> anyhow::Result<bool> {
         use pomme_shaderpack::pack::Pack;
         use pomme_shaderpack::vulkan::engine::Engine;
@@ -434,7 +439,13 @@ impl NativePack {
             self.saved = true;
             tracing::info!("Vulkan shader capture completed: {}", options.output);
         }
-        let state = shared.lock().unwrap();
+        let immediate;
+        let state = if let Some(snapshot) = scene.and_then(|s| s.pack_world.as_deref()) {
+            snapshot
+        } else {
+            immediate = shared.lock().unwrap().snapshot();
+            &immediate
+        };
         let Some(mut input) = state.frame.clone() else {
             return Ok(false);
         };
@@ -553,6 +564,14 @@ impl NativePack {
         self.pending[slot] = Some(
             serde_json::json!({"frame":self.frame,"world_time":input.world_time,"world_day":input.world_day,"rain":input.rain,"eye_in_water":input.eye_in_water,"world_revision":input.world_revision,"camera":input.camera.to_array(),"pack_hash":e.pack.digest,"history_invalidations":e.invalidations,"game":state.game}),
         );
+        if let Some(sample) = &mut self.pending[slot] {
+            sample["renderer_path"] = serde_json::to_value(crate::renderer::scene::path())?;
+            if let Some(scene) = scene {
+                sample["scene_snapshot"] = scene.evidence();
+                sample["scene_snapshot"]["pack_sections"] = state.section_count().into();
+                sample["scene_snapshot"]["pack_world_generation"] = state.generation.into();
+            }
+        }
         Ok(true)
     }
     fn record(&mut self, cmd: &pyronyx::vk::CommandBuffer, slot: usize) -> anyhow::Result<()> {
