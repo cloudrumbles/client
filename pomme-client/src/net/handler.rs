@@ -688,7 +688,13 @@ pub fn handle_game_packet(
             send_ordered(event_tx, NetworkEvent::BlockChangedAck { seq: p.seq });
         }
         ClientboundGamePacket::SetTime(p) => {
-            let day_time = p.clock_updates.values().next().map(|c| c.total_ticks);
+            // Preserve phase/rate: advance_time=false is rate zero, not a
+            // time value that the renderer should keep incrementing.
+            let day_time = p
+                .clock_updates
+                .values()
+                .next()
+                .map(|c| (c.total_ticks, c.partial_tick, c.rate));
             let _ = event_tx.try_send(NetworkEvent::TimeUpdate {
                 game_time: p.game_time,
                 day_time,

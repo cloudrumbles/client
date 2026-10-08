@@ -2079,11 +2079,11 @@ pub fn update_game(
     game.mesh_dispatcher
         .set_camera_position(*game.player.position);
 
-    // Sky time ticks unconditionally so it keeps flowing in menus;
-    // server SetTime packets reconcile drift.
+    // Keep the clock flowing in menus at the server-provided rate.
+    // Frozen clocks retain their phase until the next SetTime packet.
     core.time_tick_accumulator = (core.time_tick_accumulator + dt).min(1.0);
     while core.time_tick_accumulator >= TICK_RATE {
-        game.sky_state.day_time = game.sky_state.day_time.wrapping_add(1);
+        game.sky_state.tick_clock();
         game.sky_state.game_time = game.sky_state.game_time.wrapping_add(1);
         core.time_tick_accumulator -= TICK_RATE;
     }
@@ -3554,13 +3554,8 @@ pub fn update_game(
     }
 
     let sky_partial_tick = (core.time_tick_accumulator / TICK_RATE).clamp(0.0, 1.0);
-    let sky = crate::renderer::SkyState {
-        day_time: game.sky_state.day_time,
-        game_time: game.sky_state.game_time,
-        rain_level: game.sky_state.rain_level,
-        thunder_level: game.sky_state.thunder_level,
-        partial_tick: sky_partial_tick,
-    };
+    let mut sky = game.sky_state.clone();
+    sky.partial_tick = sky_partial_tick;
     if game.show_chunk_borders {
         gfx.renderer.update_chunk_borders(
             game.chunk_store.min_y(),

@@ -6,6 +6,8 @@ implements pack preprocessing and rendering contracts; it contains no Photon-lik
 replacement effects and does not bundle Photon or Minecraft assets.
 
 **This is partial live-world integration, not a complete Photon gameplay renderer.**
+The final renderer direction remains native Rust/Vulkan. This OpenGL host is a
+compatibility/reference harness, not a replacement commitment.
 The optional `shader-packs` client feature creates a second OpenGL viewport in
 Pomme's existing event loop. It consumes real chunk meshes, the stitched resource
 atlas, camera, separate block/sky light, time, rain and biome climate. Azalea-based

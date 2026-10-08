@@ -320,7 +320,7 @@ pub enum NetworkEvent {
     },
     TimeUpdate {
         game_time: u64,
-        day_time: Option<u64>,
+        day_time: Option<(u64, f32, f32)>,
     },
     WeatherUpdate {
         event: azalea_protocol::packets::game::c_game_event::EventType,
