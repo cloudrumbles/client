@@ -91,6 +91,112 @@ test('exact occupancy edits clear the final voxel and regenerate all LOD levels'
   assert.equal(updateReducedBlock(record, 16, 0, 0, 1, materials), null);
 });
 
+test('incremental mip edits reuse arrays and match fresh native reductions at signed dimension extremes', () => {
+  for (const bounds of [{ minY: 0, height: 16 }, { minY: -2147483632, height: 1024 }, { minY: 2147482608, height: 1024 }]) {
+    const source = { x: -3, z: 5, sections: [] }, record = reduceColumn(source, materials, bounds);
+    const arrays = [4, 8, 16].map(size => [record.levels[size], record.topHeights[size]]);
+    let random = 0x1650, previousVoxel;
+    for (let edit = 0; edit < 96; edit++) {
+      random = (Math.imul(random, 1664525) + 1013904223) >>> 0;
+      let x = random & 15, z = random >>> 4 & 15, y = bounds.minY + (random >>> 8) % bounds.height;
+      if (edit % 3 === 1) [x, y, z] = previousVoxel;
+      else previousVoxel = [x, y, z];
+      const sectionY = Math.floor(y / 16);
+      let section = source.sections.find(value => value.sectionY === sectionY);
+      if (!section) { section = { sectionY, blocks: new Uint16Array(4096) }; source.sections.push(section); }
+      const at = index(x, y - sectionY * 16, z, 16), id = section.blocks[at] ? 0 : 1;
+      section.blocks[at] = id;
+      const previous = [4, 8, 16].map(size => [record.levels[size].slice(), record.topHeights[size].slice()]);
+      updateReducedBlock(record, source.x * 16 + x, y, source.z * 16 + z, id, materials);
+      const expected = reduceColumn(source, materials, bounds);
+      for (const [level, size] of [4, 8, 16].entries()) {
+        assert.equal(record.levels[size], arrays[level][0]); assert.equal(record.topHeights[size], arrays[level][1]);
+        assert.deepEqual(record.levels[size], expected.levels[size]); assert.deepEqual(record.topHeights[size], expected.topHeights[size]);
+        const changed = record.levels[size].reduce((count, value, cell) => count + Number(value !== previous[level][0][cell] || record.topHeights[size][cell] !== previous[level][1][cell]), 0);
+        assert.ok(changed <= 1, 'only the edited cell and its ancestor path can change');
+      }
+      assert.deepEqual(record.occupancy, expected.occupancy);
+    }
+  }
+});
+
+test('regional boundaries cull hidden source faces while partial, unknown and mixed LOD neighbors stay closed', () => {
+  const solid = new Uint16Array(4096).fill(1);
+  const entry = (x, z, cellSize, blocks = solid) => ({ record: reduceColumn({ x, z, sections: [{ sectionY: 0, blocks }] }, materials), cellSize });
+  const faces = stream => stream.length / 14 / 6;
+  const records = [];
+  for (let z = 0; z < 4; z++) for (let x = 0; x < 4; x++) records.push(entry(x, z, 16));
+  const dense = meshRegion(records, 0, 0, 4, materials);
+  assert.equal(faces(dense.opaque), 48, 'sixteen closed cubes become only the outside regional surface');
+  const water = new Uint16Array(4096).fill(3);
+  assert.equal(faces(meshRegion([entry(0, 0, 16, water), entry(1, 0, 16, water)], 0, 0, 4, materials).water), 10, 'identical adjacent fluids cannot keep doubled internal water planes');
+  assert.equal(faces(meshRegion([entry(0, 0, 16), entry(2, 0, 16)], 0, 0, 4, materials).opaque), 12, 'unknown source columns cannot occlude a boundary');
+  const boundary = mesh => {
+    let positive = 0, negative = 0;
+    for (let face = 0; face < mesh.opaque.length; face += 84) {
+      if (![0, 1, 2, 3, 4, 5].every(vertex => mesh.opaque[face + vertex * 14] === 16)) continue;
+      if (mesh.opaque[face + 3] === 1) positive++;
+      if (mesh.opaque[face + 3] === -1) negative++;
+    }
+    return { positive, negative };
+  };
+  assert.deepEqual(boundary(meshRegion([entry(0, 0, 16), entry(1, 0, 4)], 0, 0, 4, materials)), { positive: 0, negative: 0 });
+  const hole = solid.slice();
+  for (let y = 0; y < 4; y++) for (let z = 0; z < 4; z++) for (let x = 0; x < 4; x++) hole[index(x, y, z, 16)] = 0;
+  assert.deepEqual(boundary(meshRegion([entry(0, 0, 16), entry(1, 0, 4, hole)], 0, 0, 4, materials)), { positive: 1, negative: 0 }, 'a partly occupied fine boundary cannot open a coarse face');
+  const glass = new Map(materials); glass.set(4, { flags: 64, color: [1, 1, 1] });
+  const translucent = solid.slice().fill(4);
+  const behindGlass = meshRegion([entry(0, 0, 16), { record: reduceColumn({ x: 1, z: 0, sections: [{ sectionY: 0, blocks: translucent }] }, glass), cellSize: 16 }], 0, 0, 4, glass);
+  assert.equal(boundary(behindGlass).positive, 1, 'different transparent materials cannot hide an opaque face');
+  for (const [x, z] of [[-134217727, -134217727], [134217725, 134217726]]) {
+    const signed = meshRegion([entry(x, z, 16), entry(x + 1, z, 4)], Math.floor(x / 4), Math.floor(z / 4), 4, materials);
+    assert.ok(Array.from(signed.opaque).every(Number.isFinite));
+    assert.ok(signed.opaque.every((value, i) => i % 14 >= 3 || value >= 0 && value <= 384), 'native signed origins never enter local Float32 vertex positions');
+  }
+});
+
+test('unchanged imports and fine-only edits preserve coarse meshes while exact occupancy still saves', async () => {
+  const indexedDB = new IDBFactory(), meshes = [];
+  const terrain = new DistantTerrain({ worldKey: 'mesh-reuse', materials, indexedDB, onMesh: mesh => meshes.push(mesh) });
+  terrain.updateCamera([1100, 80, 0]); await terrain.init();
+  await terrain.ingest(column(0, 0, [[0, 7, 0, 1]])); await settle(terrain);
+  const first = terrain.catalog.get('0,0'), uploads = meshes.length;
+  await terrain.ingest(column(0, 0, [[0, 7, 0, 1]])); await settle(terrain);
+  assert.equal(terrain.catalog.get('0,0').revision, first.revision); assert.equal(meshes.length, uploads);
+  await terrain.updateBlock(4, 0, 0, 1); await settle(terrain);
+  const changed = terrain.catalog.get('0,0');
+  assert.ok(changed.revision > first.revision); assert.ok(changed.meshRevisions[4] > first.meshRevisions[4]);
+  assert.equal(changed.meshRevisions[8], first.meshRevisions[8]); assert.equal(changed.meshRevisions[16], first.meshRevisions[16]);
+  assert.equal(meshes.length, uploads, 'a changed fine cell cannot rebuild the unchanged displayed parent');
+  terrain.updateCamera([0, 80, 0]); await settle(terrain);
+  assert.equal(meshes.length, uploads + 1, 'returning to a fine view uses the updated child hierarchy');
+  await terrain.updateBlock(5, 0, 0, 1); await settle(terrain);
+  assert.equal(meshes.length, uploads + 1, 'an interior occupancy edit cannot upload identical LOD geometry');
+  assert.equal(terrain.stats().duplicateColumns, 1); assert.equal(terrain.stats().unchangedMeshUpdates, 1);
+  assert.equal(terrain.stats().meshBuilds, uploads + 1);
+  const savedRevisions = { ...terrain.catalog.get('0,0').meshRevisions };
+  await terrain.close();
+  const restored = new DistantTerrain({ worldKey: 'mesh-reuse', materials, indexedDB }); await restored.init(); await settle(restored);
+  const record = await restored.load('0,0'), expected = reduceColumn(column(0, 0, [[0, 7, 0, 1], [4, 0, 0, 1], [5, 0, 0, 1]]), materials);
+  assert.deepEqual(record.occupancy, expected.occupancy, 'mesh reuse cannot discard a source occupancy change from IndexedDB');
+  assert.deepEqual(record.meshRevisions, savedRevisions);
+  await restored.close();
+});
+
+test('concurrent unchanged imports release protected records within the memory budget', async () => {
+  const indexedDB = new IDBFactory(), bytes = recordBytes(reduceColumn(column(), materials));
+  const options = { worldKey: 'concurrent-duplicates', materials, indexedDB, maxGpuColumns: 0, maxMemoryBytes: bytes * 2 };
+  const first = new DistantTerrain(options); await first.init();
+  for (let x = 0; x < 16; x++) await first.ingest(column(x, 0));
+  await settle(first); await first.close();
+  const second = new DistantTerrain(options); await second.init(); await settle(second);
+  await Promise.all(Array.from({ length: 16 }, (_, x) => second.ingest(column(x, 0))));
+  await settle(second);
+  assert.equal(second.stats().duplicateColumns, 16); assert.equal(second.stats().meshBuilds, 0);
+  assert.ok(second.stats().memoryBytes <= options.maxMemoryBytes, 'a skipped duplicate write must still release its protected voxel record');
+  await second.close();
+});
+
 test('persistent terrain restores real columns, suppresses near geometry and changes resolution with distance', async () => {
   const indexedDB = new IDBFactory(), meshes = [], removed = [];
   const terrain = new DistantTerrain({ worldKey: 'server:25565/overworld', materials, indexedDB, onMesh: mesh => meshes.push(mesh), onRemove: key => removed.push(key) });
@@ -169,7 +275,8 @@ test('repeated column imports use native counts without cloning the growing meta
   for (let x = 0; x < 20; x++) await terrain.ingest(column(x, 0));
   await settle(terrain);
   assert.equal(terrain.metadataReads, 1, 'under-budget imports and replacements never call getAll');
-  assert.equal(terrain.metadataCounts, 117, 'each committed write checks the global count');
+  assert.equal(terrain.metadataCounts, 97, 'unchanged repeated columns require no committed write or global count');
+  assert.equal(terrain.stats().duplicateColumns, 20);
   assert.equal(await terrain.countMetadata(), 96, 'replacements do not inflate record estimates');
   assert.ok(terrain.memoryBytes <= bytes * 4);
   await terrain.close();

@@ -72,22 +72,28 @@ export function reduceColumn(column, materialsInput, bounds = {}) {
 function rebuildHigherLevels(record) {
   const { minY, height } = dimensionBounds(record);
   for (const size of [8, 16]) {
-    const previous = size / 2, previousN = 16 / previous, n = 16 / size;
-    const source = record.levels[previous], sourceTops = record.topHeights[previous];
-    const cells = new Uint16Array(n * n * height / size), tops = allocateTops(cells.length, minY);
-    for (let y = 0; y < height / size; y++) for (let z = 0; z < n; z++) for (let x = 0; x < n; x++) {
-      const target = index(x, y, z, n), counts = new Map();
-      for (let dy = 0; dy < 2; dy++) for (let dz = 0; dz < 2; dz++) for (let dx = 0; dx < 2; dx++) {
-        const child = index(x * 2 + dx, y * 2 + dy, z * 2 + dz, previousN), id = source[child];
-        if (!id) continue;
-        const top = sourceTops[child];
-        if (top > tops[target]) { tops[target] = top; counts.clear(); }
-        if (top === tops[target]) counts.set(id, (counts.get(id) ?? 0) + 1);
-      }
-      if (counts.size) cells[target] = selectRepresentative(counts);
-    }
-    record.levels[size] = cells; record.topHeights[size] = tops;
+    const n = 16 / size;
+    record.levels[size] = new Uint16Array(n * n * height / size);
+    record.topHeights[size] = allocateTops(record.levels[size].length, minY);
+    for (let y = 0; y < height / size; y++) for (let z = 0; z < n; z++) for (let x = 0; x < n; x++) rebuildHigherCell(record, size, x, y, z);
   }
+}
+
+function rebuildHigherCell(record, size, x, y, z) {
+  const previous = size / 2, previousN = 16 / previous, n = 16 / size;
+  const source = record.levels[previous], sourceTops = record.topHeights[previous], target = index(x, y, z, n);
+  const counts = new Map(); let top = record.minY - 1;
+  for (let dy = 0; dy < 2; dy++) for (let dz = 0; dz < 2; dz++) for (let dx = 0; dx < 2; dx++) {
+    const child = index(x * 2 + dx, y * 2 + dy, z * 2 + dz, previousN), id = source[child];
+    if (!id) continue;
+    const childTop = sourceTops[child];
+    if (childTop > top) { top = childTop; counts.clear(); }
+    if (childTop === top) counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+  const id = counts.size ? selectRepresentative(counts) : 0;
+  const changed = record.levels[size][target] !== id || record.topHeights[size][target] !== top;
+  record.levels[size][target] = id; record.topHeights[size][target] = top;
+  return changed;
 }
 
 /**
@@ -101,6 +107,7 @@ export function updateReducedBlock(record, x, y, z, stateId, materialsInput) {
   if (localX < 0 || localX >= 16 || localZ < 0 || localZ >= 16 || y < minY || y >= minY + height) return null;
   if (!(record.occupancy instanceof Uint32Array) || record.occupancy.length !== 4 * 4 * height / 4 * 2) throw new Error('LOD edit requires exact occupancy data');
   const materials = materialMap(materialsInput), cellY = (y - minY) >> 2, cell = index(localX >> 2, cellY, localZ >> 2, 4);
+  const previousId = record.levels[4][cell], previousHeight = record.topHeights[4][cell];
   const bit = ((y - minY) & 3) * 16 + (localZ & 3) * 4 + (localX & 3), word = cell * 2 + (bit >> 5), mask = 1 << (bit & 31);
   const occupiedBefore = !!(record.occupancy[word] & mask), occupiedAfter = visible(stateId, materials);
   if (occupiedAfter) record.occupancy[word] |= mask; else record.occupancy[word] &= ~mask;
@@ -118,12 +125,22 @@ export function updateReducedBlock(record, x, y, z, stateId, materialsInput) {
     if (occupiedBefore && (!occupiedAfter || y <= previousTop)) record.materialStale = true;
     record.topHeights[4][cell] = top;
   }
-  rebuildHigherLevels(record);
+  // A single source edit can only affect its two ancestors. Reuse the mip
+  // arrays and stop as soon as a parent's representative and height agree.
+  if (record.levels[4][cell] !== previousId || record.topHeights[4][cell] !== previousHeight) {
+    for (const size of [8, 16]) if (!rebuildHigherCell(record, size, Math.floor(localX / size), Math.floor((y - minY) / size), Math.floor(localZ / size))) break;
+  }
   return record;
 }
 
+function occludesFace(stateId, neighbor, materials) {
+  if (!neighbor || !visible(neighbor, materials)) return false;
+  const flags = materials.get(neighbor)?.flags ?? 3;
+  return !(flags & (FLUID | 32 | 64)) || neighbor === stateId;
+}
+
 /** Mesh standalone closed LOD cubes; differing levels may have visible steps. */
-export function meshColumn(record, cellSize, materialsInput, tintAt = null) {
+export function meshColumn(record, cellSize, materialsInput, tintAt = null, boundaryOccluded = null) {
   if (![4, 8, 16].includes(cellSize)) throw new Error('LOD cell size must be 4, 8 or 16');
   if (!validColumnCoordinates(record?.x, record?.z)) throw new Error('Invalid distant column coordinates');
   const { minY, height } = dimensionBounds(record);
@@ -136,11 +153,7 @@ export function meshColumn(record, cellSize, materialsInput, tintAt = null) {
     const material = materials.get(stateId) ?? UNKNOWN, flags = material.flags ?? 3, fluid = !!(flags & FLUID), output = fluid ? water : opaque;
     for (const [name, normal, corners] of FACE_DATA) {
       const neighbor = at(x + normal[0], y + normal[1], z + normal[2]);
-      if (neighbor && visible(neighbor, materials)) {
-        const neighborFlags = materials.get(neighbor)?.flags ?? 3;
-        const solidNeighbor = !(neighborFlags & (FLUID | 32 | 64));
-        if (solidNeighbor || (fluid && (neighborFlags & FLUID) && neighbor === stateId) || neighbor === stateId) continue;
-      }
+      if (occludesFace(stateId, neighbor, materials) || boundaryOccluded?.(x, y, z, normal, stateId)) continue;
       const face = material.faces?.[name], rectangle = face?.uv ?? [0, 0, 1, 1], rotation = ((face?.rotation ?? 0) / 90) & 3;
       const coordinates = [[rectangle[0], rectangle[3]], [rectangle[0], rectangle[1]], [rectangle[2], rectangle[1]], [rectangle[2], rectangle[3]]];
       const baseTint = face?.tint ?? material.color ?? [1, 1, 1], tile = face?.tile ?? -1;
@@ -166,10 +179,35 @@ export function meshColumn(record, cellSize, materialsInput, tintAt = null) {
 export function meshRegion(records, regionX, regionZ, regionBatchSize, materialsInput, tintAt = null, bounds = records[0]?.record ?? {}) {
   if (![1, 2, 4, 8].includes(regionBatchSize) || !Number.isInteger(regionX) || !Number.isInteger(regionZ)) throw new Error('Invalid distant region bounds');
   const { minY, height } = dimensionBounds(bounds), extent = regionBatchSize * 16, origin = [regionX * extent, minY, regionZ * extent];
-  const meshes = records.map(({ record, cellSize }) => {
+  const materials = materialMap(materialsInput), columns = new Map();
+  for (const entry of records) {
+    const { record, cellSize } = entry;
     if (Math.floor(record.x / regionBatchSize) !== regionX || Math.floor(record.z / regionBatchSize) !== regionZ) throw new Error('Column lies outside the distant mesh region');
     if (record.minY !== minY || record.height !== height) throw new Error('Distant mesh region contains incompatible dimension bounds');
-    return meshColumn(record, cellSize, materialsInput, tintAt);
+    if (![4, 8, 16].includes(cellSize)) throw new Error('LOD cell size must be 4, 8 or 16');
+    const key = `${record.x},${record.z}`;
+    if (columns.has(key)) throw new Error('Duplicate distant mesh column');
+    columns.set(key, entry);
+  }
+  const meshes = records.map(({ record, cellSize }) => {
+    const boundaryOccluded = (x, y, z, normal, stateId) => {
+      const n = 16 / cellSize;
+      if (!normal[0] && !normal[2] || x + normal[0] >= 0 && x + normal[0] < n && z + normal[2] >= 0 && z + normal[2] < n) return false;
+      const neighbor = columns.get(`${record.x + normal[0]},${record.z + normal[2]}`);
+      if (!neighbor) return false;
+      const size = neighbor.cellSize, width = 16 / size, sampleSize = Math.min(cellSize, size);
+      // Fine faces fit inside one coarse neighbor. A coarse face is removed
+      // only when every finer cell covering it occludes: partial and unknown
+      // neighbors keep the closed face, so mixed resolutions cannot open gaps.
+      for (let vertical = 0; vertical < cellSize; vertical += sampleSize) for (let horizontal = 0; horizontal < cellSize; horizontal += sampleSize) {
+        const ny = Math.floor((y * cellSize + vertical + sampleSize / 2) / size);
+        const nx = normal[0] ? normal[0] > 0 ? 0 : width - 1 : Math.floor((x * cellSize + horizontal + sampleSize / 2) / size);
+        const nz = normal[2] ? normal[2] > 0 ? 0 : width - 1 : Math.floor((z * cellSize + horizontal + sampleSize / 2) / size);
+        if (!occludesFace(stateId, neighbor.record.levels[size][index(nx, ny, nz, width)], materials)) return false;
+      }
+      return true;
+    };
+    return meshColumn(record, cellSize, materials, tintAt, boundaryOccluded);
   });
   const combine = kind => {
     const values = new Float32Array(meshes.reduce((sum, mesh) => sum + mesh[kind].length, 0));

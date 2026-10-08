@@ -16,6 +16,21 @@ const BUDGET_ID = 'global';
 const columnKey = (x, z) => `${x},${z}`;
 const lodKey = key => `lod:${key}`;
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
+const sameArray = (a, b) => a?.constructor === b?.constructor && a?.length === b?.length && a.every((value, index) => value === b[index]);
+function validMeshRevisions(value, revision) {
+  return value === undefined || value && typeof value === 'object' && Object.keys(value).length === SIZES.length
+    && SIZES.every(size => Number.isSafeInteger(value[size]) && value[size] >= 0 && (revision === undefined || value[size] <= revision));
+}
+function sameMeshLevel(a, b, size) {
+  return sameArray(a.levels[size], b.levels[size]) && sameArray(a.topHeights[size], b.topHeights[size]);
+}
+function editMeshCells(record, x, y, z) {
+  return SIZES.map(size => {
+    const n = 16 / size, cx = Math.floor((x - record.x * 16) / size), cy = Math.floor((y - record.minY) / size), cz = Math.floor((z - record.z * 16) / size);
+    const cell = (cy * n + cz) * n + cx;
+    return [record.levels[size][cell], record.topHeights[size][cell]];
+  });
+}
 
 export function materialSignature(materials) {
   // Cache IDs only have meaning for this exact registry and visibility policy.
@@ -34,6 +49,7 @@ export function validCachedColumn(record, signature, bounds = {}) {
   if (record?.schemaVersion !== DISTANT_CACHE_VERSION || record.signature !== signature
     || !validColumnCoordinates(record.x, record.z) || record.minY !== minY || record.height !== height
     || record.revision !== undefined && (!Number.isSafeInteger(record.revision) || record.revision < 0)
+    || !validMeshRevisions(record.meshRevisions, record.revision)
     || !(record.biomes instanceof Uint32Array) || record.biomes.length !== height / 16 * 64
     || !(record.occupancy instanceof Uint32Array) || record.occupancy.length !== 4 * 4 * height / 4 * 2) return false;
   return SIZES.every(size => {
@@ -79,6 +95,8 @@ function normalizedMetadata(value) {
     || value.key !== columnKey(value.x, value.z) || value.id !== `${value.worldKey}\0${value.key}`
     || !Number.isInteger(value.schemaVersion) || value.schemaVersion < 1 || typeof value.signature !== 'string' || value.signature.length > 128
     || !Number.isSafeInteger(value.bytes) || value.bytes < 1 || value.bytes > MAX_RECORD_BYTES) return null;
+  if (value.revision !== undefined && (!Number.isSafeInteger(value.revision) || value.revision < 0)
+    || !validMeshRevisions(value.meshRevisions, value.revision)) return null;
   if (value.schemaVersion === DISTANT_CACHE_VERSION) {
     if (!Number.isInteger(value.minY) || !Number.isInteger(value.height)) return null;
     try { dimensionBounds(value); if (value.bytes !== dimensionRecordBytes(value.height)) return null; } catch { return null; }
@@ -133,6 +151,7 @@ export class DistantTerrain {
     this.eye = [0, 80, 0]; this.lastCameraCell = ''; this.clock = 0; this.closed = false;
     this.jobs = new Map(); this.operations = new Map(); this.nextJob = 1;
     this.memoryBytes = 0; this.meshBytes = 0; this.initializing = null; this.refreshing = false; this.refreshAgain = false;
+    this.duplicateColumns = 0; this.unchangedMeshUpdates = 0; this.meshBuilds = 0; this.meshUploads = 0;
     this.metadataByteBound = dimensionRecordBytes(this.height);
   }
 
@@ -210,7 +229,9 @@ export class DistantTerrain {
   enqueue(key, operation) {
     const next = (this.operations.get(key) ?? Promise.resolve()).catch(() => {}).then(operation);
     this.operations.set(key, next);
-    next.finally(() => { if (this.operations.get(key) === next) this.operations.delete(key); }).catch(() => {});
+    next.finally(() => {
+      if (this.operations.get(key) === next) { this.operations.delete(key); this.trimMemory(); }
+    }).catch(() => {});
     return next;
   }
   async ingest(column) {
@@ -219,8 +240,14 @@ export class DistantTerrain {
     const key = columnKey(column.x, column.z);
     return this.enqueue(key, async () => {
       if (this.closed) return;
+      const previous = await this.load(key);
       const record = await this.run('reduce', { column });
-      await this.remember(key, record);
+      const sameBiomes = previous && sameArray(previous.biomes, record.biomes);
+      const changedLevels = SIZES.filter(size => !sameBiomes || !sameMeshLevel(previous, record, size));
+      if (previous && !changedLevels.length && sameArray(previous.occupancy, record.occupancy) && previous.materialStale === record.materialStale) {
+        this.duplicateColumns++; return;
+      }
+      await this.remember(key, record, changedLevels);
       this.scheduleRefresh();
     });
   }
@@ -231,9 +258,13 @@ export class DistantTerrain {
     return this.enqueue(key, async () => {
       const record = await this.load(key);
       if (!record || this.closed) return;
+      const before = editMeshCells(record, x, y, z);
       const updated = await this.run('update', { record, x, y, z, stateId });
       if (!updated) return;
-      await this.remember(key, updated);
+      const after = editMeshCells(updated, x, y, z);
+      const changedLevels = SIZES.filter((_size, index) => before[index].some((value, axis) => value !== after[index][axis]));
+      if (!changedLevels.length) this.unchangedMeshUpdates++;
+      await this.remember(key, updated, changedLevels);
       this.scheduleRefresh();
     });
   }
@@ -252,13 +283,16 @@ export class DistantTerrain {
     if (cell !== this.lastCameraCell) { this.lastCameraCell = cell; this.scheduleRefresh(); }
   }
 
-  async remember(key, record) {
+  async remember(key, record, changedLevels = SIZES) {
     if (this.closed) return;
+    const oldMetadata = this.catalog.get(key);
     record.schemaVersion = DISTANT_CACHE_VERSION; record.signature = this.signature; record.revision = ++this.clock;
+    record.meshRevisions = Object.fromEntries(SIZES.map(size => [size, changedLevels.includes(size) ? record.revision
+      : oldMetadata?.meshRevisions?.[size] ?? oldMetadata?.revision ?? record.revision]));
     const id = `${this.worldKey}\0${key}`, bytes = recordBytes(record), accessedAt = Date.now();
     this.metadataByteBound = Math.max(this.metadataByteBound, bytes);
     const metadata = { id, key, worldKey: this.worldKey, x: record.x, z: record.z, minY: this.minY, height: this.height,
-      schemaVersion: DISTANT_CACHE_VERSION, signature: this.signature, bytes, accessedAt, revision: record.revision };
+      schemaVersion: DISTANT_CACHE_VERSION, signature: this.signature, bytes, accessedAt, revision: record.revision, meshRevisions: record.meshRevisions };
     const previous = this.columns.get(key);
     if (previous) this.memoryBytes -= recordBytes(previous);
     this.columns.set(key, record); this.memoryBytes += bytes; this.catalog.set(key, metadata);
@@ -329,7 +363,10 @@ export class DistantTerrain {
     const [x, z] = key.split(',').map(Number);
     return columnKey(Math.floor(x / this.regionBatchSize), Math.floor(z / this.regionBatchSize));
   }
-  groupStamp(members) { return members.map(([key, level]) => `${key}:${this.catalog.get(key)?.revision ?? 'missing'}:${level}`).join('|'); }
+  groupStamp(members) { return members.map(([key, level]) => {
+    const metadata = this.catalog.get(key);
+    return `${key}:${metadata?.meshRevisions?.[level] ?? metadata?.revision ?? 'missing'}:${level}`;
+  }).join('|'); }
   trimMemory(protectedKeys = new Set()) {
     // GPU meshes remain resident even when their JavaScript voxel records are
     // evicted. Reload source data only after a region's revision or LOD changes.
@@ -386,6 +423,7 @@ export class DistantTerrain {
           }
           if (!records.length) { this.removeVisible(key); continue; }
           const [regionX, regionZ] = key.split(',').map(Number);
+          this.meshBuilds++;
           const mesh = await this.run('region-mesh', { records, regionX, regionZ, regionBatchSize: this.regionBatchSize });
           if (this.closed || stamp !== this.groupStamp(members) || members.some(([column, level]) => this.near.has(column) || this.desired.get(column) !== level)) { this.refreshAgain = true; continue; }
           const bytes = mesh.opaque.byteLength + mesh.water.byteLength;
@@ -394,7 +432,7 @@ export class DistantTerrain {
           this.visible.set(key, { stamp, level: records.length === 1 ? records[0].cellSize : 0,
             revision: records.length === 1 ? records[0].record.revision : 0, members: members.map(([column]) => column), bytes });
           this.meshBytes += bytes;
-          if (bytes) this.onMesh(mesh);
+          if (bytes) { this.meshUploads++; this.onMesh(mesh); }
           this.trimMemory();
         }
         this.trimMemory();
@@ -404,6 +442,7 @@ export class DistantTerrain {
   stats() { return { rememberedColumns: this.catalog.size, residentColumns: this.columns.size,
     visibleColumns: [...this.visible.values()].reduce((sum, region) => sum + region.members.length, 0), visibleRegions: this.visible.size,
     minY: this.minY, height: this.height, biomeSampler: this.biomeSampler,
+    duplicateColumns: this.duplicateColumns, unchangedMeshUpdates: this.unchangedMeshUpdates, meshBuilds: this.meshBuilds, meshUploads: this.meshUploads,
     regionBatchSize: this.regionBatchSize, memoryBytes: this.memoryBytes, meshBytes: this.meshBytes, persistent: !!this.database }; }
   async close() {
     if (this.closed) return;

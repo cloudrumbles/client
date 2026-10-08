@@ -21,6 +21,7 @@ try {
     const [{ createRenderer }, { loadCore }, { BrowserWorld }, { loadResourcePack }, { loadMinecraftRegistry }] = await Promise.all([
       import('/src/renderer.js'), import('/src/wasm.js'), import('/src/world.js'), import('/src/assets.js'), import('/src/registry.js'),
     ]);
+    const { reduceColumn, meshColumn } = await import('/src/distant.worker.js');
     const nativeRegistry = await loadMinecraftRegistry(), names = new Set(['air', 'grass_block', 'netherrack', 'water']);
     const registry = { ...nativeRegistry, blocks: nativeRegistry.blocks.filter(block => names.has(block.name)), items: [] };
     const pack = await loadResourcePack(new Uint8Array(await (await fetch('/__native-distant-assets.zip')).arrayBuffer()), { registry });
@@ -89,6 +90,15 @@ try {
         for (const stream of [mesh.opaque, mesh.water]) for (let i = 0; i < stream.length; i += 14) {
           check(stream[i] >= 16 && stream[i] <= 32 && stream[i + 2] >= 16 && stream[i + 2] <= 32 && stream[i + 1] >= 0 && stream[i + 1] <= height, `${name}: an unknown source column created vertices.`);
         }
+        const reuseBefore = world.distant.stats(), uploadBefore = renderer.stats().meshUploadCount;
+        for (let z = 0; z <= 2; z++) for (let x = -8; x <= -6; x++) await world.distant.ingest(makeColumn(x, z));
+        await settle();
+        await world.distant.updateBlock(-107, minY, 20, grass); await settle();
+        await world.distant.updateBlock(-107, minY, 20, 0); await settle();
+        const reuseAfter = world.distant.stats();
+        check(reuseAfter.duplicateColumns === reuseBefore.duplicateColumns + 9, `${name}: duplicate native source columns must not commit new records.`);
+        check(reuseAfter.meshBuilds === reuseBefore.meshBuilds && renderer.stats().meshUploadCount === uploadBefore,
+          `${name}: actual worker occupancy updates inside an unchanged LOD cell must reuse the displayed mesh.`);
         const frame = { eye: [-106, minY + 9, 37], yaw: 0, pitch: -.4, dayPhase: .25, timeSeconds: 10, gameTime: 6000n, quality: 'low', scale: 1 };
         const draw = async current => { renderer.render(current); renderer.render(current); return (await renderer.readPixels()).pixels; };
         const bottom = await draw(frame), bottomRedPixels = colored(bottom, 0); captures[name] = canvas.toDataURL('image/png');
@@ -110,9 +120,78 @@ try {
         results.push({ ...dimension, bottomRedPixels, topBluePixels, bottomBluePixels, biomeChangedPixels, deletedPixels,
           cacheBytes: world.distant.stats().memoryBytes, meshBytes: world.distant.stats().meshBytes, sampler: world.distant.stats().biomeSampler,
           cachedMeshes: before.meshUploadCount === stable.meshUploadCount, cachedShadows: before.shadowUpdates === stable.shadowUpdates,
+          duplicateColumnsSkipped: reuseAfter.duplicateColumns - reuseBefore.duplicateColumns, interiorUpdatesReused: reuseAfter.unchangedMeshUpdates - reuseBefore.unchangedMeshUpdates,
           renderOrigin: renderer.stats().renderOrigin });
       }
-      return { dimensions: results, nativeTextureCount: pack.atlas.tiles.length, renderer: renderer.stats(), failures, captures };
+      // Compare the regional boundary mesh with an independently built
+      // outside-face reference for this known solid 64×16×64 region. Closed
+      // column meshes contain interior shadow casters along their seams.
+      meshes.clear();
+      await world.reset({ registry, materials: pack.materials, originX: 0, originZ: 0, width: 4, depth: 4,
+        minY: 0, height: 64, mode: 'server', worldKey: `lod-region-parity:${Date.now()}` });
+      world.distant.updateCamera([1200, 80, 0]);
+      const sources = [];
+      for (let z = 0; z < 4; z++) for (let x = 0; x < 4; x++) sources.push({ x, z, sections: [{ sectionY: 0, blocks: new Uint16Array(4096).fill(stone) }] });
+      await Promise.all(sources.map(column => world.distant.ingest(column))); await settle();
+      const regional = meshes.get('lod:0,0');
+      check(regional.opaque.length === 48 * 6 * 14, 'Dense regional terrain must emit only its outside 48 faces.');
+      const closed = sources.map(column => meshColumn(reduceColumn(column, pack.materials, { minY: 0, height: 64 }), 16, pack.materials));
+      const original = new Float32Array(closed.reduce((sum, mesh) => sum + mesh.opaque.length, 0));
+      let offset = 0;
+      for (const mesh of closed) {
+        original.set(mesh.opaque, offset);
+        for (let vertex = offset; vertex < offset + mesh.opaque.length; vertex += 14) for (let axis = 0; axis < 3; axis++) original[vertex + axis] += mesh.origin[axis];
+        offset += mesh.opaque.length;
+      }
+      const outside = [], material = pack.materials.get(stone);
+      const faceReference = (name, normal, corners) => {
+        const face = material.faces[name], tint = face.tint ?? material.color;
+        check(JSON.stringify(face.uv) === '[0,0,1,1]' && !face.rotation && !face.tintKind,
+          'Native netherrack reference requires its ordinary unrotated unit UV face.');
+        const uv = [[0, 16], [0, 0], [16, 0], [16, 16]];
+        for (const corner of [0, 1, 2, 0, 2, 3]) outside.push(...corners[corner], ...normal, ...tint, 1,
+          ...uv[corner], face.tile, (material.flags & ~16) | 512 | (15 << 10));
+      };
+      // Explicit union-box faces in the column key order used for batching;
+      // this reference does not call either LOD mesher or its occlusion rule.
+      for (let x = 0; x < 4; x++) for (let z = 0; z < 4; z++) {
+        const x0 = x * 16, x1 = x0 + 16, z0 = z * 16, z1 = z0 + 16;
+        if (x === 3) faceReference('east', [1, 0, 0], [[x1, 0, z0], [x1, 16, z0], [x1, 16, z1], [x1, 0, z1]]);
+        if (x === 0) faceReference('west', [-1, 0, 0], [[x0, 0, z1], [x0, 16, z1], [x0, 16, z0], [x0, 0, z0]]);
+        faceReference('up', [0, 1, 0], [[x0, 16, z0], [x0, 16, z1], [x1, 16, z1], [x1, 16, z0]]);
+        faceReference('down', [0, -1, 0], [[x0, 0, z1], [x0, 0, z0], [x1, 0, z0], [x1, 0, z1]]);
+        if (z === 3) faceReference('south', [0, 0, 1], [[x1, 0, z1], [x1, 16, z1], [x0, 16, z1], [x0, 0, z1]]);
+        if (z === 0) faceReference('north', [0, 0, -1], [[x0, 0, z0], [x0, 16, z0], [x1, 16, z0], [x1, 0, z0]]);
+      }
+      const expected = Float32Array.from(outside);
+      check(expected.length === regional.opaque.length && expected.every((value, i) => value === regional.opaque[i]),
+        'Regional culling must preserve every outside-face vertex, native UV, material flag and lighting value.');
+      const regionFrame = { eye: [32, 36, 96], yaw: 0, pitch: -.4, dayPhase: .25, timeSeconds: 10, gameTime: 6000n, quality: 'low', scale: 1 };
+      const captureRegion = async vertices => {
+        renderer.uploadChunk(regional.key, vertices, regional.water, regional.bounds, { stride: 14, origin: regional.origin });
+        renderer.setIrradianceVolume(null);
+        renderer.configureWorld({ min: [0, 0, 0], max: [64, 64, 64] }); renderer.render(regionFrame);
+        return { hdr: (await renderer.readPixels()).pixels, depth: (await renderer.readPixels({ source: 'depth' })).pixels,
+          shadow: (await renderer.readPixels({ source: 'shadow' })).pixels };
+      };
+      const optimized = await captureRegion(regional.opaque); captures['regional-boundaries'] = canvas.toDataURL('image/png');
+      const repeated = await captureRegion(regional.opaque);
+      const baseline = await captureRegion(expected);
+      const closedBaseline = await captureRegion(original);
+      const mismatches = (a, b) => a.reduce((count, value, index) => count + Number(value !== b[index]), 0);
+      const regionalProof = { originalFaces: original.length / 84, culledFaces: regional.opaque.length / 84,
+        hdrMismatches: mismatches(optimized.hdr, baseline.hdr), depthMismatches: mismatches(optimized.depth, baseline.depth),
+        shadowMismatches: mismatches(optimized.shadow, baseline.shadow), repeatedHdrMismatches: mismatches(optimized.hdr, repeated.hdr),
+        repeatedShadowMismatches: mismatches(optimized.shadow, repeated.shadow),
+        maxHdrDifference: optimized.hdr.reduce((max, value, i) => Math.max(max, Math.abs(half(value) - half(baseline.hdr[i]))), 0),
+        removedInteriorCasters: { shadowMismatches: mismatches(optimized.shadow, closedBaseline.shadow),
+          hdrMismatches: mismatches(optimized.hdr, closedBaseline.hdr), depthMismatches: mismatches(optimized.depth, closedBaseline.depth) } };
+      check(optimized.depth.some(value => value < .999), 'Regional parity must include visible native terrain pixels.');
+      check(regionalProof.hdrMismatches === 0 && regionalProof.depthMismatches === 0 && regionalProof.shadowMismatches === 0
+        && regionalProof.repeatedHdrMismatches === 0 && regionalProof.repeatedShadowMismatches === 0
+        && regionalProof.removedInteriorCasters.depthMismatches === 0,
+      `Hidden-face culling changed the native outside-face reference: ${JSON.stringify(regionalProof)}`);
+      return { dimensions: results, regionalProof, nativeTextureCount: pack.atlas.tiles.length, renderer: renderer.stats(), failures, captures };
     } finally { world.destroy(); renderer.destroy(); }
   });
   assert.deepEqual(errors, []); assert.deepEqual(proof.failures, []); assert.equal(proof.renderer.lastError, null); assert.equal(proof.dimensions.length, 6);
