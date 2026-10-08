@@ -1,0 +1,40 @@
+{
+  "source_revision": "3bfd77c68dfd4df0a1131e921138b440a722c1f5",
+  "samples": 240,
+  "time_values": [
+    6000,
+    18000
+  ],
+  "rain_range": [
+    0.0,
+    1.0
+  ],
+  "first_night_frame": 202,
+  "first_rain_frame": 202,
+  "steady_frames": [
+    20,
+    239
+  ],
+  "steady_history_count_range": [
+    10,
+    10
+  ],
+  "steady_world_revisions": [
+    238,
+    250
+  ],
+  "steady_history_epochs": [
+    1
+  ],
+  "material_revision_values": [
+    1
+  ],
+  "commands": [
+    "time set 18000",
+    "weather rain",
+    "execute if block 2 66 6 minecraft:air run setblock 2 66 6 minecraft:torch"
+  ],
+  "torch_placement": "conditional on original air; server succeeded at15:47:17UTC; night screenshot shows emitted light; clientlogs record remeshing",
+  "physical_target_GPU_tested": false,
+  "visual_limit": "Original pack output changed to night/rain/torch scene; no matched Iris or targetGPU visual-parity claim."
+}

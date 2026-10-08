@@ -1,0 +1,88 @@
+{
+  "source_revision": "3bfd77c68dfd4df0a1131e921138b440a722c1f5",
+  "source_dirty": false,
+  "client_binary_sha256": "f8ed68245f9f5e942024338acfde1468e37e55b0db8353302711fd0f8f5b7590",
+  "original_external_pack": {
+    "repository": "https://github.com/sixthsurge/photon",
+    "revision": "15458c0937f8647c37eb6a501bef5eb3bf3da31b",
+    "capture_pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+    "profile": "low",
+    "default_SH_enabled": true,
+    "options": {
+      "ENTITY_SHADOWS": true,
+      "BLOCK_ENTITY_SHADOWS": true
+    }
+  },
+  "server": {
+    "type": "Vanilla",
+    "version": "26.3",
+    "seed": 1650,
+    "world": "owned local superflat integration world",
+    "endpoint": "127.0.0.1:25577",
+    "daylight_weather_cycles": false
+  },
+  "native_arguments": [
+    "--renderer-path",
+    "shared",
+    "--version",
+    "26.3",
+    "--username",
+    "NativePhoton",
+    "--assets-dir",
+    "/workspace/client-assets/assets",
+    "--versions-dir",
+    "/workspace/client-assets/versions",
+    "--game-dir",
+    "/workspace/client-assets/native-game",
+    "--quick-access-multiplayer",
+    "127.0.0.1:25577",
+    "--shader-pack",
+    "/workspace/photon-reference",
+    "--shader-profile",
+    "low",
+    "--shader-option",
+    "ENTITY_SHADOWS=true",
+    "--shader-option",
+    "BLOCK_ENTITY_SHADOWS=true",
+    "--shader-width",
+    "320",
+    "--shader-height",
+    "180",
+    "--shader-frames",
+    "240",
+    "--shader-output",
+    "/workspace/native-results/temporal-3bfd77c-live-commands"
+  ],
+  "launch_token": "local one-use launch-token file; value omitted; not account authentication",
+  "validation": {
+    "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+    "VK_LOADER_DEBUG": "layer",
+    "activation_proof": "client.log contains Insert instance layer VK_LAYER_KHRONOS_validation",
+    "diagnostics": 0
+  },
+  "commands_at_UTC": "2026-10-08T15:47:17Z",
+  "commands": [
+    "time set 18000",
+    "weather rain",
+    "execute if block 2 66 6 minecraft:air run setblock 2 66 6 minecraft:torch"
+  ],
+  "restored_at_UTC": "2026-10-08T15:51:25Z",
+  "restoration_commands": [
+    "time set 6000",
+    "weather clear",
+    "execute if block 2 66 6 minecraft:torch run setblock 2 66 6 minecraft:air"
+  ],
+  "logs": {
+    "client.log": "full compiler and Vulkan loader stdout/stderr",
+    "game.log": "full native application trace copied after capture",
+    "server-command-results.log": "7 exact matching original server output lines; command text preserved above"
+  },
+  "native_screenshot": "unmodified F2 screenshot 2026-10-08_15.49.43.png copied as native-window.png",
+  "bounds": [
+    "llvmpipe software rendering; no physical GTX1650Ti results",
+    "240 actual native frames at320x180; timings are pack-pass scope, not gameplay FPS",
+    "weather/particles include existing native forward renderer; not full pack integration or matched Iris visual parity",
+    "world revisions carry this client mesh lighting; separate lighting_revision remains0",
+    "startup camera/projection cuts remain; their exact cause was not instrumented"
+  ]
+}

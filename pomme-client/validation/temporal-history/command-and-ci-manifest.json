@@ -1,0 +1,46 @@
+{
+  "native-commands/game.log": {
+    "bytes": 7697144,
+    "sha256": "886e0771eba8cd145368e80f6c5f6d0f4acf691437c4ad221c7e0282deacdac7"
+  },
+  "native-commands/provenance.json": {
+    "bytes": 3100,
+    "sha256": "5aa987f9769cd47e7010322aa1730d23b1a9c8dfdde8e99ce3251a0e50283e38"
+  },
+  "native-commands/client.log": {
+    "bytes": 5757,
+    "sha256": "79a9f337f777a8c160e7831e28fad3450b44b46baa92eaf05dc15c44b817a501"
+  },
+  "native-commands/server-command-results.log": {
+    "bytes": 557,
+    "sha256": "0f4abe7a87d0fedb247a4fb9b8abfb289938ddd2c5f7c784fb87e196e106b34c"
+  },
+  "native-commands/vulkan-live.json": {
+    "bytes": 2660767,
+    "sha256": "5ebd7ed19ee380162c75027bfeec0c6f3387dd0b7a5bb96da4e2c91d92e35cfb"
+  },
+  "native-commands/inspection.json": {
+    "bytes": 3403,
+    "sha256": "b6b35e6d4e176272967aa79e521277d8a79ac836303ac415a4d39248cb9bf675"
+  },
+  "native-commands/vulkan-live.png": {
+    "bytes": 90140,
+    "sha256": "dfa593c42d927c2c935ad7d14ee2b03ba36167dd223108e12df27e0e125b0e69"
+  },
+  "native-commands/native-window.png": {
+    "bytes": 623428,
+    "sha256": "e0cb5efda8291b893b7fa6326abd7e7a1582191572195f8fe3bc4fee7c8e875d"
+  },
+  "native-commands/command-inspection.json": {
+    "bytes": 916,
+    "sha256": "9c100d3a92e512e14adca17893fe4269d3b06061153f00c46e8202abd0c72243"
+  },
+  "ci/run-37800239677.json": {
+    "bytes": 19904,
+    "sha256": "4147b9009882b89d0f53e8b8f08a18bcb85e730797bfd227a99a44426d94208d"
+  },
+  "ci/linux-job-113390182473.log": {
+    "bytes": 589473,
+    "sha256": "c84fb7420ad6a922fb909bbe1d94004e883387fb3b944038592e7becaf267ab0"
+  }
+}
