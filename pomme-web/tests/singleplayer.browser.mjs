@@ -14,6 +14,7 @@ const binary = process.env.POMME_PUMPKIN_BINARY;
 const minimumColumns = Number(process.env.POMME_TEST_MIN_COLUMNS || 25);
 if (!suppliedPort && !binary) throw new Error('Set POMME_PUMPKIN_BINARY to a compatible Pumpkin executable, or POMME_TEST_SERVER_PORT to an already-running Pumpkin world.');
 const errors = [], events = [], report = { version, backend: 'Pumpkin', actualServer: true };
+const stringify = value => JSON.stringify(value, (_, entry) => typeof entry === 'bigint' ? entry.toString() : entry);
 let manager, saveDirectory, gateway, browser, page, world, endpoint;
 async function connect(endpoint) {
   gateway = await createGateway({ port: 0, allowedOrigins: [new URL(url).origin], allowDestinations: [`127.0.0.1:${endpoint.port}`] });
@@ -30,7 +31,7 @@ async function connect(endpoint) {
     assert.equal(await page.evaluate(() => window.pomme.session.state.status), 'playing');
   } catch (error) {
     const diagnostic = await page.evaluate(() => ({ state: window.pomme.session?.state, events: window.pumpkinEvents, columns: window.pomme.session?.columns.size, meshes: window.pomme.world.keys.size, readyColumns: window.pomme.world.nearReady.size, lightSections: window.pomme.core.world_light_section_count(), status: document.querySelector('#world-status').textContent }));
-    throw new Error(`${error.message}\n${JSON.stringify(diagnostic)}`);
+    throw new Error(`${error.message}\n${stringify(diagnostic)}`);
   }
 }
 
@@ -120,7 +121,10 @@ try {
 } catch (error) {
   report.failure = error.message;
   if (page) {
-    try { report.diagnostic = await page.evaluate(() => ({ state: window.pomme.session?.state, inventory: window.pomme.session?.windows.get(0), events: window.pumpkinEvents, readyColumns: window.pomme.world.nearReady.size, lightSections: window.pomme.core.world_light_section_count() })); } catch {}
+    try { report.diagnostic = await page.evaluate(() => ({ state: window.pomme.session?.state, inventory: window.pomme.session?.windows.get(0), events: window.pumpkinEvents,
+      columns: window.pomme.session?.columns.size, sourceColumns: window.pomme.world.columns.size, readyColumns: window.pomme.world.nearReady.size,
+      lightSections: window.pomme.core.world_light_section_count(), position: [...window.pomme.player.position],
+      render: window.pomme.renderer.stats(), registryVersion: window.pomme.registry.version.minecraftVersion })); } catch {}
   }
   report.browserErrors = errors;
   await mkdir('test-results', { recursive: true });

@@ -111,12 +111,20 @@ async function startLocalServer() {
   child.kill(); throw new Error('Local server startup timed out. Run npm run build first.');
 }
 
-async function buildIdentity() {
+export async function buildIdentity(directory = project) {
   const run = promisify(execFile);
   try {
-    const [commit, status] = await Promise.all([run('git', ['rev-parse', 'HEAD'], { cwd: project }), run('git', ['status', '--porcelain'], { cwd: project })]);
+    const [commit, status] = await Promise.all([run('git', ['rev-parse', 'HEAD'], { cwd: directory }), run('git', ['status', '--porcelain'], { cwd: directory })]);
     return { commit: commit.stdout.trim(), workingTreeDirty: Boolean(status.stdout.trim()) };
-  } catch { return { commit: null, workingTreeDirty: null }; }
+  } catch {
+    try {
+      const path = resolve(directory, 'BUILD.json');
+      if ((await stat(path)).size > 16384) throw new Error('Build manifest is too large.');
+      const manifest = JSON.parse(await readFile(path, 'utf8'));
+      if (!/^[0-9a-f]{40}$/.test(manifest.commit) || typeof manifest.modified !== 'boolean') throw new Error('Build manifest has no valid source identity.');
+      return { commit: manifest.commit, workingTreeDirty: null, source: 'packaged BUILD.json', packagedSourceDirtyAtBuild: manifest.modified };
+    } catch { return { commit: null, workingTreeDirty: null }; }
+  }
 }
 
 export async function runBenchmark(options) {
