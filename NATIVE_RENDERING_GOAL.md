@@ -18,7 +18,11 @@ The relevant projects are [Photon](https://github.com/sixthsurge/photon),
 [Voxy](https://github.com/MCRcortex/voxy) and
 [Nvidium](https://github.com/MCRcortex/nvidium). The intended result combines
 shaderpack support, efficient section meshing and lighting, persistent distant
-terrain, and GPU-driven rendering in the native client. Use the latest upstream
+terrain, and GPU-driven rendering in the native client. Nvidium is inspiration
+for GPU efficiency, not a dependency or required source port. Keep Vulkan and
+query the actual GTX 1650 Ti driver's features; choose optional paths by measured
+benefit rather than reproducing Nvidium's OpenGL-specific backend. Actual Voxy
+reuse/port remains a separate requirement. Use the latest upstream
 Sodium when implementation resumes and record the exact revision used.
 
 ## What this checkpoint contains
@@ -59,7 +63,7 @@ See its [status and limits](pomme-shaderpack/IMPLEMENTATION.md).
    culling, terrain, shadows and postprocessing. Query and enable the required
    indirect-draw features rather than assuming they exist. Keep a working
    fallback when an optional feature is unavailable.
-2. **Port useful Sodium and Nvidium techniques.** Adapt the latest Sodium
+2. **Reuse Sodium techniques and evaluate efficient Vulkan GPU paths.** Adapt the latest Sodium
    neighborhood sampling and meshing lifecycle to native section snapshots.
    Preserve the existing compact terrain vertices, GPU visibility compaction and
    indirect drawing. Investigate task/mesh shaders, hierarchical GPU culling,
