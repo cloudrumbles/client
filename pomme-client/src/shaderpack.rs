@@ -3,7 +3,6 @@ use std::sync::{Arc, OnceLock};
 
 mod capture;
 use capture::Capture;
-
 use glam::Vec3;
 use pomme_shaderpack::live::{LiveAtlas, LiveSection, LiveWorld, SharedWorld, WorldSnapshot};
 use pomme_shaderpack::runtime::FrameInput;
