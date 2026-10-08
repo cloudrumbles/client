@@ -169,8 +169,14 @@ pub struct FrameInput {
     pub frame: u32,
     pub seconds: f32,
     pub delta_seconds: f32,
+    /// World/history identity. Content edits keep this epoch; replacing the
+    /// world or explicitly restarting temporal state advances it.
+    pub history_epoch: u64,
+    /// Content revisions refresh geometry/lighting without clearing pack-owned
+    /// temporal targets or custom-uniform smoothing.
     pub world_revision: u64,
     pub lighting_revision: u64,
+    /// Atlas/UV/material resource identity, rather than animated texel content.
     pub material_revision: u64,
     pub fov_degrees: f32,
     pub view_effect: Mat4,
@@ -194,6 +200,7 @@ impl FrameInput {
             frame,
             seconds: frame as f32 / 60.0,
             delta_seconds: 1.0 / 60.0,
+            history_epoch: 0,
             world_revision: 0,
             lighting_revision: 0,
             material_revision: 0,
@@ -212,22 +219,14 @@ pub(crate) fn history_discontinuity(previous: Option<&FrameInput>, input: &Frame
     previous.is_none_or(|p| {
         let previous_direction = (p.target - p.camera).normalize_or_zero();
         let direction = (input.target - input.camera).normalize_or_zero();
-        p.world_revision != input.world_revision
-            || p.lighting_revision != input.lighting_revision
+        p.history_epoch != input.history_epoch
             || p.material_revision != input.material_revision
             || p.camera.distance(input.camera) > 8.0
             || previous_direction.dot(direction) < 0.5
-            || p.world_time.abs_diff(input.world_time) > 20
-            || p.world_day != input.world_day
-            || p.rain != input.rain
-            || p.wetness != input.wetness
             || p.near != input.near
             || p.fov_degrees != input.fov_degrees
             || p.far != input.far
             || p.eye_in_water != input.eye_in_water
-            || p.eye_brightness != input.eye_brightness
-            || p.temperature != input.temperature
-            || p.rainfall != input.rainfall
     })
 }
 pub struct Runtime {
@@ -887,8 +886,8 @@ impl Runtime {
         }
         self.solid_count = scene.solid.len() as i32;
         self.water_count = scene.water.len() as i32;
-        // Enforce history invalidation even if the caller forgot its revision.
-        self.previous = None;
+        // Current geometry/depth changes immediately. The pack owns rejection
+        // of edited/disoccluded pixels in retained temporal targets.
         self.check("geometry replacement")
     }
     pub fn pass_names(&self) -> Vec<String> {
@@ -1711,7 +1710,7 @@ mod tests {
         assert!(blend_mode("ONE").is_err());
     }
     #[test]
-    fn history_survives_motion_and_resets_for_state_changes() {
+    fn history_survives_content_and_pack_owned_environment_changes() {
         let scene = Scene::fixture("terrain");
         let before = FrameInput::fixture(&scene, 1, 6000, 0.0);
         let mut after = before.clone();
@@ -1720,10 +1719,9 @@ mod tests {
         after.camera += Vec3::X * 0.1;
         after.target += Vec3::X * 0.1;
         assert!(!history_discontinuity(Some(&before), &after));
-        let mutations: [fn(&mut FrameInput); 12] = [
+        let mutations: [fn(&mut FrameInput); 9] = [
             |i| i.world_revision += 1,
             |i| i.lighting_revision += 1,
-            |i| i.material_revision += 1,
             |i| i.world_time = 18000,
             |i| i.world_day += 1,
             |i| i.rain = 1.0,
@@ -1731,6 +1729,30 @@ mod tests {
             |i| i.eye_brightness[0] = 16.0,
             |i| i.temperature = 0.0,
             |i| i.rainfall = 0.0,
+        ];
+        for mutate in mutations {
+            let mut changed = before.clone();
+            mutate(&mut changed);
+            assert!(!history_discontinuity(Some(&before), &changed));
+        }
+        let mut midnight = before.clone();
+        midnight.world_time = 23999;
+        let mut next_day = midnight.clone();
+        next_day.world_time = 0;
+        next_day.world_day += 1;
+        assert!(!history_discontinuity(Some(&midnight), &next_day));
+    }
+    #[test]
+    fn history_resets_for_identity_resources_and_camera_projection_cuts() {
+        let scene = Scene::fixture("terrain");
+        let before = FrameInput::fixture(&scene, 1, 6000, 0.0);
+        let mutations: [fn(&mut FrameInput); 8] = [
+            |i| i.history_epoch += 1,
+            |i| i.material_revision += 1,
+            |i| i.near *= 2.0,
+            |i| i.far *= 2.0,
+            |i| i.fov_degrees += 10.0,
+            |i| i.eye_in_water = true,
             |i| {
                 i.camera += Vec3::X * 9.0;
                 i.target += Vec3::X * 9.0;
@@ -1743,5 +1765,75 @@ mod tests {
             assert!(history_discontinuity(Some(&before), &changed));
         }
         assert!(history_discontinuity(None, &before));
+    }
+    #[test]
+    fn environment_uniforms_refresh_and_pack_smooth_observes_clock_commands() {
+        let scene = Scene::fixture("terrain");
+        let mut before = FrameInput::fixture(&scene, 0, 23999, 0.0);
+        let base = |i: &FrameInput| {
+            frame_uniforms(
+                i,
+                8,
+                8,
+                Mat4::IDENTITY,
+                Mat4::IDENTITY,
+                Mat4::IDENTITY,
+                Mat4::IDENTITY,
+                Vec3::Y,
+            )
+        };
+        // Pack-defined expressions, with the same clock-delta form used by
+        // original packs. No host-specific shader or target exception is used.
+        let props = BTreeMap::from([
+            (
+                "uniform.float.world_age".into(),
+                "((worldDay % 128) * 24000.0 + worldTime) / 20.0".into(),
+            ),
+            (
+                "variable.float.world_age_delta".into(),
+                "abs(world_age - smooth(world_age, 0.1, 0.1))".into(),
+            ),
+            (
+                "uniform.bool.world_age_changed".into(),
+                "world_age_delta > 1.0".into(),
+            ),
+        ]);
+        let mut uniforms = Uniforms::new(&props).unwrap();
+        assert_eq!(
+            uniforms.evaluate(&base(&before), 1. / 60.).unwrap()["world_age_changed"].first(),
+            0.
+        );
+        let mut after = before.clone();
+        after.world_time = 0;
+        after.world_day = 1;
+        after.rain = 0.5;
+        after.wetness = 0.25;
+        assert!(!history_discontinuity(Some(&before), &after));
+        let values = uniforms.evaluate(&base(&after), 1. / 60.).unwrap();
+        for (name, expected) in [
+            ("worldTime", 0.),
+            ("worldDay", 1.),
+            ("rainStrength", 0.5),
+            ("wetness", 0.25),
+        ] {
+            assert_eq!(values[name].first(), expected);
+        }
+        assert_eq!(values["world_age_changed"].first(), 0.);
+        before = after.clone();
+        after.world_time = 12000;
+        after.world_revision += 1;
+        after.lighting_revision += 1;
+        assert!(!history_discontinuity(Some(&before), &after));
+        assert_eq!(
+            uniforms.evaluate(&base(&after), 1. / 60.).unwrap()["world_age_changed"].first(),
+            1.
+        );
+        after.history_epoch += 1;
+        assert!(history_discontinuity(Some(&before), &after));
+        uniforms.reset();
+        assert_eq!(
+            uniforms.evaluate(&base(&after), 1. / 60.).unwrap()["world_age_changed"].first(),
+            0.
+        );
     }
 }

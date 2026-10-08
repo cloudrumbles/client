@@ -109,6 +109,9 @@ fn main() -> anyhow::Result<()> {
                 if phase >= 6 {
                     input.material_revision = 1;
                 }
+                if phase >= 7 {
+                    input.history_epoch = 1;
+                }
                 if (4..=6).contains(&phase) && (f - a.warmup).is_multiple_of(4) {
                     match phase {
                         4 => scene.solid.truncate(scene.solid.len().saturating_sub(36)),
@@ -131,7 +134,7 @@ fn main() -> anyhow::Result<()> {
             let gpu = engine.gpu.clone();
             gpu.submit(|cmd| engine.record(cmd, 0, &input))?;
             if f >= a.warmup {
-                samples.push(serde_json::json!({"frame":f,"wall_ms":start.elapsed().as_secs_f64()*1000.,"passes":engine.timings(0)?,"compute_dispatches":engine.compute_dispatches,"input":{"camera":input.camera.to_array(),"world_time":input.world_time,"rain":input.rain,"world_revision":input.world_revision,"lighting_revision":input.lighting_revision,"material_revision":input.material_revision},"invalidations":engine.invalidations}));
+                samples.push(serde_json::json!({"frame":f,"wall_ms":start.elapsed().as_secs_f64()*1000.,"passes":engine.timings(0)?,"compute_dispatches":engine.compute_dispatches,"input":{"camera":input.camera.to_array(),"history_epoch":input.history_epoch,"world_time":input.world_time,"world_day":input.world_day,"rain":input.rain,"wetness":input.wetness,"world_revision":input.world_revision,"lighting_revision":input.lighting_revision,"material_revision":input.material_revision},"invalidations":engine.invalidations}));
             }
         }
         engine.screenshot(&a.output.join("final.png"))?;

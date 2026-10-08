@@ -53,6 +53,11 @@ pub struct WorldSnapshot {
     pub game: GameSnapshot,
 }
 impl WorldSnapshot {
+    /// Stamp the leased content and world identity consistently for both pack
+    /// backends; a later world clear cannot alter this snapshot's epoch.
+    pub fn frame_input(&self) -> Option<FrameInput> {
+        frame_input(&self.frame, self.generation, self.revision, &self.atlas)
+    }
     pub fn section_count(&self) -> usize {
         self.sections.len()
     }
@@ -75,6 +80,9 @@ impl WorldSnapshot {
     }
 }
 impl LiveWorld {
+    pub fn frame_input(&self) -> Option<FrameInput> {
+        frame_input(&self.frame, self.generation, self.revision, &self.atlas)
+    }
     pub fn shared() -> SharedWorld {
         Arc::new(Mutex::new(Self {
             sections: BTreeMap::new(),
@@ -177,9 +185,55 @@ impl LiveWorld {
         }
     }
 }
+fn frame_input(
+    frame: &Option<FrameInput>,
+    generation: u64,
+    revision: u64,
+    atlas: &Option<LiveAtlas>,
+) -> Option<FrameInput> {
+    let mut input = frame.as_ref()?.clone();
+    input.history_epoch = generation;
+    input.world_revision = revision;
+    input.material_revision = atlas.as_ref().map_or(0, |a| a.revision);
+    Some(input)
+}
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn live_and_leased_frames_separate_content_from_world_identity() {
+        let shared = LiveWorld::shared();
+        let mut w = shared.lock().unwrap();
+        let mut input = FrameInput::fixture(&Scene::fixture("terrain"), 7, 18000, 0.5);
+        input.lighting_revision = 3;
+        w.frame = Some(input.clone());
+        let old = w.snapshot();
+        w.replace_sections([0, 0], 0..1, 1, Vec::new());
+        let edited = w.frame_input().unwrap();
+        assert_ne!(
+            edited.world_revision,
+            old.frame_input().unwrap().world_revision
+        );
+        assert_eq!(
+            edited.history_epoch,
+            old.frame_input().unwrap().history_epoch
+        );
+        assert_eq!(edited.lighting_revision, 3);
+        assert_eq!(edited.world_time, 18000);
+        assert_eq!(edited.rain, 0.5);
+        assert_eq!(
+            edited.history_epoch,
+            w.snapshot().frame_input().unwrap().history_epoch
+        );
+        w.clear();
+        assert!(w.frame_input().is_none());
+        w.frame = Some(input);
+        assert_ne!(w.frame_input().unwrap().history_epoch, edited.history_epoch);
+        assert_eq!(
+            old.frame_input().unwrap().history_epoch,
+            edited.history_epoch
+        );
+    }
     #[test]
     fn frame_lease_retains_geometry_materials_atlas_and_dimension_after_clear() {
         let shared = LiveWorld::shared();

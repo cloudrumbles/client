@@ -119,6 +119,7 @@ fn driver_execution_changes_with_pack_settings_and_rejects_failed_reload() {
     let pack = Pack::load(&f.0, "world0", Some("base"), &[]).unwrap();
     let mut first = Runtime::new(context.gl.clone(), pack, 32, 32, &scene, None).unwrap();
     first.render(&input).unwrap();
+    let initial_invalidations = first.invalidations;
     first.screenshot(&f.0.join("first.png")).unwrap();
     let pack = Pack::load(&f.0, "world0", Some("changed"), &[]).unwrap();
     let mut second = Runtime::new(context.gl.clone(), pack, 32, 32, &scene, None).unwrap();
@@ -136,5 +137,9 @@ fn driver_execution_changes_with_pack_settings_and_rejects_failed_reload() {
     first.render(&input).unwrap();
     first.replace_geometry(&Scene::fixture("cave")).unwrap();
     first.render(&input).unwrap();
-    assert!(first.invalidations >= 3);
+    assert_eq!(first.invalidations, initial_invalidations);
+    let mut restarted = input.clone();
+    restarted.history_epoch += 1;
+    first.render(&restarted).unwrap();
+    assert_eq!(first.invalidations, initial_invalidations + 1);
 }

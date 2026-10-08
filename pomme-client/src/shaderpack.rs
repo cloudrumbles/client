@@ -457,7 +457,7 @@ impl NativePack {
             immediate = shared.lock().unwrap().snapshot();
             &immediate
         };
-        let Some(mut input) = state.frame.clone() else {
+        let Some(mut input) = state.frame_input() else {
             return Ok(false);
         };
         let dimension = match state.game.dimension.as_str() {
@@ -578,7 +578,7 @@ impl NativePack {
         self.input = Some(input);
         let input = self.input.as_ref().unwrap();
         self.capture.prepare(slot, ||
-            serde_json::json!({"frame":self.frame,"world_time":input.world_time,"world_day":input.world_day,"rain":input.rain,"eye_in_water":input.eye_in_water,"world_revision":input.world_revision,"camera":input.camera.to_array(),"pack_hash":e.pack.digest,"history_invalidations":e.invalidations,"game":state.game}),
+            serde_json::json!({"frame":self.frame,"history_epoch":input.history_epoch,"world_time":input.world_time,"world_day":input.world_day,"rain":input.rain,"eye_in_water":input.eye_in_water,"world_revision":input.world_revision,"lighting_revision":input.lighting_revision,"material_revision":input.material_revision,"camera":input.camera.to_array(),"pack_hash":e.pack.digest,"history_invalidations":e.invalidations,"game":state.game}),
         );
         if let Some(sample) = self.capture.sample_mut(slot) {
             sample["pack_preparation_ms"] = preparation_start

@@ -53,6 +53,7 @@ struct WindowSample {
     frame: u32,
     world_time: i32,
     world_revision: u64,
+    history_epoch: u64,
     rain: f32,
     camera: [f32; 3],
     wall_ms: f64,
@@ -190,14 +191,14 @@ impl Viewer {
                 if !world.active {
                     return Ok(true);
                 }
-                let Some(input) = &world.frame else {
+                let Some(input) = world.frame_input() else {
                     drop(world);
                     std::thread::sleep(std::time::Duration::from_millis(16));
                     self.context.as_ref().unwrap().window.request_redraw();
                     return Ok(false);
                 };
                 (
-                    input.clone(),
+                    input,
                     (self.live_revision != world.revision).then(|| world.scene()),
                     world.revision,
                     world
@@ -290,6 +291,7 @@ impl Viewer {
             frame: self.frame,
             world_time: input.world_time,
             world_revision: input.world_revision,
+            history_epoch: input.history_epoch,
             rain: input.rain,
             camera: input.camera.to_array(),
             wall_ms: render_start.elapsed().as_secs_f64() * 1000.0,
@@ -312,7 +314,7 @@ impl Viewer {
                 serde_json::to_vec_pretty(&serde_json::json!({
                     "runtime_revision":crate::BUILD_REVISION,"backend":"OpenGL compatibility", "presented_frames":self.frame + 1,
                     "capabilities":runtime.capabilities,"pack_sha256":runtime.pack.digest,
-                    "options":runtime.pack.options,"scene":self.options.scene,"solid_vertices":self.scene.solid.len(),"water_vertices":self.scene.water.len(),"world_revision":input.world_revision,"world_time":input.world_time,"world_day":input.world_day,"rain":input.rain,"camera":input.camera.to_array(),
+                    "options":runtime.pack.options,"scene":self.options.scene,"solid_vertices":self.scene.solid.len(),"water_vertices":self.scene.water.len(),"world_revision":input.world_revision,"history_epoch":input.history_epoch,"world_time":input.world_time,"world_day":input.world_day,"rain":input.rain,"camera":input.camera.to_array(),
                     "scene_input":if self.live.is_some(){"live native Minecraft chunk meshes"}else{"deterministic fixture, not a Minecraft world"}, "passes":runtime.pass_names(),"measurement":"serialized pack viewport frames; GPU timer readback; excludes main Vulkan rendering; not gameplay-FPS qualification","samples":self.samples,"reloads":self.reloads,"minecraft_version":self.options.minecraft_version,"dimension":self.options.dimension,"eye_brightness":input.eye_brightness,"temperature":input.temperature,"rainfall":input.rainfall
                 }))?,
             )?;

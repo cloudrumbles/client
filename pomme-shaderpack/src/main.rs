@@ -49,8 +49,8 @@ struct Args {
     /// evidence.
     #[arg(long)]
     window_frames: Option<u32>,
-    /// Reproducible camera motion or command/world/lighting/weather
-    /// discontinuities.
+    /// Reproducible camera motion or content/environment changes followed by
+    /// explicit resource and history-epoch resets.
     #[arg(long,default_value="static",value_parser=["static","orbit","state-changes"])]
     scenario: String,
     /// Write the resolved pack manifest without creating a GPU context.
@@ -63,6 +63,7 @@ struct Sample {
     wall_ms: f64,
     passes: Vec<pomme_shaderpack::runtime::PassTiming>,
     input: serde_json::Value,
+    history_invalidations: u32,
 }
 fn main() -> Result<()> {
     let args = Args::parse();
@@ -153,6 +154,9 @@ fn main() -> Result<()> {
             if phase >= 6 {
                 input.material_revision = 1;
             }
+            if phase >= 7 {
+                input.history_epoch = 1;
+            }
             if phase >= 4 && (frame - args.warmup).is_multiple_of(4) && phase <= 6 {
                 if phase == 4 {
                     scene.solid.truncate(scene.solid.len() - 36);
@@ -177,7 +181,8 @@ fn main() -> Result<()> {
                 frame,
                 wall_ms: start.elapsed().as_secs_f64() * 1000.0,
                 passes,
-                input: serde_json::json!({"camera":input.camera.to_array(),"target":input.target.to_array(),"world_time":input.world_time,"world_day":input.world_day,"rain":input.rain,"wetness":input.wetness,"world_revision":input.world_revision,"lighting_revision":input.lighting_revision,"material_revision":input.material_revision}),
+                input: serde_json::json!({"camera":input.camera.to_array(),"target":input.target.to_array(),"history_epoch":input.history_epoch,"world_time":input.world_time,"world_day":input.world_day,"rain":input.rain,"wetness":input.wetness,"world_revision":input.world_revision,"lighting_revision":input.lighting_revision,"material_revision":input.material_revision}),
+                history_invalidations: runtime.invalidations,
             });
         }
     }
