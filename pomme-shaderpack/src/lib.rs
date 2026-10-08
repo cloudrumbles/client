@@ -1,9 +1,11 @@
 pub mod context;
 pub mod expression;
+pub mod geometry;
 pub mod live;
 pub mod pack;
 pub mod runtime;
 pub mod scene;
+pub mod stages;
 pub mod viewer;
 #[cfg(feature = "vulkan")]
 pub mod vulkan;

@@ -6,14 +6,20 @@ use std::sync::{Arc, Mutex};
 use azalea_core::position::BlockPos;
 use azalea_registry::builtin::BlockEntityKind;
 use pomme_gpu_allocator::vulkan::{Allocation, Allocator};
+#[cfg(feature = "shader-packs")]
+use pomme_shaderpack::geometry::{
+    AlphaMode, DrawSpace, FrameGeometry, Material, MaterialIdentity, MeshAsset, TextureAsset,
+};
 use pyronyx::vk;
 
-use crate::assets::{AssetIndex, resolve_asset_path};
+use crate::assets::AssetIndex;
 use crate::renderer::camera::CameraUniform;
 use crate::renderer::chunk::mesher::ChunkVertex;
 use crate::renderer::entity_model::{BakedEntityModel, ModelConvention, PartAnim};
+#[cfg(feature = "shader-packs")]
+use crate::renderer::pack_geometry::{self, PackGeometryGap};
 use crate::renderer::pipelines::entity_renderer::{
-    BlendMode, ModelInput, WHITE_TINT, create_pipeline, fallback_texture,
+    BlendMode, ModelInput, WHITE_TINT, create_pipeline, fallback_texture, load_actor_pixels,
 };
 use crate::renderer::{MAX_FRAMES_IN_FLIGHT, block_entity_model, util};
 
@@ -36,6 +42,10 @@ struct TextureSlot {
     view: vk::ImageView,
     allocation: Allocation,
     set: vk::DescriptorSet,
+    #[cfg(feature = "shader-packs")]
+    pack_texture: Option<Arc<TextureAsset>>,
+    #[cfg(feature = "shader-packs")]
+    pack_materials: Mutex<HashMap<String, Arc<Material>>>,
 }
 
 struct KindEntry {
@@ -45,6 +55,8 @@ struct KindEntry {
     vertex_buffer: vk::Buffer,
     vertex_allocation: Allocation,
     textures: Vec<TextureSlot>,
+    #[cfg(feature = "shader-packs")]
+    pack_mesh: Option<Arc<MeshAsset>>,
 }
 
 struct KindDef {
@@ -171,6 +183,32 @@ fn lid_anim(kind: BlockEntityKind, openness: f32) -> PartAnim {
             translation: vec![(0, glam::Vec3::new(0.0, -eased * 8.0, 0.0))],
         },
         _ => PartAnim::default(),
+    }
+}
+
+fn block_entity_matrix(
+    info: &BlockEntityRenderInfo,
+    convention: ModelConvention,
+    anchor: glam::DVec3,
+) -> glam::Mat4 {
+    let center = (glam::DVec3::new(
+        info.pos.x as f64 + 0.5,
+        info.pos.y as f64,
+        info.pos.z as f64 + 0.5,
+    ) - anchor)
+        .as_vec3();
+    match convention {
+        ModelConvention::EntityYDown => {
+            glam::Mat4::from_translation(center)
+                * glam::Mat4::from_rotation_y((180.0 - info.yaw).to_radians())
+        }
+        // Vanilla ChestRenderer rotates about the block center. The native
+        // baked mesh is relative to the block's minimum corner.
+        ModelConvention::BlockYUp => {
+            glam::Mat4::from_translation(center)
+                * glam::Mat4::from_rotation_y((-info.yaw).to_radians())
+                * glam::Mat4::from_translation(glam::Vec3::new(-0.5, 0.0, -0.5))
+        }
     }
 }
 
@@ -455,6 +493,7 @@ impl BlockEntityPipeline {
                 def.tex_size,
                 &mut pending_uploads,
                 &mut staging_to_free,
+                def.kind == BlockEntityKind::Chest,
             );
             entries.insert(def.kind, entry);
         }
@@ -489,12 +528,89 @@ impl BlockEntityPipeline {
             .copy_from_slice(bytes);
     }
 
+    /// Append the loaded Chest variant using native facing and lid poses.
+    /// `block_identity` is the actual full state descriptor supplied by the
+    /// world snapshot, including properties used by the pack material map.
+    #[cfg(feature = "shader-packs")]
+    pub fn append_pack_chest(
+        &self,
+        info: &BlockEntityRenderInfo,
+        anchor: glam::DVec3,
+        light: [u8; 2],
+        block_identity: &str,
+        frame: &mut FrameGeometry,
+    ) -> Result<usize, PackGeometryGap> {
+        if info.kind != BlockEntityKind::Chest {
+            return Err(PackGeometryGap::UnsupportedKind);
+        }
+        let entry = self
+            .entries
+            .get(&info.kind)
+            .ok_or(PackGeometryGap::MissingMesh)?;
+        let mesh = entry
+            .pack_mesh
+            .as_ref()
+            .ok_or(PackGeometryGap::MissingMesh)?;
+        let slot = entry
+            .textures
+            .get(info.variant as usize)
+            .ok_or(PackGeometryGap::InvalidVariant)?;
+        let texture = slot
+            .pack_texture
+            .as_ref()
+            .ok_or(PackGeometryGap::MissingTexture)?;
+        let material = {
+            let mut materials = slot.pack_materials.lock().unwrap();
+            Arc::clone(
+                materials
+                    .entry(block_identity.to_owned())
+                    .or_insert_with(|| {
+                        Arc::new(Material {
+                            identity: MaterialIdentity::Block(block_identity.to_owned()),
+                            texture: Arc::clone(texture),
+                            alpha: AlphaMode::Cutout(0.5),
+                        })
+                    }),
+            )
+        };
+        let model = &entry.models[info.variant as usize % entry.models.len()];
+        let base = block_entity_matrix(info, model.convention, anchor);
+        let transforms = model.compute_part_transforms(&lid_anim(info.kind, info.lid_open));
+        Ok(pack_geometry::append_parts(
+            frame,
+            mesh,
+            &material,
+            &model.part_ranges,
+            &transforms,
+            pack_geometry::PartPose {
+                base,
+                space: DrawSpace::World { anchor },
+                light,
+                tint: WHITE_TINT,
+                overlay: [0.0; 4],
+            },
+        ))
+    }
+
     pub fn draw(
         &self,
         cmd: vk::CommandBuffer,
         frame: usize,
         anchor: glam::DVec3,
         items: &[BlockEntityRenderInfo],
+    ) {
+        self.draw_filtered(cmd, frame, anchor, items, None);
+    }
+
+    /// Skip only the input entries successfully submitted to pack rendering.
+    /// Missing mask entries retain native rendering.
+    pub fn draw_filtered(
+        &self,
+        cmd: vk::CommandBuffer,
+        frame: usize,
+        anchor: glam::DVec3,
+        items: &[BlockEntityRenderInfo],
+        skip: Option<&[bool]>,
     ) {
         if items.is_empty() {
             return;
@@ -505,7 +621,14 @@ impl BlockEntityPipeline {
         let mut bound_entry: *const KindEntry = std::ptr::null();
         let mut bound_set: vk::DescriptorSet = vk::DescriptorSet::null();
 
-        for info in items {
+        for (index, info) in items.iter().enumerate() {
+            if skip
+                .and_then(|mask| mask.get(index))
+                .copied()
+                .unwrap_or(false)
+            {
+                continue;
+            }
             let Some(entry) = self.entries.get(&info.kind) else {
                 continue;
             };
@@ -531,27 +654,7 @@ impl BlockEntityPipeline {
 
             let model = &entry.models[info.variant as usize % entry.models.len()];
 
-            let block_center = (glam::DVec3::new(
-                info.pos.x as f64 + 0.5,
-                info.pos.y as f64,
-                info.pos.z as f64 + 0.5,
-            ) - anchor)
-                .as_vec3();
-            let model_mat = match model.convention {
-                // With the 180 yaw offset and the convention's baked-in flip
-                // this reproduces vanilla's block-entity `scale(1,-1,-1)`.
-                ModelConvention::EntityYDown => {
-                    glam::Mat4::from_translation(block_center)
-                        * glam::Mat4::from_rotation_y((180.0f32 - info.yaw).to_radians())
-                }
-                // Vanilla `ChestRenderer`: rotate by -facing.toYRot() about the
-                // block center; coords are relative to the block's min corner.
-                ModelConvention::BlockYUp => {
-                    glam::Mat4::from_translation(block_center)
-                        * glam::Mat4::from_rotation_y((-info.yaw).to_radians())
-                        * glam::Mat4::from_translation(glam::Vec3::new(-0.5, 0.0, -0.5))
-                }
-            };
+            let model_mat = block_entity_matrix(info, model.convention, anchor);
 
             let anim = lid_anim(info.kind, info.lid_open);
             let part_transforms = model.compute_part_transforms(&anim);
@@ -644,6 +747,7 @@ fn build_entry(
     fallback_tex_size: u32,
     pending_uploads: &mut Vec<util::PendingImageUpload>,
     staging_to_free: &mut Vec<(vk::Buffer, Allocation)>,
+    _retain_pack: bool,
 ) -> KindEntry {
     let mut all_vertices: Vec<ChunkVertex> = Vec::new();
     for model in &mut models {
@@ -654,6 +758,8 @@ fn build_entry(
         }
     }
     let vert_bytes = bytemuck::cast_slice::<ChunkVertex, u8>(&all_vertices);
+    #[cfg(feature = "shader-packs")]
+    let pack_mesh = _retain_pack.then(|| pack_geometry::chunk_mesh("chest", &all_vertices, false));
     let (vertex_buffer, vertex_allocation) = util::create_mapped_buffer(
         device,
         allocator,
@@ -677,6 +783,7 @@ fn build_entry(
                 fallback_tex_size,
                 pending_uploads,
                 staging_to_free,
+                _retain_pack,
             )
         })
         .collect();
@@ -686,6 +793,8 @@ fn build_entry(
         vertex_buffer,
         vertex_allocation,
         textures,
+        #[cfg(feature = "shader-packs")]
+        pack_mesh,
     }
 }
 
@@ -702,17 +811,15 @@ fn build_texture_slot(
     fallback_tex_size: u32,
     pending_uploads: &mut Vec<util::PendingImageUpload>,
     staging_to_free: &mut Vec<(vk::Buffer, Allocation)>,
+    _retain_pack: bool,
 ) -> TextureSlot {
-    let (pixels, width, height) = keys
-        .iter()
-        .find_map(|key| {
-            let path = resolve_asset_path(jar_assets_dir, asset_index, key);
-            util::load_png(&path)
-        })
-        .unwrap_or_else(|| {
-            tracing::warn!("Failed to load BE texture {:?}, using fallback", keys);
-            fallback_texture(fallback_tex_size)
-        });
+    let loaded = load_actor_pixels(jar_assets_dir, asset_index, keys);
+    #[cfg(feature = "shader-packs")]
+    let verified_key = loaded.as_ref().map(|(key, _)| *key);
+    let (pixels, width, height) = loaded.map(|(_, pixels)| pixels).unwrap_or_else(|| {
+        tracing::warn!("Failed to load BE texture {:?}, using fallback", keys);
+        fallback_texture(fallback_tex_size)
+    });
 
     let (image, view, allocation) =
         util::create_gpu_image(device, allocator, width, height, "block_entity_texture");
@@ -759,5 +866,79 @@ fn build_texture_slot(
         view,
         allocation,
         set,
+        #[cfg(feature = "shader-packs")]
+        pack_texture: verified_key
+            .filter(|_| _retain_pack)
+            .map(|key| pack_geometry::texture_asset(key, [width, height], Arc::new(pixels))),
+        #[cfg(feature = "shader-packs")]
+        pack_materials: Mutex::new(HashMap::new()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn chest_lid_and_lock_open_around_the_native_hinge() {
+        for model in block_entity_model::bake_chest_models() {
+            let closed = model.compute_part_transforms(&lid_anim(BlockEntityKind::Chest, 0.0));
+            let half = model.compute_part_transforms(&lid_anim(BlockEntityKind::Chest, 0.5));
+            let open = model.compute_part_transforms(&lid_anim(BlockEntityKind::Chest, 1.0));
+            assert!(closed[0].abs_diff_eq(open[0], 1e-6));
+            for part in [1, 2] {
+                let hinge = glam::Vec3::new(0.0, 9.0 / 16.0, 1.0 / 16.0);
+                assert!(
+                    closed[part]
+                        .transform_point3(glam::Vec3::ZERO)
+                        .abs_diff_eq(hinge, 1e-6)
+                );
+                assert!(
+                    open[part]
+                        .transform_point3(glam::Vec3::ZERO)
+                        .abs_diff_eq(hinge, 1e-6)
+                );
+                let forward = glam::Vec3::Z;
+                assert!(
+                    open[part]
+                        .transform_vector3(forward)
+                        .abs_diff_eq(glam::Vec3::Y, 1e-6)
+                );
+                assert!(
+                    half[part].transform_vector3(forward).y > 0.9,
+                    "native cubic lid easing"
+                );
+                assert!(!closed[part].abs_diff_eq(open[part], 1e-5));
+            }
+        }
+    }
+
+    #[test]
+    fn chest_facing_uses_double_precision_anchor_and_block_center() {
+        let anchor = glam::DVec3::new(30_000_000.0, 64.0, -30_000_000.0);
+        let mut info = BlockEntityRenderInfo {
+            pos: BlockPos::new(30_000_002, 65, -29_999_999),
+            kind: BlockEntityKind::Chest,
+            yaw: 0.0,
+            variant: 0,
+            lid_open: 0.0,
+        };
+        for yaw in [0.0, 90.0, 180.0, 270.0] {
+            info.yaw = yaw;
+            let matrix = block_entity_matrix(&info, ModelConvention::BlockYUp, anchor);
+            assert!(
+                matrix
+                    .transform_point3(glam::Vec3::new(0.5, 0.0, 0.5))
+                    .abs_diff_eq(glam::Vec3::new(2.5, 1.0, 1.5), 1e-6)
+            );
+            let front = matrix.transform_vector3(glam::Vec3::Z);
+            let expected = match yaw as u32 {
+                0 => glam::Vec3::Z,
+                90 => glam::Vec3::NEG_X,
+                180 => glam::Vec3::NEG_Z,
+                _ => glam::Vec3::X,
+            };
+            assert!(front.abs_diff_eq(expected, 1e-6));
+        }
     }
 }

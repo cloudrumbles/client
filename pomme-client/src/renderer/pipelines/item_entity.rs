@@ -4,10 +4,14 @@ use std::sync::{Arc, Mutex};
 
 use glam::Mat4;
 use pomme_gpu_allocator::vulkan::{Allocation, Allocator};
+#[cfg(feature = "shader-packs")]
+use pomme_shaderpack::geometry::{AlphaMode, Material, MaterialIdentity, MeshAsset, TextureAsset};
 use pyronyx::vk;
 
 use crate::renderer::camera::CameraUniform;
 use crate::renderer::chunk::atlas::{AtlasRegion, AtlasUVMap, SpriteAlphaMask, TextureAtlas};
+#[cfg(feature = "shader-packs")]
+use crate::renderer::pack_geometry::{self, PackGeometryGap, SourceVertex};
 use crate::renderer::{MAX_FRAMES_IN_FLIGHT, shader, util};
 use crate::world::block::model::{BakedModel, Direction, direction_from_positions};
 
@@ -104,6 +108,8 @@ struct MeshEntry {
     translucent: bool,
     bounds_min: glam::Vec3,
     bounds_max: glam::Vec3,
+    #[cfg(feature = "shader-packs")]
+    pack_asset: Option<(Arc<MeshAsset>, Arc<Material>)>,
 }
 
 /// Descriptor layouts, per-frame camera UBOs, and atlas set shared by the
@@ -364,6 +370,8 @@ pub struct ItemEntityPipeline {
     translucent: vk::Pipeline,
     shared: ItemPipelineShared,
     meshes: HashMap<String, MeshEntry>,
+    #[cfg(feature = "shader-packs")]
+    pack_atlas: Arc<TextureAsset>,
 }
 
 impl ItemEntityPipeline {
@@ -382,6 +390,12 @@ impl ItemEntityPipeline {
             translucent,
             shared,
             meshes: HashMap::new(),
+            #[cfg(feature = "shader-packs")]
+            pack_atlas: pack_geometry::texture_asset(
+                "item-atlas",
+                atlas.cpu_size,
+                Arc::clone(&atlas.cpu_pixels),
+            ),
         }
     }
 
@@ -389,6 +403,7 @@ impl ItemEntityPipeline {
         self.shared.update_camera(frame, uniform);
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn insert_mesh(
         &mut self,
         device: &vk::Device,
@@ -397,6 +412,7 @@ impl ItemEntityPipeline {
         vertices: &[ItemVertex],
         is_3d_model: bool,
         translucent: bool,
+        _verified_sprites: bool,
     ) {
         let bytes = bytemuck::cast_slice(vertices);
         let (buffer, allocation) = util::create_mapped_buffer(
@@ -417,6 +433,24 @@ impl ItemEntityPipeline {
                 translucent,
                 bounds_min,
                 bounds_max,
+                #[cfg(feature = "shader-packs")]
+                pack_asset: _verified_sprites.then(|| {
+                    let mesh = pack_item_mesh(name, vertices);
+                    let material = Arc::new(Material {
+                        identity: MaterialIdentity::Item(if name.contains(':') {
+                            name.to_owned()
+                        } else {
+                            format!("minecraft:{name}")
+                        }),
+                        texture: Arc::clone(&self.pack_atlas),
+                        alpha: if translucent {
+                            AlphaMode::Blend
+                        } else {
+                            AlphaMode::Cutout(0.1)
+                        },
+                    });
+                    (mesh, material)
+                }),
             },
         );
     }
@@ -432,6 +466,23 @@ impl ItemEntityPipeline {
 
     pub fn mesh_handle(&self, name: &str) -> Option<(vk::Buffer, u32)> {
         self.meshes.get(name).map(|m| (m.buffer, m.vertex_count))
+    }
+
+    /// Immutable native mesh and actual atlas pixels retained at asset load.
+    /// A missing or failed sprite is rejected even if the atlas registered its
+    /// name against the checkerboard rectangle.
+    #[cfg(feature = "shader-packs")]
+    pub fn pack_asset(
+        &self,
+        name: &str,
+    ) -> Result<(Arc<MeshAsset>, Arc<Material>), PackGeometryGap> {
+        self.meshes
+            .get(name)
+            .ok_or(PackGeometryGap::MissingMesh)?
+            .pack_asset
+            .as_ref()
+            .map(|(mesh, material)| (Arc::clone(mesh), Arc::clone(material)))
+            .ok_or(PackGeometryGap::MissingTexture)
     }
 
     pub fn ensure_mesh(
@@ -451,7 +502,17 @@ impl ItemEntityPipeline {
                 .quads
                 .iter()
                 .any(|quad| uv_map.get_region(&quad.texture).translucent);
-            self.insert_mesh(device, allocator, name, &vertices, true, translucent);
+            self.insert_mesh(
+                device,
+                allocator,
+                name,
+                &vertices,
+                true,
+                translucent,
+                model.quads.iter().all(|quad| {
+                    uv_map.has_region(&quad.texture) && uv_map.get_region(&quad.texture).sprite != 0
+                }),
+            );
         }
     }
 
@@ -482,6 +543,7 @@ impl ItemEntityPipeline {
                 &vertices,
                 false,
                 region.translucent,
+                region.sprite != 0,
             );
         }
     }
@@ -535,8 +597,22 @@ impl ItemEntityPipeline {
         device.destroy_pipeline(self.translucent, None);
     }
 
-    pub fn rebind_atlas(&self, device: &vk::Device, atlas: &TextureAtlas) {
+    pub fn rebind_atlas(&mut self, device: &vk::Device, atlas: &TextureAtlas) {
         self.shared.rebind_atlas(device, atlas);
+        #[cfg(feature = "shader-packs")]
+        {
+            self.pack_atlas = pack_geometry::texture_asset(
+                "item-atlas",
+                atlas.cpu_size,
+                Arc::clone(&atlas.cpu_pixels),
+            );
+            // Existing UVs belong to the previous atlas generation. The
+            // renderer rebuilds native item meshes after rebind; prevent a
+            // pack draw from combining old UVs with new pixels meanwhile.
+            for entry in self.meshes.values_mut() {
+                entry.pack_asset = None;
+            }
+        }
     }
 
     pub fn clear_meshes(&mut self, device: &vk::Device, allocator: &Arc<Mutex<Allocator>>) {
@@ -551,6 +627,24 @@ impl ItemEntityPipeline {
         self.destroy_pipelines(device);
         self.shared.destroy(device, allocator);
     }
+}
+
+#[cfg(feature = "shader-packs")]
+fn pack_item_mesh(name: &str, vertices: &[ItemVertex]) -> Arc<MeshAsset> {
+    let source: Vec<_> = vertices
+        .iter()
+        .map(|v| SourceVertex {
+            position: v.position,
+            uv: v.tex_coords,
+            tint: pack_geometry::packed_tint(v.light_tint),
+            normal: Some([
+                v.normal[0] as f32 / 127.0,
+                v.normal[1] as f32 / 127.0,
+                v.normal[2] as f32 / 127.0,
+            ]),
+        })
+        .collect();
+    pack_geometry::quad_mesh(&format!("item/{name}"), &source, 1.0)
 }
 
 /// Local-space bounds of a baked item mesh before its display transform.
@@ -1006,6 +1100,24 @@ fn create_pipeline_impl(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(feature = "shader-packs")]
+    #[test]
+    fn pack_item_lowering_preserves_native_extrusion_float_uvs_and_baked_normals() {
+        let image = image::RgbaImage::from_fn(3, 2, |x, y| {
+            image::Rgba([17, 31, 63, if x == 1 && y == 0 { 0 } else { 255 }])
+        });
+        let native = build_extruded_item(&image, unit_region());
+        let pack = pack_item_mesh("unit-item", &native);
+        assert_eq!(pack.vertices.len(), native.len());
+        for (source, result) in native.iter().zip(pack.vertices.iter()) {
+            assert_eq!(result.position, source.position);
+            assert_eq!(result.uv, source.tex_coords);
+            assert_eq!(result.normal, unpack_normal(source).to_array());
+            assert_eq!(result.color, pack_geometry::packed_tint(source.light_tint));
+            assert!(result.tangent.iter().all(|v| v.is_finite()));
+        }
+    }
 
     fn unit_region() -> AtlasRegion {
         AtlasRegion {

@@ -20,10 +20,12 @@ from every vertex to each palette entry after the first live upload stalled.
 Validation also exposed and repaired an existing item push-constant stage-mask
 mismatch. These are software checks, not physical GTX 1650 Ti measurements.
 
-Current geometry stages are terrain/water/shadow. Native forward actors, held
-items, weather geometry, particles and UI share the same window/depth afterwards;
-they are not yet shaded by the corresponding pack geometry programs or included
-in its shadows/postprocessing. Compute, storage images/SSBOs, geometry shaders,
+Geometry stages now include the narrow Cow/Chest/held-item native asset path
+on the shared renderer, using the licensed Iris fallback table and per-draw
+light/material/pose uniforms. Pack settings govern Cow/Chest shadows; first-person
+hands do not cast world shadows. Other actors, empty-hand skin, weather geometry,
+particles and UI remain forward. This is not complete actor or Iris parity.
+See `pomme-client/ACTOR_PACK_STAGES.md` for exact coverage and checks. Compute, storage images/SSBOs, geometry shaders,
 all host uniforms/stage fallbacks, animated atlas parity and Iris visual parity
 remain unsupported. Unsupported active resources fail explicitly. Packed HDR can
 use a wider RGBA16F target if the device cannot filter/blit that packed format;

@@ -1,4 +1,9 @@
-# Shared scene renderer checkpoint (contract v1)
+# Shared scene renderer checkpoint (contract v2)
+
+Contract v2 adds the narrow Cow/Chest/held-item pack geometry slice described in
+[ACTOR_PACK_STAGES.md](ACTOR_PACK_STAGES.md). The immutable input checkpoint below
+remains its foundation. Successful actor inputs now carry retained native assets
+and per-frame poses into the pack graph; other categories remain native forward.
 
 This is the first vertical slice of the parent-owned incremental replacement plan.
 `--renderer-path shared` (default) freezes native camera, sky/time/weather, near
@@ -42,10 +47,12 @@ clip depth at its existing ABI boundary. Hands retain their existing separate
 projection/depth-clear behavior; they do not redefine the world camera. HUD/menu
 and inventory previews draw afterwards under their existing UI cameras.
 
-This does **not** complete Milestone 1's future unified material/mesh lowering or
-Milestone 2: actors, hands, particles and weather still execute their native forward
-pipelines outside the pack graph. Distant geometry is not yet connected. Shader
-compute/storage support, full fallback rules and Iris image parity are unchanged.
+This does **not** complete unified material/mesh lowering or Milestone 2. Cow,
+Chest and supported held-item meshes have a pack path; remaining actor kinds,
+empty-hand skin, particles and weather execute their native forward pipelines. Distant geometry is not yet connected. Shader
+compute/storage support and Iris image parity remain open. Iris geometry fallback
+relationships are now ported with their license/notice; the dispatch subset remains
+limited to implemented geometry categories.
 The live Photon check uses the existing explicit `SH_SKYLIGHT=false` restriction;
 it is not the complete preset requested for Milestone 2. Neither backend's
 software-adapter timings qualify the GTX 1650 Ti / 60 FPS target.
@@ -64,8 +71,9 @@ Canonical sources inspected on 2026-10-08:
 These are Java host integrations, not callable Rust libraries. Vitrail's renderer
 uses Mojang `GpuDevice`/`CommandEncoder`, Java mixins, LWJGL and VMA; Iris's renderer
 uses Minecraft integration and OpenGL. The following exact source map records
-candidate contracts/components for the parent's next review. No implementation
-from these projects is copied, bundled or linked in this checkpoint. Any later
+candidate contracts/components for the parent's next review. The initial contract-v1 checkpoint copied no implementation. Contract v2 ports
+Iris ProgramId fallback data into `pomme-shaderpack/src/stages.rs`, with its
+LGPL-3.0-only license and notice in `pomme-shaderpack/third_party/iris`. Any later
 port must record the source files, changes and corresponding notices; a Java
 transformer dependency is not silently relabeled as LGPL.
 

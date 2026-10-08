@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::mem::{offset_of, size_of};
 use std::path::Path;
+use std::sync::Arc;
 
 use anyhow::{Context, Result, ensure};
 use glam::{Mat3, Mat4, Vec3};
@@ -10,9 +11,48 @@ use regex::Regex;
 use super::abi::{Compiled, Program, Sampler};
 use super::resource::{Buffer, Gpu, Image, custom, format};
 use crate::expression::{Uniforms, Value};
+use crate::geometry::{
+    AlphaMode, DrawSpace, FrameGeometry, MaterialIdentity, MeshAsset, TextureAsset,
+};
 use crate::pack::Pack;
 use crate::runtime::{FrameInput, PassTiming, frame_uniforms, history_discontinuity};
 use crate::scene::{Scene, Vertex};
+use crate::stages::{is_actor, is_shadow};
+
+struct CachedMesh {
+    source: Arc<MeshAsset>,
+    buffer: Buffer,
+}
+struct CachedTexture {
+    source: Arc<TextureAsset>,
+    image: Image,
+}
+#[derive(Default, Clone, serde::Serialize)]
+pub struct GeometryPreparation {
+    pub cpu_ms: f64,
+    pub mesh_upload_bytes: usize,
+    pub texture_upload_bytes: usize,
+    pub uniform_capacity_bytes: usize,
+    pub mesh_assets: usize,
+    pub texture_assets: usize,
+    pub draws: usize,
+}
+#[derive(Default, Clone, serde::Serialize)]
+pub struct GeometryStage {
+    pub requested: String,
+    pub resolved: String,
+    pub draws: usize,
+    pub vertices: usize,
+    pub material_ids: Vec<i32>,
+}
+fn mesh_id(mesh: &Arc<MeshAsset>) -> usize {
+    Arc::as_ptr(mesh) as usize
+}
+fn texture_id(tex: &Arc<TextureAsset>) -> usize {
+    Arc::as_ptr(tex) as usize
+}
+const MAX_ACTOR_ASSETS: usize = 512;
+const MAX_ACTOR_DRAWS: usize = 4096;
 
 struct Color {
     images: [Image; 2],
@@ -27,6 +67,7 @@ struct Pass {
     render_pass: vk::RenderPass,
     pipeline: vk::Pipeline,
     sets: Vec<vk::DescriptorSet>,
+    actor_sets: HashMap<(usize, usize), vk::DescriptorSet>,
     framebuffers: HashMap<Vec<u64>, vk::Framebuffer>,
 }
 pub struct Engine {
@@ -53,6 +94,12 @@ pub struct Engine {
     water_count: u32,
     uniform_buffers: Vec<Buffer>,
     uniform_stride: usize,
+    uniform_capacities: Vec<usize>,
+    geometry: Arc<FrameGeometry>,
+    actor_meshes: HashMap<usize, CachedMesh>,
+    actor_textures: HashMap<usize, CachedTexture>,
+    pub geometry_preparation: GeometryPreparation,
+    pub geometry_stages: Vec<GeometryStage>,
     descriptor_pool: vk::DescriptorPool,
     query_pools: Vec<vk::QueryPool>,
     cpu_timings: Vec<Vec<f64>>,
@@ -432,6 +479,7 @@ impl Engine {
             )?);
         }
         let uniform_values = Uniforms::new(&pack.properties)?;
+        let uniform_capacity = uniform_stride * compiled.programs.len();
         let mut out = Self {
             pack,
             gpu,
@@ -456,6 +504,12 @@ impl Engine {
             water_count: scene.water.len() as u32,
             uniform_buffers,
             uniform_stride,
+            uniform_capacities: vec![uniform_capacity; slots],
+            geometry: Arc::new(FrameGeometry::default()),
+            actor_meshes: HashMap::new(),
+            actor_textures: HashMap::new(),
+            geometry_preparation: GeometryPreparation::default(),
+            geometry_stages: Vec::new(),
             descriptor_pool: vk::DescriptorPool::null(),
             query_pools,
             cpu_timings: vec![vec![]; slots],
@@ -477,11 +531,24 @@ impl Engine {
             )?);
         }
         let programs = std::mem::take(&mut out.compiled.programs);
-        let sampler_count = programs.iter().map(|p| p.samplers.len()).sum::<usize>() * slots;
+        let actor_passes = programs.iter().filter(|p| is_actor(&p.name)).count();
+        let set_count = (programs.len() + actor_passes * MAX_ACTOR_ASSETS) * slots;
+        let sampler_count = programs
+            .iter()
+            .map(|p| {
+                p.samplers.len()
+                    * if is_actor(&p.name) {
+                        MAX_ACTOR_ASSETS + 1
+                    } else {
+                        1
+                    }
+            })
+            .sum::<usize>()
+            * slots;
         let sizes = [
             vk::DescriptorPoolSize {
-                ty: vk::DescriptorType::UniformBuffer,
-                descriptor_count: (programs.len() * slots) as u32,
+                ty: vk::DescriptorType::UniformBufferDynamic,
+                descriptor_count: set_count as u32,
             },
             vk::DescriptorPoolSize {
                 ty: vk::DescriptorType::CombinedImageSampler,
@@ -490,7 +557,7 @@ impl Engine {
         ];
         out.descriptor_pool = out.gpu.device.create_descriptor_pool(
             &vk::DescriptorPoolCreateInfo {
-                max_sets: (programs.len() * slots) as u32,
+                max_sets: set_count as u32,
                 pool_size_count: sizes.len() as u32,
                 pool_sizes: sizes.as_ptr(),
                 ..Default::default()
@@ -510,7 +577,7 @@ impl Engine {
         let d = &self.gpu.device;
         let mut bindings = vec![vk::DescriptorSetLayoutBinding {
             binding: 0,
-            descriptor_type: vk::DescriptorType::UniformBuffer,
+            descriptor_type: vk::DescriptorType::UniformBufferDynamic,
             descriptor_count: 1,
             stage_flags: vk::ShaderStageFlags::Vertex | vk::ShaderStageFlags::Fragment,
             ..Default::default()
@@ -540,6 +607,7 @@ impl Engine {
             render_pass: vk::RenderPass::null(),
             pipeline: vk::Pipeline::null(),
             sets: Vec::new(),
+            actor_sets: HashMap::new(),
             framebuffers: HashMap::new(),
         });
         let p = &mut self.passes[index];
@@ -551,7 +619,7 @@ impl Engine {
             },
             None,
         )?;
-        let formats = if p.program.name == "shadow" {
+        let formats = if is_shadow(&p.program.name) {
             self.shadow_colors
                 .iter()
                 .map(|i| i.format)
@@ -575,21 +643,25 @@ impl Engine {
                     .max_color_attachments as usize,
             "pass attachments exceed Vulkan device limit"
         );
-        let depth = p.program.name == "shadow" || p.program.name.starts_with("gbuffers_");
+        let depth = is_shadow(&p.program.name) || p.program.name.starts_with("gbuffers_");
         p.render_pass = render_pass(d, &formats, depth)?;
         let mut blend = Vec::new();
         for (slot, _) in formats.iter().enumerate() {
             let key = format!(
                 "blend.{}.colortex{}",
-                p.program.name,
+                p.program.source_name,
                 p.program.targets.get(slot).copied().unwrap_or(slot)
             );
             let value = self.pack.properties.get(&key).or_else(|| {
                 self.pack
                     .properties
-                    .get(&format!("blend.{}", p.program.name))
+                    .get(&format!("blend.{}", p.program.source_name))
             });
-            blend.push(blend_state(value.map(String::as_str))?);
+            blend.push(blend_state(
+                value
+                    .map(String::as_str)
+                    .or_else(|| is_shadow(&p.program.name).then_some("off")),
+            )?);
         }
         // The pipeline must not claim independent attachment blend states unless
         // enabled.
@@ -675,6 +747,108 @@ impl Engine {
         self.previous = None;
         Ok(())
     }
+    /// Caller has waited for this frame slot's fence. No actor vertices are
+    /// rebuilt here.
+    pub fn prepare_geometry(&mut self, slot: usize, geometry: Arc<FrameGeometry>) -> Result<()> {
+        let start = std::time::Instant::now();
+        ensure!(
+            geometry.draws.len() <= MAX_ACTOR_DRAWS,
+            "actor draw capacity exceeded"
+        );
+        let mut stats = GeometryPreparation {
+            draws: geometry.draws.len(),
+            ..Default::default()
+        };
+        for draw in &geometry.draws {
+            ensure!(
+                self.passes
+                    .iter()
+                    .any(|p| !is_shadow(&p.program.name) && actor_stage(draw, &p.program.name)),
+                "pack has no resolved geometry stage for actor material {:?}",
+                draw.material.identity
+            );
+            ensure!(
+                draw.light.iter().all(|n| *n <= 15),
+                "invalid actor light nibble"
+            );
+            ensure!(
+                draw.range.start <= draw.range.end
+                    && draw.range.end as usize <= draw.mesh.vertices.len(),
+                "invalid actor vertex range {}",
+                draw.mesh.key
+            );
+            let mid = mesh_id(&draw.mesh);
+            if !self.actor_meshes.contains_key(&mid) {
+                ensure!(
+                    self.actor_meshes.len() < MAX_ACTOR_ASSETS,
+                    "actor mesh cache capacity exceeded"
+                );
+                let data = vertex_bytes(&draw.mesh.vertices);
+                let buffer = Buffer::new(&self.gpu, data, vk::BufferUsageFlags::VertexBuffer)?;
+                stats.mesh_upload_bytes += data.len();
+                self.actor_meshes.insert(
+                    mid,
+                    CachedMesh {
+                        source: Arc::clone(&draw.mesh),
+                        buffer,
+                    },
+                );
+            }
+            let tid = texture_id(&draw.material.texture);
+            if !self.actor_textures.contains_key(&tid) {
+                ensure!(
+                    self.actor_textures.len() < MAX_ACTOR_ASSETS,
+                    "actor texture cache capacity exceeded"
+                );
+                let tex = &draw.material.texture;
+                ensure!(
+                    tex.size.iter().all(|n| *n > 0)
+                        && tex.pixels.len() == tex.size[0] as usize * tex.size[1] as usize * 4,
+                    "invalid actor texture {}",
+                    tex.key
+                );
+                let image = Image::new(
+                    &self.gpu,
+                    extent(tex.size[0], tex.size[1]),
+                    vk::Format::R8G8B8A8Unorm,
+                    1,
+                    false,
+                    false,
+                    true,
+                )?;
+                image.upload(&tex.pixels)?;
+                stats.texture_upload_bytes += tex.pixels.len();
+                self.actor_textures.insert(
+                    tid,
+                    CachedTexture {
+                        source: Arc::clone(tex),
+                        image,
+                    },
+                );
+            }
+        }
+        let needed = self.uniform_stride * (self.passes.len() + geometry.draws.len() * 2);
+        ensure!(
+            needed <= u32::MAX as usize,
+            "dynamic actor uniform offsets exceed Vulkan range"
+        );
+        if needed > self.uniform_capacities[slot] {
+            let size = needed.next_power_of_two();
+            self.uniform_buffers[slot] = Buffer::new(
+                &self.gpu,
+                &vec![0; size],
+                vk::BufferUsageFlags::UniformBuffer,
+            )?;
+            self.uniform_capacities[slot] = size;
+        }
+        stats.uniform_capacity_bytes = self.uniform_capacities[slot];
+        stats.mesh_assets = self.actor_meshes.len();
+        stats.texture_assets = self.actor_textures.len();
+        stats.cpu_ms = start.elapsed().as_secs_f64() * 1000.;
+        self.geometry_preparation = stats;
+        self.geometry = geometry;
+        Ok(())
+    }
     fn sampler(&self, p: &Program, s: &Sampler) -> Result<&Image> {
         let category = if p.name.starts_with("deferred") {
             "deferred"
@@ -682,7 +856,7 @@ impl Engine {
             "composite"
         } else if p.name.starts_with("prepare") {
             "prepare"
-        } else if p.name == "shadow" {
+        } else if is_shadow(&p.name) {
             "shadow"
         } else {
             "gbuffers"
@@ -819,14 +993,17 @@ impl Engine {
             );
         }
         let values = self.uniforms.evaluate(&base, input.delta_seconds as f64)?;
+        self.geometry_stages.clear();
+        let geometry = Arc::clone(&self.geometry);
+        let mut actor_uniform = self.passes.len();
         let query = self.query_pools[slot];
         cmd.reset_query_pool(query, 0, self.passes.len() as u32 * 2);
         self.cpu_timings[slot].clear();
         for n in 0..self.passes.len() {
             let cpu_start = std::time::Instant::now();
             let mut values = values.clone();
-            let is_shadow = self.passes[n].program.name == "shadow";
-            if is_shadow {
+            let is_shadow = is_shadow(&self.passes[n].program.name);
+            if is_shadow && self.passes[n].program.name == "shadow" {
                 self.shadows[0].clear(cmd, [0.; 4]);
                 for t in &self.shadow_colors {
                     t.clear(cmd, [0.; 4]);
@@ -847,6 +1024,13 @@ impl Engine {
             } else {
                 Mat4::IDENTITY
             };
+            values.insert("pomme_ActorInputs".into(), Value::scalar(0.));
+            // Values in these branches are disabled for non-actor geometry.
+            values.insert("pomme_ActorHandedness".into(), Value::scalar(1.));
+            values.insert("pomme_ActorLight".into(), Value(vec![0.; 2]));
+            values.insert("pomme_ActorTint".into(), Value(vec![1.; 4]));
+            values.insert("pomme_ActorMaterial".into(), Value(vec![0.; 3]));
+            values.insert("pomme_AlphaTest".into(), Value::scalar(-1.));
             values.insert(
                 "pomme_ModelViewMatrix".into(),
                 Value(model.to_cols_array().map(f64::from).to_vec()),
@@ -874,13 +1058,21 @@ impl Engine {
                         .collect(),
                 ),
             );
-            let bytes = self
-                .compiled
-                .abi
-                .bytes(&values, &self.passes[n].program.active_uniforms)?;
-            self.uniform_buffers[slot].write(n * self.uniform_stride, &bytes)?;
+            if !is_actor(&self.passes[n].program.name) {
+                let bytes = self
+                    .compiled
+                    .abi
+                    .bytes(&values, &self.passes[n].program.active_uniforms)?;
+                self.uniform_buffers[slot].write(n * self.uniform_stride, &bytes)?;
+            }
             cmd.write_timestamp(vk::PipelineStageFlags::TopOfPipe, query, n as u32 * 2);
             let name = self.passes[n].program.name.clone();
+            if name == "gbuffers_hand" {
+                self.depths[0].copy_to(cmd, &self.depths[2]);
+            }
+            if name == "deferred" || name == "gbuffers_water" {
+                self.depths[0].copy_to(cmd, &self.depths[1]);
+            }
             for i in &self.passes[n].program.mipmaps {
                 self.colors[*i].images[self.colors[*i].front].mipmaps(cmd)?;
             }
@@ -938,7 +1130,7 @@ impl Engine {
                 .collect::<Result<Vec<_>>>()?;
             let buffer = vk::DescriptorBufferInfo {
                 buffer: self.uniform_buffers[slot].handle,
-                offset: (n * self.uniform_stride) as u64,
+                offset: 0,
                 range: self.compiled.abi.uniform_size as u64,
             };
             let set = self.passes[n].sets[slot];
@@ -946,7 +1138,7 @@ impl Engine {
                 dst_set: set,
                 dst_binding: 0,
                 descriptor_count: 1,
-                descriptor_type: vk::DescriptorType::UniformBuffer,
+                descriptor_type: vk::DescriptorType::UniformBufferDynamic,
                 buffer_info: &buffer,
                 ..Default::default()
             }];
@@ -998,6 +1190,17 @@ impl Engine {
                 p.framebuffers.insert(key, f);
                 f
             };
+            if is_actor(&name) {
+                let mut transitioned = std::collections::HashSet::new();
+                for draw in geometry.draws.iter().filter(|d| actor_stage(d, &name)) {
+                    let tid = texture_id(&draw.material.texture);
+                    if transitioned.insert(tid) {
+                        self.actor_textures[&tid]
+                            .image
+                            .transition(cmd, vk::ImageLayout::ShaderReadOnlyOptimal);
+                    }
+                }
+            }
             cmd.begin_render_pass(
                 &vk::RenderPassBeginInfo {
                     render_pass: p.render_pass,
@@ -1040,8 +1243,13 @@ impl Engine {
                 p.pipeline_layout,
                 0,
                 &[set],
-                &[],
+                &[(n * self.uniform_stride) as u32],
             );
+            let buffer_info_for_actor = vk::DescriptorBufferInfo {
+                buffer: self.uniform_buffers[slot].handle,
+                offset: 0,
+                range: self.compiled.abi.uniform_size as u64,
+            };
             let water = name == "gbuffers_water";
             let (buffer, count) = if is_geo {
                 if water {
@@ -1052,9 +1260,205 @@ impl Engine {
             } else {
                 (&self.fullscreen, 6)
             };
-            cmd.bind_vertex_buffers(0, &[buffer.handle], &[0]);
-            cmd.draw(count, 1, 0, 0);
+            if is_actor(&name) {
+                let source_name = p.program.source_name.clone();
+                let active_uniforms = p.program.active_uniforms.clone();
+                let samplers = p.program.samplers.clone();
+                let mut updated_textures = std::collections::HashSet::new();
+                let mut evidence = GeometryStage {
+                    requested: name.clone(),
+                    resolved: source_name.clone(),
+                    ..Default::default()
+                };
+                let allowed = !is_shadow
+                    || self
+                        .pack
+                        .properties
+                        .get(if name == "shadow_entities" {
+                            "shadowEntities"
+                        } else {
+                            "shadowBlockEntities"
+                        })
+                        .is_none_or(|v| v != "false");
+                for draw in geometry
+                    .draws
+                    .iter()
+                    .filter(|draw| allowed && actor_stage(draw, &name))
+                {
+                    let mut actor_values = values.clone();
+                    let model = match draw.space {
+                        DrawSpace::World { anchor } => {
+                            let rotation = if is_shadow { shadow } else { relative };
+                            rotation
+                                * Mat4::from_translation(
+                                    (anchor - input.camera.as_dvec3()).as_vec3(),
+                                )
+                                * draw.model
+                        }
+                        DrawSpace::Hand => draw.model,
+                    };
+                    let proj = if matches!(draw.space, DrawSpace::Hand) {
+                        Mat4::from_scale(Vec3::new(1., 1., 0.125))
+                            * geometry
+                                .hand_projection
+                                .context("missing hand projection")?
+                    } else if is_shadow {
+                        shadow_projection
+                    } else {
+                        projection
+                    };
+                    insert_matrix(&mut actor_values, "pomme_ModelViewMatrix", model);
+                    insert_matrix(&mut actor_values, "pomme_ProjectionMatrix", proj);
+                    actor_values.insert(
+                        "pomme_NormalMatrix".into(),
+                        Value(
+                            Mat3::from_mat4(model)
+                                .inverse()
+                                .transpose()
+                                .to_cols_array()
+                                .map(f64::from)
+                                .to_vec(),
+                        ),
+                    );
+                    actor_values.insert("pomme_ActorInputs".into(), Value::scalar(1.));
+                    actor_values.insert(
+                        "pomme_ActorHandedness".into(),
+                        Value::scalar(f64::from(model.determinant().signum())),
+                    );
+                    actor_values.insert(
+                        "pomme_ActorLight".into(),
+                        Value(draw.light.map(|v| f64::from(v) * 16.).to_vec()),
+                    );
+                    actor_values.insert(
+                        "pomme_ActorTint".into(),
+                        Value(draw.tint.map(f64::from).to_vec()),
+                    );
+                    actor_values.insert(
+                        "entityColor".into(),
+                        Value(draw.overlay.map(f64::from).to_vec()),
+                    );
+                    let id = match &draw.material.identity {
+                        MaterialIdentity::Entity(name) => self.pack.entity_material_id(name),
+                        MaterialIdentity::Block(state) => self.pack.block_material_id(state),
+                        MaterialIdentity::Item(name) => self.pack.item_material_id(name),
+                    };
+                    let (entity_id, block_id, item_id) = match &draw.material.identity {
+                        MaterialIdentity::Entity(_) => (id, -1, -1),
+                        MaterialIdentity::Block(_) => (-1, id, -1),
+                        MaterialIdentity::Item(_) => (-1, -1, id),
+                    };
+                    for (key, identity) in [
+                        ("entityId", entity_id),
+                        ("blockEntityId", block_id),
+                        ("currentRenderedItemId", item_id),
+                    ] {
+                        actor_values.insert(key.into(), Value::scalar(f64::from(identity)));
+                    }
+                    actor_values.insert(
+                        "pomme_ActorMaterial".into(),
+                        Value(vec![f64::from(id), 0., 0.]),
+                    );
+                    actor_values.insert(
+                        "pomme_AlphaTest".into(),
+                        Value::scalar(alpha_threshold(
+                            &self.pack,
+                            &source_name,
+                            draw.material.alpha,
+                        )?),
+                    );
+                    let offset = actor_uniform * self.uniform_stride;
+                    let bytes = self.compiled.abi.bytes(&actor_values, &active_uniforms)?;
+                    self.uniform_buffers[slot].write(offset, &bytes)?;
+                    actor_uniform += 1;
+                    let tid = texture_id(&draw.material.texture);
+                    let tex = &self.actor_textures[&tid];
+                    debug_assert!(Arc::ptr_eq(&tex.source, &draw.material.texture));
+                    let image_infos = samplers
+                        .iter()
+                        .map(|s| -> Result<_> {
+                            let t = if matches!(s.name.as_str(), "gtexture" | "texture" | "tex") {
+                                &tex.image
+                            } else {
+                                self.sampler(&self.passes[n].program, s)?
+                            };
+                            Ok(vk::DescriptorImageInfo {
+                                sampler: if s.ty == "sampler2DShadow" {
+                                    t.comparison
+                                } else {
+                                    t.sampling()
+                                },
+                                image_view: t.view,
+                                image_layout: vk::ImageLayout::ShaderReadOnlyOptimal,
+                            })
+                        })
+                        .collect::<Result<Vec<_>>>()?;
+                    let p = &mut self.passes[n];
+                    let set = if let Some(set) = p.actor_sets.get(&(slot, tid)) {
+                        *set
+                    } else {
+                        let mut sets = [vk::DescriptorSet::null()];
+                        self.gpu.device.allocate_descriptor_sets(
+                            &vk::DescriptorSetAllocateInfo {
+                                descriptor_pool: self.descriptor_pool,
+                                descriptor_set_count: 1,
+                                set_layouts: &p.layout,
+                                ..Default::default()
+                            },
+                            &mut sets,
+                        )?;
+                        p.actor_sets.insert((slot, tid), sets[0]);
+                        sets[0]
+                    };
+                    let mut writes = vec![vk::WriteDescriptorSet {
+                        dst_set: set,
+                        dst_binding: 0,
+                        descriptor_count: 1,
+                        descriptor_type: vk::DescriptorType::UniformBufferDynamic,
+                        buffer_info: &buffer_info_for_actor,
+                        ..Default::default()
+                    }];
+                    for (sampler, info) in p.program.samplers.iter().zip(&image_infos) {
+                        writes.push(vk::WriteDescriptorSet {
+                            dst_set: set,
+                            dst_binding: sampler.binding,
+                            descriptor_count: 1,
+                            descriptor_type: vk::DescriptorType::CombinedImageSampler,
+                            image_info: info,
+                            ..Default::default()
+                        });
+                    }
+                    // One descriptor update before its first bind in this pass.
+                    // Later parts share image bindings and use distinct dynamic
+                    // uniform offsets. Updating a bound set would invalidate
+                    // the command buffer without UPDATE_AFTER_BIND.
+                    if updated_textures.insert(tid) {
+                        self.gpu.device.update_descriptor_sets(&writes, &[]);
+                    }
+                    cmd.bind_descriptor_sets(
+                        vk::PipelineBindPoint::Graphics,
+                        p.pipeline_layout,
+                        0,
+                        &[set],
+                        &[offset as u32],
+                    );
+                    let mesh = &self.actor_meshes[&mesh_id(&draw.mesh)];
+                    debug_assert!(Arc::ptr_eq(&mesh.source, &draw.mesh));
+                    cmd.bind_vertex_buffers(0, &[mesh.buffer.handle], &[0]);
+                    let count = draw.range.end - draw.range.start;
+                    cmd.draw(count, 1, draw.range.start, 0);
+                    evidence.draws += 1;
+                    evidence.vertices += count as usize;
+                    if !evidence.material_ids.contains(&id) {
+                        evidence.material_ids.push(id);
+                    }
+                }
+                self.geometry_stages.push(evidence);
+            } else {
+                cmd.bind_vertex_buffers(0, &[buffer.handle], &[0]);
+                cmd.draw(count, 1, 0, 0);
+            }
             cmd.end_render_pass();
+            let p = &self.passes[n];
             for t in &targets {
                 t.transition(cmd, vk::ImageLayout::ShaderReadOnlyOptimal);
             }
@@ -1063,9 +1467,10 @@ impl Engine {
             }
             if is_shadow {
                 self.shadows[0].copy_to(cmd, &self.shadows[1]);
-            } else if name == "gbuffers_terrain" {
-                self.depths[0].copy_to(cmd, &self.depths[1]);
+            } else if name == "gbuffers_block" {
                 self.depths[0].copy_to(cmd, &self.depths[2]);
+            } else if name == "gbuffers_hand" {
+                self.depths[0].copy_to(cmd, &self.depths[1]);
             } else if !is_geo && name != "final" {
                 for i in &p.program.targets {
                     if self
@@ -1166,6 +1571,11 @@ impl Engine {
     pub fn depth_image(&self) -> &Image {
         &self.depths[0]
     }
+    /// depthtex0: complete world, depthtex1: pre-translucent (including solid
+    /// hand), depthtex2: opaque world before the hand, matching Iris.
+    pub fn depth_snapshot(&self, index: usize) -> Option<&Image> {
+        self.depths.get(index)
+    }
 }
 impl Drop for Engine {
     fn drop(&mut self) {
@@ -1186,6 +1596,63 @@ impl Drop for Engine {
         }
     }
 }
+
+fn insert_matrix(values: &mut std::collections::BTreeMap<String, Value>, name: &str, matrix: Mat4) {
+    values.insert(
+        name.into(),
+        Value(matrix.to_cols_array().map(f64::from).to_vec()),
+    );
+}
+fn actor_stage(draw: &crate::geometry::Draw, stage: &str) -> bool {
+    let blend = draw.material.alpha == AlphaMode::Blend;
+    match (&draw.space, &draw.material.identity) {
+        (DrawSpace::Hand, _) => {
+            stage
+                == if blend {
+                    "gbuffers_hand_water"
+                } else {
+                    "gbuffers_hand"
+                }
+        }
+        (DrawSpace::World { .. }, MaterialIdentity::Entity(_)) => {
+            stage == "shadow_entities"
+                || stage
+                    == if blend {
+                        "gbuffers_entities_translucent"
+                    } else {
+                        "gbuffers_entities"
+                    }
+        }
+        (DrawSpace::World { .. }, MaterialIdentity::Block(_)) => {
+            stage == "shadow_block"
+                || stage
+                    == if blend {
+                        "gbuffers_block_translucent"
+                    } else {
+                        "gbuffers_block"
+                    }
+        }
+        _ => false,
+    }
+}
+fn alpha_threshold(pack: &Pack, source: &str, alpha: AlphaMode) -> Result<f64> {
+    if let Some(value) = pack.properties.get(&format!("alphaTest.{source}")) {
+        if value.eq_ignore_ascii_case("off") {
+            return Ok(-1.);
+        }
+        let fields = value.split_whitespace().collect::<Vec<_>>();
+        ensure!(
+            fields.len() == 2 && fields[0] == "GREATER",
+            "unsupported alpha-test function {value}"
+        );
+        return Ok(fields[1].parse()?);
+    }
+    Ok(match alpha {
+        AlphaMode::Cutout(value) => f64::from(value),
+        _ => -1.,
+    })
+}
+
 fn render_pass(d: &vk::Device, formats: &[vk::Format], depth: bool) -> Result<vk::RenderPass> {
     let mut attachments = formats
         .iter()

@@ -29,6 +29,7 @@ pub struct Abi {
 }
 pub struct Program {
     pub name: String,
+    pub source_name: String,
     pub vertex: Vec<u32>,
     pub fragment: Vec<u32>,
     pub targets: Vec<usize>,
@@ -61,36 +62,45 @@ fn shape(ty: &str, count: usize) -> Result<usize> {
 }
 pub fn program_names(pack: &Pack) -> Result<Vec<String>> {
     let mut names = Vec::new();
+    // Execution phases follow Iris beginHand/beginTranslucents: opaque actors,
+    // solid hand, deferred, translucent world/hand, then composite and final.
     for stage in [
         "begin",
         "prepare",
         "shadow",
+        "shadow_entities",
+        "shadow_block",
         "shadowcomp",
         "gbuffers_terrain",
+        "gbuffers_entities",
+        "gbuffers_block",
+        "gbuffers_hand",
         "deferred",
         "gbuffers_water",
+        "gbuffers_entities_translucent",
+        "gbuffers_block_translucent",
+        "gbuffers_hand_water",
         "composite",
         "final",
     ] {
-        let numbered = matches!(stage, "begin" | "prepare" | "deferred" | "composite");
+        let numbered = matches!(
+            stage,
+            "begin" | "prepare" | "shadowcomp" | "deferred" | "composite"
+        );
         for i in 0..if numbered { 100 } else { 1 } {
             let name = if i == 0 {
                 stage.into()
             } else {
                 format!("{stage}{i}")
             };
-            if pack.enabled(&name)? && pack.program_path(&name, "fsh").is_some() {
-                ensure!(
-                    pack.program_path(&name, "vsh").is_some(),
-                    "missing {name} vertex program"
-                );
+            if crate::stages::resolve(pack, &name)?.is_some() {
                 names.push(name);
             }
         }
     }
     ensure!(
         names.iter().any(|n| n == "final") && names.iter().any(|n| n == "gbuffers_terrain"),
-        "pack needs final and terrain programs"
+        "pack needs resolvable final and terrain programs"
     );
     Ok(names)
 }
@@ -102,8 +112,9 @@ impl Compiled {
         let mut samplers = BTreeSet::new();
         let ure = uniform_re()?;
         for name in names {
-            let vertex = pack.source(&pack.program_path(&name, "vsh").unwrap())?;
-            let fragment = pack.source(&pack.program_path(&name, "fsh").unwrap())?;
+            let source_name = crate::stages::resolve(pack, &name)?.context("unresolved program")?;
+            let vertex = pack.source(&pack.program_path(&source_name, "vsh").unwrap())?;
+            let fragment = pack.source(&pack.program_path(&source_name, "fsh").unwrap())?;
             for source in [&vertex, &fragment] {
                 for c in ure.captures_iter(source) {
                     let ty = c[1].to_owned();
@@ -122,13 +133,19 @@ impl Compiled {
                     }
                 }
             }
-            sources.push((name, vertex, fragment));
+            sources.push((name, source_name, vertex, fragment));
         }
         for (name, ty, count) in [
             ("pomme_ModelViewMatrix", "mat4", 1),
             ("pomme_ProjectionMatrix", "mat4", 1),
             ("pomme_NormalMatrix", "mat3", 1),
             ("pomme_TextureMatrix", "mat4", 8),
+            ("pomme_ActorInputs", "bool", 1),
+            ("pomme_ActorLight", "vec2", 1),
+            ("pomme_ActorTint", "vec4", 1),
+            ("pomme_ActorMaterial", "vec3", 1),
+            ("pomme_ActorHandedness", "float", 1),
+            ("pomme_AlphaTest", "float", 1),
         ] {
             uniforms.insert(name.into(), (ty.into(), count));
         }
@@ -173,7 +190,7 @@ impl Compiled {
             Regex::new(r"layout\s*\(\s*location\s*=\s*(\d+)\s*\)\s*out\s+(\w+)\s+(\w+)\s*;")?;
         let mip_re = Regex::new(r"const\s+bool\s+colortex(\d+)MipmapEnabled\s*=\s*true")?;
         let mut programs = Vec::new();
-        for (name, vertex, fragment) in sources {
+        for (name, source_name, vertex, fragment) in sources {
             let varyings = varying_locations(&vertex, &fragment)?;
             let vs = translate(&vertex, &abi, &varyings, true)?;
             let source = format!("{vertex}\n{fragment}");
@@ -234,6 +251,7 @@ impl Compiled {
             );
             programs.push(Program {
                 name,
+                source_name,
                 vertex: vertex_spv,
                 fragment: fragment_spv,
                 targets,
@@ -304,6 +322,17 @@ fn translate(
     varyings: &BTreeMap<String, usize>,
     vertex: bool,
 ) -> Result<String> {
+    // Actor material storage is RGB, like the native vertex format. Keep the
+    // pack's vec4 declaration and Vulkan's default value for its missing W.
+    let actor_material = if vertex
+        && varying_re()?
+            .captures_iter(source)
+            .any(|c| matches!(&c[2], "attribute" | "in") && &c[3] == "vec4" && &c[4] == "mc_Entity")
+    {
+        "vec4(pomme_ActorMaterial,1.0)"
+    } else {
+        "pomme_ActorMaterial"
+    };
     let source = source
         .lines()
         .filter(|l| !l.trim().starts_with("#version") && !l.trim().starts_with("#extension"))
@@ -327,9 +356,15 @@ fn translate(
             }
         })
         .into_owned();
+    body = Regex::new(r"\bat_tangent\b")?
+        .replace_all(&body, "pomme_MeshTangent")
+        .into_owned();
+    body = Regex::new(r"\bmc_Entity\b")?
+        .replace_all(&body, "pomme_MeshMaterial")
+        .into_owned();
     let attrs = [
-        ("at_tangent", 5),
-        ("mc_Entity", 6),
+        ("pomme_MeshTangent", 5),
+        ("pomme_MeshMaterial", 6),
         ("mc_midTexCoord", 7),
         ("at_midBlock", 8),
     ];
@@ -362,10 +397,10 @@ fn translate(
         ("gl_NormalMatrix", "pomme_NormalMatrix"),
         ("gl_TextureMatrix", "pomme_TextureMatrix"),
         ("gl_MultiTexCoord0", "pomme_TexCoord"),
-        ("gl_MultiTexCoord1", "pomme_LightCoord"),
+        ("gl_MultiTexCoord1", "pomme_EffectiveLight"),
         ("gl_Vertex", "pomme_Vertex"),
         ("gl_Normal", "pomme_Normal"),
-        ("gl_Color", "pomme_Color"),
+        ("gl_Color", "pomme_EffectiveColor"),
         ("gl_VertexID", "gl_VertexIndex"),
         ("gl_FragData", "pomme_FragData"),
         ("gl_FragColor", "pomme_FragColor"),
@@ -408,6 +443,28 @@ fn translate(
             )
             .into_owned();
         header.push_str("layout(location=0) in vec4 pomme_Vertex;\nlayout(location=1) in vec3 pomme_Normal;\nlayout(location=2) in vec4 pomme_TexCoord;\nlayout(location=3) in vec4 pomme_LightCoord;\nlayout(location=4) in vec4 pomme_Color;\n");
+        body = Regex::new(r"\bpomme_MeshTangent\b")?
+            .replace_all(&body, "pomme_EffectiveTangent")
+            .into_owned();
+        body = body.replace(
+            "in vec4 pomme_EffectiveTangent;",
+            "in vec4 pomme_MeshTangent;",
+        );
+        header.push_str("#define pomme_EffectiveTangent vec4(pomme_MeshTangent.xyz,pomme_MeshTangent.w*(pomme_ActorInputs?pomme_ActorHandedness:1.0))\n");
+        body = Regex::new(r"\bpomme_MeshMaterial\b")?
+            .replace_all(&body, "pomme_EffectiveMaterial")
+            .into_owned();
+        // Its declaration must remain an input, not expand through the value alias.
+        body = body.replace(
+            "in vec3 pomme_EffectiveMaterial;",
+            "in vec3 pomme_MeshMaterial;",
+        );
+        body = body.replace(
+            "in vec4 pomme_EffectiveMaterial;",
+            "in vec4 pomme_MeshMaterial;",
+        );
+        header.push_str("#define pomme_EffectiveLight (pomme_ActorInputs?vec4(pomme_ActorLight,0,1):pomme_LightCoord)\n#define pomme_EffectiveColor (pomme_ActorInputs?pomme_ActorTint*pomme_Color:pomme_Color)\n");
+        header.push_str(&format!("#define pomme_EffectiveMaterial (pomme_ActorInputs?{actor_material}:pomme_MeshMaterial)\n"));
         body = Regex::new(r"\bvoid\s+main\s*\(\s*\)")?
             .replace(&body, "void pomme_main()")
             .into_owned();
@@ -415,6 +472,7 @@ fn translate(
             "\nvoid main(){pomme_main();gl_Position.z=(gl_Position.z+gl_Position.w)*0.5;}\n",
         );
     } else {
+        body = body.replace("pomme_EffectiveColor", "pomme_ActorTint");
         let indices = Regex::new(r"pomme_FragData\s*\[\s*(\d+)\s*\]")?
             .captures_iter(&body)
             .map(|c| c[1].parse::<usize>())
@@ -427,6 +485,21 @@ fn translate(
         }
         if body.contains("pomme_FragColor") {
             header.push_str("layout(location=0) out vec4 pomme_FragColor;\n");
+        }
+        let output = if body.contains("pomme_FragColor") {
+            Some("pomme_FragColor".to_owned())
+        } else if !indices.is_empty() {
+            Some("pomme_FragData[0]".to_owned())
+        } else {
+            Regex::new(r"layout\s*\(\s*location\s*=\s*0\s*\)\s*out\s+vec4\s+(\w+)")?
+                .captures(&body)
+                .map(|c| c[1].to_owned())
+        };
+        if let Some(output) = output {
+            body = Regex::new(r"\bvoid\s+main\s*\(\s*\)")?
+                .replace(&body, "void pomme_main()")
+                .into_owned();
+            body.push_str(&format!("\nvoid main(){{pomme_main();if(pomme_ActorInputs&&pomme_AlphaTest>=0.0&&{output}.a<=pomme_AlphaTest)discard;}}\n"));
         }
     }
     Ok(header + &body)
@@ -564,6 +637,53 @@ impl Abi {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn material_vec3_and_vec4_aliases_compile_with_all_components_used() {
+        let abi = Abi {
+            uniforms: vec![
+                Uniform {
+                    name: "pomme_ActorInputs".into(),
+                    ty: "bool".into(),
+                    count: 1,
+                    offset: 0,
+                    size: 16,
+                },
+                Uniform {
+                    name: "pomme_ActorMaterial".into(),
+                    ty: "vec3".into(),
+                    count: 1,
+                    offset: 16,
+                    size: 16,
+                },
+            ],
+            samplers: vec![],
+            uniform_size: 32,
+        };
+        let compiler = shaderc::Compiler::new().unwrap();
+        let mut options = shaderc::CompileOptions::new().unwrap();
+        options.set_target_env(
+            shaderc::TargetEnv::Vulkan,
+            shaderc::EnvVersion::Vulkan1_2 as u32,
+        );
+        for (ty, value) in [("vec3", "vec4(mc_Entity,1.0)"), ("vec4", "mc_Entity")] {
+            let source = translate(
+                &format!("#version 330 compatibility\nattribute {ty} mc_Entity;\nvoid main(){{gl_Position={value};}}"),
+                &abi,
+                &BTreeMap::new(),
+                true,
+            ).unwrap();
+            assert!(source.contains(&format!("layout(location=6) in {ty} pomme_MeshMaterial;")));
+            compiler
+                .compile_into_spirv(
+                    &source,
+                    shaderc::ShaderKind::Vertex,
+                    &format!("material-{ty}.vsh"),
+                    "main",
+                    Some(&options),
+                )
+                .unwrap_or_else(|error| panic!("{ty}: {error}"));
+        }
+    }
     #[test]
     fn compatibility_ftransform_compiles_for_vulkan() {
         let abi = Abi {

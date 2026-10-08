@@ -1,0 +1,15 @@
+Iris program fallback table and rendering contracts
+Copyright the Iris contributors. LGPL-3.0-only.
+Canonical source: https://github.com/IrisShaders/Iris
+Revision: bff1e69cb6c5519d8745784aa9c8b92984de67e7
+Adapted into Rust in 2026 in src/stages.rs from:
+common/src/main/java/net/irisshaders/iris/shaderpack/loading/ProgramId.java
+Fallback parent relationships were preserved. Java enum, API mapping and blend wrapper code were omitted.
+Shadow blending OFF is implemented by the Vulkan pipeline for the shadow family.
+Hand depth 0.125 and pre-hand/pre-translucent depth contracts were checked against
+pathways/HandRenderer.java and pipeline/IrisRenderingPipeline.java.
+Vitrail ProgramFallbacks.java (f42e5489c6abff655781b40bebc70338bada3039,
+LGPL-3.0-only) was cross-checked; no Vitrail implementation was copied here.
+No glsl-transformer (AGPL-3.0) or Java dependencies were copied.
+Corresponding adapted source is distributed in this repository; retain this notice
+and license when distributing this component. The aggregate client is GPL-3.0-or-later.

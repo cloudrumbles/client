@@ -5,6 +5,10 @@ use std::sync::{Arc, Mutex};
 
 use azalea_registry::builtin::EntityKind;
 use pomme_gpu_allocator::vulkan::{Allocation, Allocator};
+#[cfg(feature = "shader-packs")]
+use pomme_shaderpack::geometry::{
+    AlphaMode, DrawSpace, FrameGeometry, Material, MaterialIdentity, MeshAsset, TextureAsset,
+};
 use pyronyx::vk;
 
 use crate::assets::{AssetIndex, resolve_asset_path};
@@ -12,6 +16,8 @@ use crate::entity::components::Position;
 use crate::renderer::camera::CameraUniform;
 use crate::renderer::chunk::mesher::ChunkVertex;
 use crate::renderer::entity_model::BakedEntityModel;
+#[cfg(feature = "shader-packs")]
+use crate::renderer::pack_geometry::{self, PackGeometryGap};
 use crate::renderer::{MAX_FRAMES_IN_FLIGHT, entity_model, shader, util};
 use crate::world::block::BedDirection;
 
@@ -221,6 +227,10 @@ enum OverlayKind {
 
 struct MobVariant {
     model: BakedEntityModel,
+    #[cfg(feature = "shader-packs")]
+    pack_mesh: Option<Arc<MeshAsset>>,
+    #[cfg(feature = "shader-packs")]
+    pack_material: Option<Arc<Material>>,
     vertex_buffer: vk::Buffer,
     vertex_allocation: Allocation,
     texture_image: vk::Image,
@@ -1414,6 +1424,7 @@ impl EntityRenderer {
                     jar_assets_dir,
                     asset_index,
                     v,
+                    def.kind == EntityKind::Cow,
                 )
             };
             let adult_variants: Vec<MobVariant> =
@@ -1484,6 +1495,65 @@ impl EntityRenderer {
         let bytes = bytemuck::bytes_of(uniform);
         self.camera_allocations[frame].mapped_slice_mut().unwrap()[..bytes.len()]
             .copy_from_slice(bytes);
+    }
+
+    /// Lower the selected real Cow asset with the same native pose functions.
+    /// Unsupported kinds, unavailable variants and fallback textures add no
+    /// draws; the caller can retain their native-forward rendering.
+    #[cfg(feature = "shader-packs")]
+    pub fn append_pack_cow(
+        &self,
+        info: &EntityRenderInfo,
+        anchor: glam::DVec3,
+        light: [u8; 2],
+        frame: &mut FrameGeometry,
+    ) -> Result<usize, PackGeometryGap> {
+        if info.entity_kind != EntityKind::Cow {
+            return Err(PackGeometryGap::UnsupportedKind);
+        }
+        let entry = self
+            .mobs
+            .get(&info.entity_kind)
+            .ok_or(PackGeometryGap::MissingMesh)?;
+        let variants = if info.is_baby {
+            entry
+                .baby_variants
+                .as_ref()
+                .ok_or(PackGeometryGap::MissingMesh)?
+        } else {
+            &entry.adult_variants
+        };
+        let variant = variants
+            .get(info.variant_index as usize)
+            .ok_or(PackGeometryGap::InvalidVariant)?;
+        let mesh = variant
+            .pack_mesh
+            .as_ref()
+            .ok_or(PackGeometryGap::MissingMesh)?;
+        let material = variant
+            .pack_material
+            .as_ref()
+            .ok_or(PackGeometryGap::MissingTexture)?;
+        let model = Self::entity_matrix(info, anchor);
+        let anim = Self::compute_anim(entry.anim, &variant.model, info);
+        let transforms = variant.model.compute_part_transforms(&anim);
+        Ok(pack_geometry::append_parts(
+            frame,
+            mesh,
+            material,
+            &variant.model.part_ranges,
+            &transforms,
+            pack_geometry::PartPose {
+                base: model,
+                space: DrawSpace::World { anchor },
+                light,
+                tint: info.base_tint,
+                overlay: {
+                    let native = hurt_color(info);
+                    [native[0], native[1], native[2], 1.0 - native[3]]
+                },
+            },
+        ))
     }
 
     pub fn update_player_skin(
@@ -1603,7 +1673,6 @@ impl EntityRenderer {
     }
 
     fn compute_anim(
-        &self,
         anim_type: AnimationType,
         model: &BakedEntityModel,
         info: &EntityRenderInfo,
@@ -1842,6 +1911,24 @@ impl EntityRenderer {
         eye: glam::DVec3,
         cull_dist: f32,
     ) {
+        self.draw_filtered(cmd, frame, entities, frustum, anchor, eye, cull_dist, None);
+    }
+
+    /// Optional per-input skip mask for actors submitted to the pack path.
+    /// Missing mask entries retain native rendering. Filtering happens before
+    /// building the shared visible list used by every native overlay pass.
+    #[allow(clippy::too_many_arguments)]
+    pub fn draw_filtered(
+        &mut self,
+        cmd: vk::CommandBuffer,
+        frame: usize,
+        entities: &[EntityRenderInfo],
+        frustum: &[[f32; 4]; 6],
+        anchor: glam::DVec3,
+        eye: glam::DVec3,
+        cull_dist: f32,
+        skip: Option<&[bool]>,
+    ) {
         if entities.is_empty() {
             return;
         }
@@ -1853,7 +1940,14 @@ impl EntityRenderer {
         let mut instances: Vec<EntityInstance> = Vec::new();
         let (opaque, culled, body, eyes, swirl) = {
             let mut vis: Vec<VisEntity> = Vec::new();
-            for info in entities {
+            for (index, info) in entities.iter().enumerate() {
+                if skip
+                    .and_then(|mask| mask.get(index))
+                    .copied()
+                    .unwrap_or(false)
+                {
+                    continue;
+                }
                 let Some(entry) = self.mobs.get(&info.entity_kind) else {
                     continue;
                 };
@@ -1862,7 +1956,7 @@ impl EntityRenderer {
                 }
                 let variant = entry.base_variant(info.is_baby, self.effective_variant_index(info));
                 let entity_mat = Self::entity_matrix(info, anchor);
-                let anim = self.compute_anim(entry.anim, &variant.model, info);
+                let anim = Self::compute_anim(entry.anim, &variant.model, info);
                 // Shared with every overlay that isn't `own_pivots`.
                 let part_transforms = variant.model.compute_part_transforms(&anim);
                 vis.push(VisEntity {
@@ -2441,6 +2535,7 @@ fn build_variants(
     jar_assets_dir: &Path,
     asset_index: &Option<AssetIndex>,
     variant: VariantDef,
+    _retain_pack: bool,
 ) -> Vec<MobVariant> {
     let VariantDef {
         model,
@@ -2454,6 +2549,8 @@ fn build_variants(
         _ => texture_sampler,
     };
     let vert_bytes = bytemuck::cast_slice::<ChunkVertex, u8>(&model.vertices);
+    #[cfg(feature = "shader-packs")]
+    let pack_mesh = _retain_pack.then(|| pack_geometry::chunk_mesh("cow", &model.vertices, true));
 
     tex_variants
         .iter()
@@ -2466,7 +2563,7 @@ fn build_variants(
                 "entity_vertices",
             );
 
-            let (texture_image, texture_view, texture_allocation) = load_entity_texture(
+            let texture = load_entity_texture(
                 device,
                 queue,
                 command_pool,
@@ -2475,7 +2572,22 @@ fn build_variants(
                 asset_index,
                 tex_keys,
                 tex_size,
+                _retain_pack,
             );
+            let LoadedEntityTexture {
+                image: texture_image,
+                view: texture_view,
+                allocation: texture_allocation,
+                ..
+            } = texture;
+            #[cfg(feature = "shader-packs")]
+            let pack_material = texture.pack.map(|texture| {
+                Arc::new(Material {
+                    identity: MaterialIdentity::Entity("minecraft:cow".into()),
+                    texture,
+                    alpha: AlphaMode::Cutout(0.5),
+                })
+            });
 
             let tex_alloc_info = vk::DescriptorSetAllocateInfo {
                 descriptor_pool,
@@ -2505,6 +2617,10 @@ fn build_variants(
 
             MobVariant {
                 model: model.clone(),
+                #[cfg(feature = "shader-packs")]
+                pack_mesh: pack_mesh.clone(),
+                #[cfg(feature = "shader-packs")]
+                pack_material,
                 vertex_buffer,
                 vertex_allocation,
                 texture_image,
@@ -2518,6 +2634,28 @@ fn build_variants(
         .collect()
 }
 
+struct LoadedEntityTexture {
+    image: vk::Image,
+    view: vk::ImageView,
+    allocation: Allocation,
+    #[cfg(feature = "shader-packs")]
+    pack: Option<Arc<TextureAsset>>,
+}
+
+/// Decoded native asset candidates, without the forward renderer's fallback.
+pub(super) type DecodedEntityTexture = (Vec<u8>, u32, u32);
+
+pub(super) fn load_actor_pixels<'a>(
+    jar_assets_dir: &Path,
+    asset_index: &Option<AssetIndex>,
+    asset_keys: &'a [&str],
+) -> Option<(&'a str, DecodedEntityTexture)> {
+    asset_keys.iter().find_map(|key| {
+        let path = resolve_asset_path(jar_assets_dir, asset_index, key);
+        util::load_png(&path).map(|pixels| (*key, pixels))
+    })
+}
+
 #[allow(clippy::too_many_arguments)]
 fn load_entity_texture(
     device: &vk::Device,
@@ -2528,20 +2666,18 @@ fn load_entity_texture(
     asset_index: &Option<AssetIndex>,
     asset_keys: &[&str],
     fallback_size: u32,
-) -> (vk::Image, vk::ImageView, Allocation) {
-    let (pixels, width, height) = asset_keys
-        .iter()
-        .find_map(|key| {
-            let path = resolve_asset_path(jar_assets_dir, asset_index, key);
-            util::load_png(&path)
-        })
-        .unwrap_or_else(|| {
-            tracing::warn!(
-                "Failed to load entity texture {:?}, using fallback",
-                asset_keys
-            );
-            fallback_texture(fallback_size)
-        });
+    _retain_pack: bool,
+) -> LoadedEntityTexture {
+    let loaded = load_actor_pixels(jar_assets_dir, asset_index, asset_keys);
+    #[cfg(feature = "shader-packs")]
+    let verified_key = loaded.as_ref().map(|(key, _)| *key);
+    let (pixels, width, height) = loaded.map(|(_, pixels)| pixels).unwrap_or_else(|| {
+        tracing::warn!(
+            "Failed to load entity texture {:?}, using fallback",
+            asset_keys
+        );
+        fallback_texture(fallback_size)
+    });
 
     let (image, view, allocation) =
         util::create_gpu_image(device, allocator, width, height, "entity_texture");
@@ -2558,7 +2694,15 @@ fn load_entity_texture(
     );
     device.destroy_buffer(staging_buf, None);
     allocator.lock().unwrap().free(staging_alloc).ok();
-    (image, view, allocation)
+    LoadedEntityTexture {
+        image,
+        view,
+        allocation,
+        #[cfg(feature = "shader-packs")]
+        pack: verified_key
+            .filter(|_| _retain_pack)
+            .map(|key| pack_geometry::texture_asset(key, [width, height], Arc::new(pixels))),
+    }
 }
 
 fn upload_texture_pixels(
@@ -2853,6 +2997,115 @@ mod tests {
     use azalea_registry::builtin::EntityKind;
 
     use super::{EntityRenderInfo, EntityRenderer, PLAYER_MODEL_SCALE};
+
+    #[test]
+    fn cow_native_head_and_walk_pose_animate_adult_and_baby_models() {
+        for model in [
+            super::entity_model::bake_cow_model(),
+            super::entity_model::bake_baby_cow_model(),
+        ] {
+            let mut info = EntityRenderInfo {
+                entity_kind: EntityKind::Cow,
+                ..Default::default()
+            };
+            let still = model.compute_part_transforms(&EntityRenderer::compute_anim(
+                super::AnimationType::Quadruped,
+                &model,
+                &info,
+            ));
+            info.head_x_rot_deg = 30.0;
+            info.head_y_rot_deg = 45.0;
+            info.walk_anim_pos = 2.0;
+            info.walk_anim_speed = 0.8;
+            let animated = model.compute_part_transforms(&EntityRenderer::compute_anim(
+                super::AnimationType::Quadruped,
+                &model,
+                &info,
+            ));
+            for (index, part) in model.parts.iter().enumerate() {
+                if part.name == "body" {
+                    assert!(still[index].abs_diff_eq(animated[index], 1e-6));
+                } else {
+                    assert!(
+                        !still[index].abs_diff_eq(animated[index], 1e-5),
+                        "{}",
+                        part.name
+                    );
+                }
+            }
+            let right = model
+                .parts
+                .iter()
+                .position(|p| p.name == "right_hind_leg")
+                .unwrap();
+            let left = model
+                .parts
+                .iter()
+                .position(|p| p.name == "left_hind_leg")
+                .unwrap();
+            assert!(
+                animated[right].transform_vector3(glam::Vec3::Y).z
+                    * animated[left].transform_vector3(glam::Vec3::Y).z
+                    < 0.0
+            );
+        }
+    }
+
+    #[test]
+    fn actor_decode_rejects_missing_material_instead_of_forward_fallback() {
+        let root = crate::test_util::test_temp_dir("actor-texture");
+        std::fs::create_dir_all(root.join("minecraft/textures/entity/cow")).unwrap();
+        let keys = [
+            "minecraft/textures/entity/cow/missing.png",
+            "minecraft/textures/entity/cow/test.png",
+        ];
+        assert!(super::load_actor_pixels(&root, &None, &keys).is_none());
+        let image = image::RgbaImage::from_pixel(2, 1, image::Rgba([29, 75, 121, 213]));
+        image.save(root.join(keys[1])).unwrap();
+        let (key, (pixels, width, height)) = super::load_actor_pixels(&root, &None, &keys).unwrap();
+        assert_eq!(key, keys[1]);
+        assert_eq!([width, height], [2, 1]);
+        assert_eq!(pixels, [29, 75, 121, 213].repeat(2));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(feature = "shader-packs")]
+    #[test]
+    #[ignore = "requires extracted official assets; set POMME_ACTOR_ASSETS"]
+    fn official_cow_and_chest_textures_lower_exact_decoded_rgba() {
+        let root = std::path::PathBuf::from(
+            std::env::var("POMME_ACTOR_ASSETS").expect("set POMME_ACTOR_ASSETS"),
+        );
+        let cow = super::mob_definitions()
+            .into_iter()
+            .find(|def| def.kind == EntityKind::Cow)
+            .unwrap();
+        for keys in cow
+            .adult
+            .iter()
+            .chain(cow.baby.iter())
+            .flat_map(|variant| variant.tex_variants)
+        {
+            let (key, (pixels, width, height)) =
+                super::load_actor_pixels(&root, &None, keys).expect("official Cow PNG");
+            let expected = pixels.clone();
+            let texture = super::pack_geometry::texture_asset(
+                key,
+                [width, height],
+                std::sync::Arc::new(pixels),
+            );
+            assert_eq!(texture.pixels.as_slice(), expected);
+            assert_eq!(texture.size, [64, 64]);
+        }
+        let keys = ["minecraft/textures/entity/chest/normal.png"];
+        let (key, (pixels, width, height)) =
+            super::load_actor_pixels(&root, &None, &keys).expect("official Chest PNG");
+        let expected = pixels.clone();
+        let texture =
+            super::pack_geometry::texture_asset(key, [width, height], std::sync::Arc::new(pixels));
+        assert_eq!(texture.pixels.as_slice(), expected);
+        assert_eq!(texture.size, [64, 64]);
+    }
 
     #[test]
     fn player_matrix_applies_vanilla_avatar_scale() {

@@ -3681,7 +3681,8 @@ pub fn update_game(
     // the cursor mid-frame), so the renderer doesn't re-hide it from a stale value.
     let hide_cursor = game.input_live() && !game.dead && core.input.is_cursor_captured();
     #[cfg(feature = "shader-packs")]
-    gfx.renderer.shader_environment(game);
+    gfx.renderer
+        .shader_environment(game, &entity_renders, &block_entity_renders);
     if let Err(e) = gfx.renderer.render_world(
         &gfx.window,
         hide_cursor,
