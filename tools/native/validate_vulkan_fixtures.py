@@ -16,8 +16,9 @@ args.output.mkdir(parents=True, exist_ok=True)
 env = os.environ.copy()
 env['VK_INSTANCE_LAYERS'] = 'VK_LAYER_KHRONOS_validation'
 env['VK_LOADER_DEBUG'] = 'layer,error'
+env['POMME_TEMPORAL_EVIDENCE'] = str(args.output / 'temporal')
 results = []
-for fixture in ['actor_vulkan', 'compute_vulkan']:
+for fixture in ['actor_vulkan', 'compute_vulkan', 'temporal_vulkan']:
     command = ['cargo', 'test', '--locked', '--release', '-p', 'pomme-shaderpack',
                '--features', 'vulkan', '--test', fixture, '--', '--ignored', '--nocapture']
     log = args.output / f'{fixture}.log'

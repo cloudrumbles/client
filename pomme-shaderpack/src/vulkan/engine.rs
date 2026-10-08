@@ -1170,7 +1170,8 @@ impl Engine {
         self.water = water;
         self.solid_count = scene.solid.len() as u32;
         self.water_count = scene.water.len() as u32;
-        self.previous = None;
+        // Geometry revisions do not replace the world identity. Retain the
+        // actual previous matrices and pack-owned history for reprojection.
         Ok(())
     }
     pub fn replace_atlas(&mut self, size: [u32; 2], pixels: &[u8]) -> Result<()> {

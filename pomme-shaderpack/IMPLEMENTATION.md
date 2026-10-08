@@ -64,9 +64,11 @@ must remain unknown.
   pack custom PNG/3D raw textures, texture metadata and per-attachment blend state.
 - Static/live vertex buffers reused across frames, cached uniform/attribute
   reflection, cached option regular expressions, explicit geometry replacement.
-- Current/previous camera transforms and conservative temporal invalidation for
-  camera cuts, world/light/material revisions, time/day commands, rain/wetness
-  changes and pack reload. Shadows are rendered each frame; no unmeasured shadow
+- Current/previous camera transforms retained across world/light content updates.
+  Explicit world history epochs, atlas/material resource changes, camera/projection/
+  water cuts and pack reload reset temporal targets. The original pack owns time/
+  day/weather/climate/eye-light responses, with custom smoothing retained across
+  those changes. Shadows are rendered each frame; no unmeasured shadow
   cache is enabled.
 - Material IDs read from the selected pack's `block.properties` for actual block names and property predicates, rather than Photon-specific host IDs.
 - Native window controls/presentation and surfaceless EGL screenshot/measurement

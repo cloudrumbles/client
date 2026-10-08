@@ -151,6 +151,15 @@ fn dispatch_preserves_current_front_and_raster_visibility_across_resets_and_repl
         .submit(|cmd| engine.record(cmd, 0, &input))
         .unwrap();
     close(screenshot(&engine, &file), [102, 128, 89, 255]);
+    assert_eq!(engine.invalidations, 1);
+    assert_eq!(engine.compute_dispatches.len(), 3);
+    input.history_epoch += 1;
+    engine
+        .gpu
+        .clone()
+        .submit(|cmd| engine.record(cmd, 0, &input))
+        .unwrap();
+    close(screenshot(&engine, &file), [102, 128, 89, 255]);
     assert_eq!(engine.invalidations, 2);
     assert_eq!(engine.compute_dispatches.len(), 4);
     // Replacement allocates new storage, runs setup and uses new shader bytes.

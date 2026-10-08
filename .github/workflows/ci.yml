@@ -81,7 +81,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: cargo test -p pomme-client --release --no-default-features --features shader-packs
 
-      - name: Execute Vulkan actor and compute fixtures
+      - name: Execute Vulkan actor, compute and temporal fixtures
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get install -y mesa-vulkan-drivers vulkan-validationlayers

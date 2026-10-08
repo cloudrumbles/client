@@ -153,11 +153,23 @@ ordering, setup persistence, changed world/time/weather inputs and replacement
 shader bytes. Software execution establishes correctness only; it does not
 qualify GTX 1650 Ti performance.
 
+`python3 tools/native/validate_vulkan_fixtures.py --output vulkan-fixture-results`
+runs actor, compute and temporal GPU fixtures with positive loader-activation
+proof required. The temporal fixture retains setup-owned `Clear=false` storage
+across geometry, lighting, clock and weather changes, checks current raster and
+uniform values, then verifies an explicit epoch reinitializes storage and custom
+smoothing. Its JSON samples and PNGs accompany the captured validation log.
+
 The adapter retains block-state predicates, normals, tangent/handedness, mid-UV,
 color and separate light in auxiliary CPU meshing data; the existing 16-byte
 Vulkan vertex format stays intact. When a pack is selected, greedy terrain quads
-are disabled to preserve the pack's atlas UV contract. Geometry/atlas changes
-invalidate history; old atlas UV meshes are discarded on resource reload. Vanilla
+are disabled to preserve the pack's atlas UV contract. Geometry and lighting
+content updates preserve pack-owned temporal history and previous matrices while
+refreshing current buffers. The live world's generation supplies an explicit
+history epoch; world replacement, atlas/material resource replacement and actual
+camera/projection/water cuts reset retained targets. Original pack shaders and
+custom-uniform smoothing handle ordinary time commands, day rollover, weather,
+climate and eye-light changes. Old atlas UV meshes are discarded on resource reload. Vanilla
 dimension changes select world0/world-1/world1 programs. Modded dimensions fail
 explicitly until their mapping is implemented. This prototype retains all loaded
 section geometry in the pack graph; section culling/batching and animation parity
@@ -186,8 +198,11 @@ Measurements serialize every frame with GPU timer-query readback and exclude
 presentation. Do not convert these offscreen intervals into a gameplay-FPS claim.
 Warmup is configurable; pack temporal effects can still be settling after a short
 run. The state-change sequence performs a time command, rain change, teleport,
-a real fixture geometry deletion, light change and material change, then records
-the associated history invalidations. Continuous orbit uses previous camera
+a real fixture geometry deletion and light change, followed by a material resource
+reset and a separate explicit history-epoch reset (four frames per phase, 32 frames
+for the full sequence). It records the epoch and history invalidation count per
+frame. Content/environment changes update inputs without globally clearing
+retained targets; the pack owns pixel rejection. Continuous orbit uses previous camera
 matrices. No disk lighting cache or unsupported NVIDIA extension is required.
 
 The [checked-in evidence](validation/README.md) records software execution only.
