@@ -1,0 +1,14 @@
+test_complete_capture_checks_revision_and_exact_bound (test_acquire_fault_integration.CaptureCompletionTests.test_complete_capture_checks_revision_and_exact_bound) ... ok
+test_files_existing_without_marker_are_incomplete (test_acquire_fault_integration.CaptureCompletionTests.test_files_existing_without_marker_are_incomplete) ... ok
+test_full_length_corrupt_png_is_not_accepted (test_acquire_fault_integration.CaptureCompletionTests.test_full_length_corrupt_png_is_not_accepted) ... ok
+test_partial_marker_and_json_wait_for_complete_write (test_acquire_fault_integration.CaptureCompletionTests.test_partial_marker_and_json_wait_for_complete_write) ... ok
+test_partial_png_and_wrong_length_wait_for_complete_write (test_acquire_fault_integration.CaptureCompletionTests.test_partial_png_and_wrong_length_wait_for_complete_write) ... ok
+test_failed_layer_overrides_insert_message (test_acquire_fault_integration.ValidationEvidenceTests.test_failed_layer_overrides_insert_message) ... ok
+test_inserted_layer_proves_activation_and_counts_errors (test_acquire_fault_integration.ValidationEvidenceTests.test_inserted_layer_proves_activation_and_counts_errors) ... ok
+test_missing_layer_request_cannot_claim_zero_errors (test_acquire_fault_integration.ValidationEvidenceTests.test_missing_layer_request_cannot_claim_zero_errors) ... ok
+test_request_and_manifest_loading_are_not_activation (test_acquire_fault_integration.ValidationEvidenceTests.test_request_and_manifest_loading_are_not_activation) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.002s
+
+OK

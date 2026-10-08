@@ -1,0 +1,68 @@
+{
+  "source_repository": "https://github.com/cloudrumbles/client",
+  "source_revision": "e9f3e7a41b1aa61ace14ac80735e57d51af00fd8",
+  "source_tree": "4b8cf1dedef62458fd10d4b9f15f8b80bbf72fe6",
+  "source_clean_before_build_and_run": true,
+  "feature": "renderer-fault-injection",
+  "release_build_exit_code": 0,
+  "build_command": "cargo build --locked -p pomme-client --release --no-default-features --features renderer-fault-injection -v",
+  "cargo_target_dir": "/workspace/minecraft-client/target",
+  "cargo_build_jobs": 2,
+  "build_script_timestamp_forced": true,
+  "build_script_note": "Shared-target build-script output initially carried a stale other-worktree revision. touch pomme-shaderpack/build.rs forced rerun without changing its content; final capture revision asserted equal to the clean source HEAD.",
+  "binary_sha256": "ce0749fbd97bb65980e2ffad25a7c9b73188ec4e022d366d43496254e55db7a9",
+  "rustc": "rustc 1.100.0-nightly (8925ea358 2026-08-20)\nbinary: rustc\ncommit-hash: 8925ea358a0f265ca61026aadc7ecc506c545cbe\ncommit-date: 2026-08-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.100.0-nightly\nLLVM version: 23.1.0",
+  "cargo": "cargo 1.100.0-nightly (514c56dd7 2026-08-19)",
+  "steel_revision": "9142c96cfe72441c6050d98800cbb395dc92e964",
+  "photon_repository": "https://github.com/sixthsurge/photon",
+  "photon_revision": "15458c0937f8647c37eb6a501bef5eb3bf3da31b",
+  "photon_source_clean": true,
+  "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+  "display": ":93",
+  "game_version": "26.3",
+  "server": "owned offline creative server 127.0.0.1:25577",
+  "username": "FaultPhoton",
+  "shader_profile": "low",
+  "shader_options": [
+    "SH_SKYLIGHT=false"
+  ],
+  "driver_environment": {
+    "VK_DRIVER_FILES": "/workspace/client-tools/sysroot/usr/share/vulkan/icd.d/lvp_icd.json",
+    "VK_LAYER_PATH": "/workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d",
+    "VK_INSTANCE_LAYERS": "VK_LAYER_KHRONOS_validation",
+    "VK_LOADER_DEBUG": "layer",
+    "LP_NUM_THREADS": "2"
+  },
+  "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "validation_layer_manifest_api": "1.4.309",
+  "driver_selftests": {
+    "passed": 9,
+    "failed": 0,
+    "command": "python3 -B -m unittest discover -s pomme-client/tests -p 'test_acquire_fault_integration.py' -v"
+  },
+  "rust_format_check_exit_code": 0,
+  "git_diff_check_exit_code": 0,
+  "live_driver_exit_code": 0,
+  "ci": {
+    "run_id": 37786632158,
+    "head_sha": "e9f3e7a41b1aa61ace14ac80735e57d51af00fd8",
+    "url": "https://github.com/cloudrumbles/client/actions/runs/37786632158",
+    "status_at_publication": "in_progress"
+  },
+  "scope": "Software Vulkan lifecycle and harness evidence; no GTX1650Ti qualification, actual hardware OutOfDate event, or gameplay FPS claim.",
+  "excluded_prior_run": "/workspace/native-results/acquire-e9f3e7a-proof had stale 2e278c08+dirty capture stamp and is not qualification evidence.",
+  "files_sha256": {
+    "acquire-events.jsonl": "f27411589f94c55e2fc303b9b4583c12c6c8ab723ceff0a053b8fed5882aa381",
+    "capture/vulkan-live.complete.json": "63f6eb495458f06b8d62ca5d07458b37ce86fd4c9bce6a55e9fa37e8441360e7",
+    "capture/vulkan-live.json": "f7d2ee39612f153a4afde4513a6c876dccdc27c0aa582cfa485f3d0e9818450a",
+    "capture/vulkan-live.png": "ef0bf249ed8af6d2742428563d03caf2d4a9a61ecc69041be1939a2e4d46a429",
+    "cargo-version.txt": "9eb456db994f9553f31ef850b4bc029db960b34ee62b4cc069634c9072d003dd",
+    "client-validation.log": "f4bf3c022dfb81c5a129b779cf57ae00a597c0de201d25e21efbceb88f753360",
+    "python-selftests.log": "2abcd8172929415ea9b722a19fb7b9a7f60e3779f3a85dc11d0629ed57e4748f",
+    "release-build-stamped.log": "5c4099af7536413388a19e5a3a4483d6cbc5061875199e0a0fa4268c50e98523",
+    "result.json": "a71bd45f0847f63f7a9f7ac4d2cfba726c1c14ee801dac5d2018e303a4a10e07",
+    "run-live-clean.sh": "e66f4d95d1332aef0abcf43cb949eb16226196a53f41f7347e300c972be1fb5f",
+    "rustc-version.txt": "1c68a9842926a70d5d61bc18e789f6e8239bfc6440701d84040534420d6522df",
+    "verified-events.jsonl": "f27411589f94c55e2fc303b9b4583c12c6c8ab723ceff0a053b8fed5882aa381"
+  }
+}

@@ -1,0 +1,224 @@
+2026-10-08T13:57:49.807564Z  INFO pomme_client: Installation directory: /workspace/client-assets/native-game
+2026-10-08T13:57:49.807916Z  WARN discord_rich_presence::ipc_unix: find_pipe: could not find pipe
+2026-10-08T13:57:49.807926Z  WARN pomme_client: Discord rich presence unavailable: failed to find IPC socket
+2026-10-08T13:57:49.808052Z  WARN pomme_client::assets: Failed to read asset index: No such file or directory (os error 2)
+2026-10-08T13:57:49.808168Z  WARN pomme_client::audio::sounds: sounds.json not found at /workspace/client-assets/versions/26.3/extracted/assets/minecraft/sounds.json
+2026-10-08T13:57:49.815124Z  INFO pomme_client::audio: OpenAL audio initialized (1.1 ALSOFT 1.24.2; 247 static, 8 streaming sources)
+2026-10-08T13:57:49.821636Z  WARN winit::platform_impl::linux::x11::xdisplay: error setting XSETTINGS; Xft options won't reload automatically
+2026-10-08T13:57:49.836492Z  WARN winit::platform_impl::linux::x11::util::randr: XRandR reported that the display's 0mm in size, which is certifiably insane
+2026-10-08T13:57:49.858047Z  INFO winit::platform_impl::linux::x11::window: Guessed window scale factor: 1
+[Vulkan Loader] LAYER:          Searching for implicit layer manifest files
+[Vulkan Loader] LAYER:             In following locations:
+[Vulkan Loader] LAYER:                /workspace/client-assets/config/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /etc/xdg/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /etc/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /workspace/client-assets/data/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /usr/local/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /usr/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:             Found no files
+[Vulkan Loader] LAYER:          Searching for explicit layer manifest files
+[Vulkan Loader] LAYER:             In following locations:
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d
+[Vulkan Loader] LAYER:             Found the following files:
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_MESA_overlay.json
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_INTEL_nullhw.json
+2026-10-08T13:57:49.879871Z  INFO pomme_client::world::block::registry: Block registry: 1168 blocks (cached textures)
+[Vulkan Loader] WARNING | LAYER: env var 'VK_INSTANCE_LAYERS' defined and adding layers "VK_LAYER_KHRONOS_validation"
+[Vulkan Loader] WARNING | LAYER: env var 'VK_INSTANCE_LAYERS' defined and adding layers "VK_LAYER_KHRONOS_validation"
+2026-10-08T13:57:49.880781Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.880808Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.880961Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.881011Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+[Vulkan Loader] DEBUG | LAYER:  Loading layer library libVkLayer_khronos_validation.so
+[Vulkan Loader] INFO | LAYER:   Insert instance layer "VK_LAYER_KHRONOS_validation" (libVkLayer_khronos_validation.so)
+[Vulkan Loader] LAYER:          vkCreateInstance layer callstack setup to:
+[Vulkan Loader] LAYER:             <Application>
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             <Loader>
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             VK_LAYER_KHRONOS_validation
+[Vulkan Loader] LAYER:                     Type: Explicit
+[Vulkan Loader] LAYER:                     Enabled By: Environment Variable VK_INSTANCE_LAYERS
+[Vulkan Loader] LAYER:                     Manifest: /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                     Library:  libVkLayer_khronos_validation.so
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             <Drivers>
+2026-10-08T13:57:49.885123Z  INFO pomme_client::renderer::context: GPU: llvmpipe (LLVM 19.1.7, 256 bits) (Vulkan 1.4.305)
+2026-10-08T13:57:49.885142Z  INFO pomme_client::renderer::context: Indirect draws: count=true, multi=true
+[Vulkan Loader] INFO | LAYER:   Inserted device layer "VK_LAYER_KHRONOS_validation" (libVkLayer_khronos_validation.so)
+[Vulkan Loader] DRIVER:         vkCreateDevice layer callstack setup to:
+[Vulkan Loader] DRIVER:            <Application>
+[Vulkan Loader] DRIVER:              ||
+[Vulkan Loader] DRIVER:            <Loader>
+[Vulkan Loader] DRIVER:              ||
+[Vulkan Loader] LAYER:             VK_LAYER_KHRONOS_validation
+[Vulkan Loader] LAYER:                     Type: Explicit
+[Vulkan Loader] LAYER:                     Enabled By: Environment Variable VK_INSTANCE_LAYERS
+[Vulkan Loader] LAYER:                     Manifest: /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                     Library:  libVkLayer_khronos_validation.so
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] DRIVER:            <Device>
+[Vulkan Loader] DRIVER:                Using "llvmpipe (LLVM 19.1.7, 256 bits)" with driver: "libvulkan_lvp.so"
+2026-10-08T13:57:49.893749Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.893806Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.893840Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.893891Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.894912Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.894929Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.894957Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.894996Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.897255Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.897356Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.897410Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.897437Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.901069Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.901135Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.901160Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.901176Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.905935Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.906005Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.906021Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.906053Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.906214Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.906234Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.906279Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.906300Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.914298Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.914333Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.914358Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.914411Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.916250Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.916277Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.916294Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.916372Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.946165Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.946271Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.946343Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.946360Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.963075Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.963100Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.963144Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.963160Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.965648Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.965752Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.965790Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.965824Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.968439Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.968473Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.968501Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.968536Z  WARN pomme_client::world::block::model: minecraft:block/template_hanging_sign_rot_3: model JSON is invalid (missing field `axis` at line 30 column 69); skipping
+2026-10-08T13:57:49.987945Z  INFO pomme_client::world::block::model: Baked models for 1192/1288 blocks (8 unhandled)
+2026-10-08T13:57:49.987963Z  WARN pomme_client::world::block::model: Unhandled baked models: copper_golem_statue, exposed_copper_golem_statue, oxidized_copper_golem_statue, waxed_copper_golem_statue, waxed_exposed_copper_golem_statue, waxed_oxidized_copper_golem_statue, waxed_weathered_copper_golem_statue, weathered_copper_golem_statue
+2026-10-08T13:57:50.031369Z  INFO pomme_client::world::block::model: Baked 835 item models, 795 flat items, and registered 775 generated-item textures
+2026-10-08T13:57:50.053937Z  WARN pomme_client::renderer::chunk::atlas: Missing texture: purpur_pillar
+2026-10-08T13:57:50.062470Z  WARN pomme_client::renderer::chunk::atlas: Missing texture: quartz_pillar
+2026-10-08T13:57:50.077874Z  WARN pomme_client::renderer::chunk::atlas: Missing texture: minecraft:missingno
+2026-10-08T13:57:50.125152Z  INFO pomme_client::renderer::chunk::atlas: Atlas built: 1024x1024, mip level 4, 1944 regions
+2026-10-08T13:57:50.138747Z  INFO pomme_client::renderer::pipelines::hand: Hand pipeline initialized (36 vertices, skin 64x64)
+2026-10-08T13:57:50.140177Z  INFO pomme_client::renderer::pipelines::block_overlay: Block overlay: loaded 10 destroy stages (16x160)
+2026-10-08T13:57:50.147454Z  INFO pomme_client::renderer::pipelines::sky: Sky: loaded minecraft/textures/environment/celestial/sun.png (32x32)
+2026-10-08T13:57:50.147758Z  INFO pomme_client::renderer::pipelines::sky: Sky: loaded minecraft/textures/environment/celestial/moon/full_moon.png (32x32)
+2026-10-08T13:57:50.147969Z  INFO pomme_client::renderer::pipelines::sky: Sky: loaded minecraft/textures/environment/celestial/moon/waning_gibbous.png (32x32)
+2026-10-08T13:57:50.148283Z  INFO pomme_client::renderer::pipelines::sky: Sky: loaded minecraft/textures/environment/celestial/moon/third_quarter.png (32x32)
+2026-10-08T13:57:50.148660Z  INFO pomme_client::renderer::pipelines::sky: Sky: loaded minecraft/textures/environment/celestial/moon/waning_crescent.png (32x32)
+2026-10-08T13:57:50.148962Z  INFO pomme_client::renderer::pipelines::sky: Sky: loaded minecraft/textures/environment/celestial/moon/new_moon.png (32x32)
+2026-10-08T13:57:50.149299Z  INFO pomme_client::renderer::pipelines::sky: Sky: loaded minecraft/textures/environment/celestial/moon/waxing_crescent.png (32x32)
+2026-10-08T13:57:50.149868Z  INFO pomme_client::renderer::pipelines::sky: Sky: loaded minecraft/textures/environment/celestial/moon/first_quarter.png (32x32)
+2026-10-08T13:57:50.150088Z  INFO pomme_client::renderer::pipelines::sky: Sky: loaded minecraft/textures/environment/celestial/moon/waxing_gibbous.png (32x32)
+2026-10-08T13:57:50.150231Z  INFO pomme_client::renderer::pipelines::sky: Sky pipeline initialized (24 top_disc, 4680 star, 6 sun, 6 moon, 48 sunrise, 24 dark_disc vertices)
+2026-10-08T13:57:50.152442Z  INFO pomme_client::renderer::pipelines::weather: Weather: loaded minecraft/textures/environment/rain.png (64x256)
+2026-10-08T13:57:50.152743Z  INFO pomme_client::renderer::pipelines::weather: Weather: loaded minecraft/textures/environment/snow.png (64x256)
+2026-10-08T13:57:50.160173Z  INFO pomme_client::renderer::pipelines::clouds: Clouds: loaded minecraft/textures/environment/clouds.png (256x256)
+2026-10-08T13:57:50.161769Z  INFO pomme_client::renderer::pipelines::panorama: Panorama face 0 is a placeholder, skipping cubemap
+2026-10-08T13:57:50.256088Z  INFO pomme_client::renderer::chunk::buffer: GPU VRAM: 18007 MB, chunk budget: 1408 MB, buckets: 2048
+2026-10-08T13:57:50.256203Z  INFO pomme_client::renderer::chunk::buffer: Chunk buffers: HOST_VISIBLE (vertex=1024 MB, index=384 MB, staging=2816 KB)
+2026-10-08T13:57:50.292960Z  INFO pomme_client::net::resolve: Connecting to 127.0.0.1 (resolved: 127.0.0.1:25577)...
+2026-10-08T13:57:50.295233Z  INFO pomme_client::net::connection: Negotiated wire protocol 777
+2026-10-08T13:57:50.295693Z  INFO pomme_client::net::resolve: Connecting to 127.0.0.1 (resolved: 127.0.0.1:25577)...
+2026-10-08T13:57:50.296953Z  INFO pomme_client::net::translate: Translating protocol 777 <-> 776
+2026-10-08T13:57:50.296978Z  INFO pomme_client::net::connection: Sent login hello as FaultPhoton (7c2657d7-a8cb-3889-b914-75c0abd4fb7a)
+2026-10-08T13:57:50.296982Z  WARN pomme_client::net::connection: Connecting offline (no access token). The server keys op/permissions to the authenticated account, so op-only commands like /time may return "Unknown command" under this offline identity.
+2026-10-08T13:57:50.330510Z  INFO pomme_client::net::connection: Login packet: Discriminant(3)
+2026-10-08T13:57:50.330524Z  INFO pomme_client::net::connection: Compression enabled (threshold: 256)
+2026-10-08T13:57:50.330761Z  INFO pomme_client::net::connection: Login packet: Discriminant(2)
+2026-10-08T13:57:50.330768Z  INFO pomme_client::net::connection: Login success: FaultPhoton (7c2657d7-a8cb-3889-b914-75c0abd4fb7a)
+2026-10-08T13:57:50.330781Z  INFO pomme_client::net::connection: Entering configuration phase
+2026-10-08T13:57:50.420788Z  INFO pomme_client::net::connection: Entering game state
+2026-10-08T13:57:50.420839Z  INFO pomme_client::net::connection: Extracted 67 biome climate entries
+2026-10-08T13:57:50.443662Z  INFO pomme_client::net::handler: Command tree received: 26 nodes, root commands = ["me", "help", "list", "msg", "tell", "w", "random", "teammsg", "tm", "trigger"]
+2026-10-08T13:57:50.450786Z  INFO pomme_client::app::core: Received 67 biome climate entries
+2026-10-08T13:57:50.450810Z  INFO pomme_client::app::core: Connected to server
+2026-10-08T13:57:50.450815Z  INFO pomme_client::app::core: Dimension: height=384, min_y=-64, skylight=true, cardinal_light=Default
+2026-10-08T13:57:50.464071Z  INFO pomme_client::app::core: Game mode changed to 1
+2026-10-08T13:57:50.464092Z  INFO pomme_client::app::core: Server view distance: 3
+2026-10-08T13:57:50.464095Z  INFO pomme_client::app::core: Server simulation distance: 3
+2026-10-08T13:57:50.464135Z  INFO pomme_client::app::core: Player position set to (5.5, 66.0, 9.5)
+2026-10-08T13:57:50.623916Z  INFO pomme_client::renderer: Shared scene contract active scene={"camera":{"anchor":[5.0,67.0,9.0],"clip":[0.10000000149011612,1000.0],"depth":"forward_zero_to_one","fov":70.0,"position":[5.5,67.62000000476837,9.5]},"categories":[{"geometry":"near_terrain","inputs":10,"material":"block_state_atlas"},{"geometry":"distant_terrain","inputs":0,"material":"block_state_atlas"},{"geometry":"entities","inputs":3,"material":"entity_model_texture"},{"geometry":"entities","inputs":0,"material":"item_model_or_skin"},{"geometry":"block_entities","inputs":1,"material":"block_entity_model_texture"},{"geometry":"hands","inputs":1,"material":"item_model_or_skin"},{"geometry":"particles","inputs":0,"material":"particle_atlas"},{"geometry":"weather","inputs":0,"material":"precipitation_texture"}],"rain":0.0,"version":{"contract":1,"frame":1,"resources":{"atlas":0,"models":0,"surface":0,"terrain":3,"world":1}},"world_time":6000}
+pack profile references undeclared option GTAO; ignored
+Vulkan compiled prepare: 15 uniforms, 1 samplers
+Vulkan compiled shadow: 9 uniforms, 2 samplers
+Vulkan compiled gbuffers_terrain: 14 uniforms, 2 samplers
+Vulkan compiled deferred: 38 uniforms, 5 samplers
+Vulkan compiled deferred1: 29 uniforms, 6 samplers
+Vulkan compiled deferred2: 13 uniforms, 6 samplers
+Vulkan compiled deferred3: 12 uniforms, 5 samplers
+Vulkan compiled deferred4: 47 uniforms, 12 samplers
+Vulkan compiled gbuffers_water: 47 uniforms, 6 samplers
+Vulkan compiled composite: 20 uniforms, 1 samplers
+Vulkan compiled composite1: 32 uniforms, 10 samplers
+Vulkan compiled composite4: 8 uniforms, 3 samplers
+Vulkan compiled composite5: 1 uniforms, 1 samplers
+Vulkan compiled composite6: 1 uniforms, 1 samplers
+Vulkan compiled composite7: 1 uniforms, 1 samplers
+Vulkan compiled composite8: 1 uniforms, 1 samplers
+Vulkan compiled composite9: 1 uniforms, 1 samplers
+Vulkan compiled composite10: 1 uniforms, 1 samplers
+Vulkan compiled composite11: 0 uniforms, 1 samplers
+Vulkan compiled composite12: 1 uniforms, 1 samplers
+Vulkan compiled composite13: 1 uniforms, 1 samplers
+Vulkan compiled composite14: 1 uniforms, 1 samplers
+Vulkan compiled composite15: 1 uniforms, 1 samplers
+Vulkan compiled composite16: 1 uniforms, 1 samplers
+Vulkan compiled composite17: 1 uniforms, 1 samplers
+Vulkan compiled composite18: 1 uniforms, 1 samplers
+Vulkan compiled composite19: 5 uniforms, 2 samplers
+Vulkan compiled composite21: 1 uniforms, 1 samplers
+Vulkan compiled composite22: 0 uniforms, 1 samplers
+Vulkan compiled final: 0 uniforms, 1 samplers
+Vulkan packed HDR fallback: colortex0 uses RGBA16F for filtered mip support
+2026-10-08T13:57:56.069048Z  INFO pomme_client::shaderpack: Vulkan shader pack activated frame=0 path="/workspace/photon-reference" pack_hash=c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845 dimension="world0"
+pack profile references undeclared option GTAO; ignored
+Vulkan compiled prepare: 15 uniforms, 1 samplers
+Vulkan compiled shadow: 9 uniforms, 2 samplers
+Vulkan compiled gbuffers_terrain: 14 uniforms, 2 samplers
+Vulkan compiled deferred: 38 uniforms, 5 samplers
+Vulkan compiled deferred1: 29 uniforms, 6 samplers
+Vulkan compiled deferred2: 13 uniforms, 6 samplers
+Vulkan compiled deferred3: 12 uniforms, 5 samplers
+Vulkan compiled deferred4: 47 uniforms, 12 samplers
+Vulkan compiled gbuffers_water: 47 uniforms, 6 samplers
+Vulkan compiled composite: 20 uniforms, 1 samplers
+Vulkan compiled composite1: 32 uniforms, 10 samplers
+Vulkan compiled composite4: 8 uniforms, 3 samplers
+Vulkan compiled composite5: 1 uniforms, 1 samplers
+Vulkan compiled composite6: 1 uniforms, 1 samplers
+Vulkan compiled composite7: 1 uniforms, 1 samplers
+Vulkan compiled composite8: 1 uniforms, 1 samplers
+Vulkan compiled composite9: 1 uniforms, 1 samplers
+Vulkan compiled composite10: 1 uniforms, 1 samplers
+Vulkan compiled composite11: 0 uniforms, 1 samplers
+Vulkan compiled composite12: 1 uniforms, 1 samplers
+Vulkan compiled composite13: 1 uniforms, 1 samplers
+Vulkan compiled composite14: 1 uniforms, 1 samplers
+Vulkan compiled composite15: 1 uniforms, 1 samplers
+Vulkan compiled composite16: 1 uniforms, 1 samplers
+Vulkan compiled composite17: 1 uniforms, 1 samplers
+Vulkan compiled composite18: 1 uniforms, 1 samplers
+Vulkan compiled composite19: 5 uniforms, 2 samplers
+Vulkan compiled composite21: 1 uniforms, 1 samplers
+Vulkan compiled composite22: 0 uniforms, 1 samplers
+Vulkan compiled final: 0 uniforms, 1 samplers
+Vulkan packed HDR fallback: colortex0 uses RGBA16F for filtered mip support
+2026-10-08T13:58:04.279648Z  INFO pomme_client::shaderpack: Vulkan shader pack activated frame=1 path="/workspace/photon-reference" pack_hash=c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845 dimension="world0"
+2026-10-08T13:58:13.420496Z  INFO pomme_client::shaderpack: Vulkan shader capture completed: /workspace/native-results/acquire-e9f3e7a-proof-clean/capture

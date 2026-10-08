@@ -1,0 +1,52 @@
+{
+  "faults": [
+    {
+      "event": "injected_out_of_date",
+      "pack_submissions": 0,
+      "recreations": 0,
+      "scenario": "before_first_submission",
+      "slot": 1
+    },
+    {
+      "event": "injected_out_of_date",
+      "pack_submissions": 0,
+      "recreations": 1,
+      "scenario": "after_recreation_before_submission",
+      "slot": 1
+    },
+    {
+      "event": "injected_out_of_date",
+      "pack_submissions": 1,
+      "recreations": 3,
+      "scenario": "after_window_resize_and_submission",
+      "slot": 2
+    }
+  ],
+  "resize": {
+    "event": "resize_requested",
+    "from": [
+      854,
+      480
+    ],
+    "pack_submissions": 1,
+    "recreations": 2,
+    "to": [
+      870,
+      496
+    ]
+  },
+  "captured_samples": 20,
+  "revision": "e9f3e7a41b1aa61ace14ac80735e57d51af00fd8",
+  "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "validation_status": "verified",
+  "validation_errors": 0,
+  "validation_layers_requested": "VK_LAYER_KHRONOS_validation",
+  "validation_activation_proof": [
+    "[Vulkan Loader] INFO | LAYER:   Insert instance layer \"VK_LAYER_KHRONOS_validation\" (libVkLayer_khronos_validation.so)"
+  ],
+  "validation_layer_failures": [],
+  "validation_messages": [],
+  "binary_sha256": "ce0749fbd97bb65980e2ffad25a7c9b73188ec4e022d366d43496254e55db7a9",
+  "production_acquire_path": true,
+  "gpu_query_wait_timeout": false
+}
