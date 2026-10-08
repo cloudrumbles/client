@@ -81,6 +81,7 @@ impl Bridge {
                 allocator: Arc::clone(&ctx.allocator),
                 queue: ctx.graphics_queue,
                 pool: ctx.command_pool,
+                queue_family: ctx.graphics_family,
                 independent_blend: ctx.independent_blend,
             };
             return Some(Self {
@@ -437,10 +438,13 @@ impl NativePack {
             std::fs::create_dir_all(output)?;
             e.screenshot(&output.join("vulkan-live.png"))?;
             self.capture.samples.sort_by_key(|s| s["frame"].as_u64());
+            let properties = self.gpu.physical.get_properties();
+            let device_name = unsafe { std::ffi::CStr::from_ptr(properties.device_name.as_ptr()) }
+                .to_string_lossy();
             std::fs::write(
                 output.join("vulkan-live.json"),
                 serde_json::to_vec_pretty(
-                    &serde_json::json!({"backend":"Vulkan in native game window","device":unsafe{std::ffi::CStr::from_ptr(self.gpu.physical.get_properties().device_name.as_ptr())}.to_string_lossy(),"revision":pomme_shaderpack::BUILD_REVISION,"pack_hash":e.pack.digest,"options":e.pack.options,"size":self.size,"passes":e.pass_names(),"measurement":"Vulkan pack-pass timestamp queries; includes lowered actors; excludes remaining forward actors, UI and presentation; not gameplay FPS","samples":self.capture.samples,"reloads":self.capture.reloads}),
+                    &serde_json::json!({"backend":"Vulkan in native game window","device":device_name,"revision":pomme_shaderpack::BUILD_REVISION,"pack_hash":e.pack.digest,"options":e.pack.options,"size":self.size,"passes":e.pass_names(),"compute_programs":e.compute_manifest(),"measurement":"Vulkan pack-pass timestamp queries; includes lowered actors; excludes remaining forward actors, UI and presentation; not gameplay FPS","samples":self.capture.samples,"reloads":self.capture.reloads}),
                 )?,
             )?;
             self.capture.finish();
@@ -601,6 +605,7 @@ impl NativePack {
         if let Some(s) = self.capture.sample_mut(slot) {
             s["history_invalidations"] = e.invalidations.into();
             s["geometry_stages"] = serde_json::to_value(&e.geometry_stages)?;
+            s["compute_dispatches"] = serde_json::to_value(&e.compute_dispatches)?;
         }
         self.presenter
             .as_ref()

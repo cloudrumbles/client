@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::mem::{offset_of, size_of};
 use std::path::Path;
 use std::sync::Arc;
@@ -8,7 +8,7 @@ use glam::{Mat3, Mat4, Vec3};
 use pyronyx::vk;
 use regex::Regex;
 
-use super::abi::{Compiled, Program, Sampler};
+use super::abi::{Compiled, ComputeProgram, ImageAccess, Program, Sampler, StorageImage};
 use super::resource::{Buffer, Gpu, Image, custom, format};
 use crate::expression::{Uniforms, Value};
 use crate::geometry::{
@@ -45,6 +45,13 @@ pub struct GeometryStage {
     pub vertices: usize,
     pub material_ids: Vec<i32>,
 }
+#[derive(Clone, serde::Serialize)]
+pub struct ComputeDispatch {
+    pub program: String,
+    pub groups: [u32; 3],
+    pub local_size: [u32; 3],
+    pub storage_images: Vec<String>,
+}
 fn mesh_id(mesh: &Arc<MeshAsset>) -> usize {
     Arc::as_ptr(mesh) as usize
 }
@@ -70,6 +77,101 @@ struct Pass {
     actor_sets: HashMap<(usize, usize), vk::DescriptorSet>,
     framebuffers: HashMap<Vec<u64>, vk::Framebuffer>,
 }
+struct ComputePass {
+    program: ComputeProgram,
+    layout: vk::DescriptorSetLayout,
+    pipeline_layout: vk::PipelineLayout,
+    pipeline: vk::Pipeline,
+    sets: Vec<vk::DescriptorSet>,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Execution {
+    Graphics(usize),
+    Compute(usize),
+}
+fn execution_order(graphics: &[&str], compute_bases: &[&str]) -> Result<Vec<Execution>> {
+    let mut out = Vec::new();
+    for stage in [
+        "setup",
+        "begin",
+        "shadow",
+        "shadow_entities",
+        "shadow_block",
+        "shadowcomp",
+        "prepare",
+        "gbuffers_terrain",
+        "gbuffers_entities",
+        "gbuffers_block",
+        "gbuffers_hand",
+        "deferred",
+        "gbuffers_water",
+        "gbuffers_entities_translucent",
+        "gbuffers_block_translucent",
+        "gbuffers_hand_water",
+        "composite",
+        "final",
+    ] {
+        let numbered = matches!(
+            stage,
+            "setup" | "begin" | "shadowcomp" | "prepare" | "deferred" | "composite"
+        );
+        for i in 0..if numbered { 100 } else { 1 } {
+            let name = if i == 0 {
+                stage.into()
+            } else {
+                format!("{stage}{i}")
+            };
+            for (index, base) in compute_bases.iter().enumerate() {
+                if *base == name {
+                    out.push(Execution::Compute(index));
+                }
+            }
+            for (index, graphics) in graphics.iter().enumerate() {
+                if *graphics == name {
+                    out.push(Execution::Graphics(index));
+                }
+            }
+        }
+    }
+    ensure!(
+        out.len() == graphics.len() + compute_bases.len(),
+        "unmapped shader execution stage"
+    );
+    Ok(out)
+}
+fn descriptor_limits(
+    limits: &vk::PhysicalDeviceLimits,
+    samplers: usize,
+    images: usize,
+) -> Result<()> {
+    ensure!(
+        samplers <= limits.max_per_stage_descriptor_samplers as usize
+            && samplers <= limits.max_descriptor_set_samplers as usize
+            && samplers <= limits.max_per_stage_descriptor_sampled_images as usize
+            && samplers <= limits.max_descriptor_set_sampled_images as usize,
+        "shader sampled-image/sampler descriptors exceed device limits"
+    );
+    ensure!(
+        images <= limits.max_per_stage_descriptor_storage_images as usize
+            && images <= limits.max_descriptor_set_storage_images as usize,
+        "shader storage-image descriptors exceed device limits"
+    );
+    ensure!(
+        1 + samplers + images <= limits.max_per_stage_resources as usize
+            && limits.max_per_stage_descriptor_uniform_buffers >= 1
+            && limits.max_descriptor_set_uniform_buffers_dynamic >= 1,
+        "shader resource descriptors exceed device limits"
+    );
+    Ok(())
+}
+fn timestamp_elapsed(start: u64, end: u64, bits: u32) -> u64 {
+    let mask = if bits >= 64 {
+        u64::MAX
+    } else {
+        (1u64 << bits) - 1
+    };
+    end.wrapping_sub(start) & mask
+}
 pub struct Engine {
     pub pack: Pack,
     pub gpu: Gpu,
@@ -77,6 +179,9 @@ pub struct Engine {
     width: u32,
     height: u32,
     passes: Vec<Pass>,
+    computes: Vec<ComputePass>,
+    execution: Vec<Execution>,
+    setup_done: bool,
     colors: Vec<Color>,
     depths: Vec<Image>,
     shadows: Vec<Image>,
@@ -100,6 +205,7 @@ pub struct Engine {
     actor_textures: HashMap<usize, CachedTexture>,
     pub geometry_preparation: GeometryPreparation,
     pub geometry_stages: Vec<GeometryStage>,
+    pub compute_dispatches: Vec<ComputeDispatch>,
     descriptor_pool: vk::DescriptorPool,
     query_pools: Vec<vk::QueryPool>,
     cpu_timings: Vec<Vec<f64>>,
@@ -179,32 +285,17 @@ impl Engine {
                 .any(|s| s.starts_with("image.") || s.starts_with("bufferObject.")),
             "custom images/SSBOs require their Vulkan storage ABI"
         );
-        // Never silently omit an active compute program.
-        for stage in [
-            "setup",
-            "begin",
-            "prepare",
-            "shadowcomp",
-            "deferred",
-            "composite",
-        ] {
-            for i in 0..100 {
-                let name = if i == 0 {
-                    stage.into()
-                } else {
-                    format!("{stage}{i}")
-                };
-                for suffix in ["", "_a", "_b", "_c"] {
-                    let n = format!("{name}{suffix}");
-                    ensure!(
-                        !(pack.enabled(&n)? && pack.program_path(&n, "csh").is_some()),
-                        "active compute program {n} requires the Vulkan compute/image execution path"
-                    );
-                }
-            }
-        }
         let compiled = Compiled::new(&pack)?;
         let limits = gpu.physical.get_properties().limits;
+        let families = gpu.physical.get_queue_family_properties();
+        let family = families
+            .get(gpu.queue_family as usize)
+            .context("invalid shader-pack queue family")?;
+        ensure!(
+            family.queue_flags.contains(vk::QueueFlags::Graphics)
+                && family.timestamp_valid_bits > 0,
+            "shader-pack queue needs graphics and timestamp support"
+        );
         ensure!(
             compiled.abi.uniform_size <= limits.max_uniform_buffer_range as usize,
             "pack uniform block exceeds device range"
@@ -213,6 +304,7 @@ impl Engine {
             .programs
             .iter()
             .map(|p| p.source.as_str())
+            .chain(compiled.compute_programs.iter().map(|p| p.source.as_str()))
             .collect::<Vec<_>>()
             .join("\n");
         let mut colors = Vec::new();
@@ -277,9 +369,19 @@ impl Engine {
                     color[j] = v[j % v.len()];
                 }
             }
+            let storage = compiled
+                .abi
+                .images
+                .iter()
+                .any(|image| image.name == format!("colorimg{i}"));
+            let allocate = if storage {
+                Image::new_storage
+            } else {
+                Image::new
+            };
             colors.push(Color {
                 images: [
-                    Image::new(
+                    allocate(
                         &gpu,
                         extent(size[0], size[1]),
                         fmt,
@@ -288,7 +390,7 @@ impl Engine {
                         false,
                         true,
                     )?,
-                    Image::new(
+                    allocate(
                         &gpu,
                         extent(size[0], size[1]),
                         fmt,
@@ -469,17 +571,18 @@ impl Engine {
         )?;
         let alignment = limits.min_uniform_buffer_offset_alignment as usize;
         let uniform_stride = compiled.abi.uniform_size.div_ceil(alignment) * alignment;
+        let program_count = compiled.programs.len() + compiled.compute_programs.len();
         let mut uniform_buffers = Vec::new();
         let query_pools = Vec::new();
         for _ in 0..slots {
             uniform_buffers.push(Buffer::new(
                 &gpu,
-                &vec![0; uniform_stride * compiled.programs.len()],
+                &vec![0; uniform_stride * program_count],
                 vk::BufferUsageFlags::UniformBuffer,
             )?);
         }
         let uniform_values = Uniforms::new(&pack.properties)?;
-        let uniform_capacity = uniform_stride * compiled.programs.len();
+        let uniform_capacity = uniform_stride * program_count;
         let mut out = Self {
             pack,
             gpu,
@@ -487,6 +590,9 @@ impl Engine {
             width,
             height,
             passes: Vec::new(),
+            computes: Vec::new(),
+            execution: Vec::new(),
+            setup_done: false,
             colors,
             depths,
             shadows,
@@ -510,6 +616,7 @@ impl Engine {
             actor_textures: HashMap::new(),
             geometry_preparation: GeometryPreparation::default(),
             geometry_stages: Vec::new(),
+            compute_dispatches: Vec::new(),
             descriptor_pool: vk::DescriptorPool::null(),
             query_pools,
             cpu_timings: vec![vec![]; slots],
@@ -524,15 +631,16 @@ impl Engine {
             out.query_pools.push(out.gpu.device.create_query_pool(
                 &vk::QueryPoolCreateInfo {
                     query_type: vk::QueryType::Timestamp,
-                    query_count: out.compiled.programs.len() as u32 * 2,
+                    query_count: program_count as u32 * 2,
                     ..Default::default()
                 },
                 None,
             )?);
         }
         let programs = std::mem::take(&mut out.compiled.programs);
+        let computes = std::mem::take(&mut out.compiled.compute_programs);
         let actor_passes = programs.iter().filter(|p| is_actor(&p.name)).count();
-        let set_count = (programs.len() + actor_passes * MAX_ACTOR_ASSETS) * slots;
+        let set_count = (program_count + actor_passes * MAX_ACTOR_ASSETS) * slots;
         let sampler_count = programs
             .iter()
             .map(|p| {
@@ -544,7 +652,9 @@ impl Engine {
                     }
             })
             .sum::<usize>()
-            * slots;
+            * slots
+            + computes.iter().map(|p| p.samplers.len()).sum::<usize>() * slots;
+        let storage_count = computes.iter().map(|p| p.images.len()).sum::<usize>() * slots;
         let sizes = [
             vk::DescriptorPoolSize {
                 ty: vk::DescriptorType::UniformBufferDynamic,
@@ -553,6 +663,10 @@ impl Engine {
             vk::DescriptorPoolSize {
                 ty: vk::DescriptorType::CombinedImageSampler,
                 descriptor_count: sampler_count.max(1) as u32,
+            },
+            vk::DescriptorPoolSize {
+                ty: vk::DescriptorType::StorageImage,
+                descriptor_count: storage_count.max(1) as u32,
             },
         ];
         out.descriptor_pool = out.gpu.device.create_descriptor_pool(
@@ -567,6 +681,10 @@ impl Engine {
         for program in programs {
             out.add_pass(program, slots)?;
         }
+        for program in computes {
+            out.add_compute(program, slots)?;
+        }
+        out.build_execution()?;
         out.gpu.submit(|cmd| {
             out.clear_all(cmd);
             Ok(())
@@ -574,6 +692,14 @@ impl Engine {
         Ok(out)
     }
     fn add_pass(&mut self, program: Program, slots: usize) -> Result<()> {
+        descriptor_limits(
+            &self.gpu.physical.get_properties().limits,
+            program.samplers.len(),
+            0,
+        )?;
+        for sampler in &program.samplers {
+            self.named_sampler(&program.name, sampler)?;
+        }
         let d = &self.gpu.device;
         let mut bindings = vec![vk::DescriptorSetLayoutBinding {
             binding: 0,
@@ -692,6 +818,326 @@ impl Engine {
             },
             &mut p.sets,
         )?;
+        Ok(())
+    }
+    fn add_compute(&mut self, program: ComputeProgram, slots: usize) -> Result<()> {
+        let limits = self.gpu.physical.get_properties().limits;
+        descriptor_limits(&limits, program.samplers.len(), program.images.len())?;
+        for sampler in &program.samplers {
+            self.named_sampler(&program.name, sampler)?;
+        }
+        ensure!(
+            self.gpu.physical.get_queue_family_properties()[self.gpu.queue_family as usize]
+                .queue_flags
+                .contains(vk::QueueFlags::Compute),
+            "shader compute needs a compute-capable graphics queue"
+        );
+        let crate::compute::Dispatch::Fixed(groups) = program.dispatch;
+        ensure!(
+            groups
+                .iter()
+                .zip(limits.max_compute_work_group_count)
+                .all(|(n, max)| *n <= max),
+            "{} dispatch exceeds device workgroup-count limit",
+            program.name
+        );
+        ensure!(
+            program
+                .local_size
+                .iter()
+                .zip(limits.max_compute_work_group_size)
+                .all(|(n, max)| *n > 0 && *n <= max)
+                && program
+                    .local_size
+                    .iter()
+                    .map(|n| u64::from(*n))
+                    .product::<u64>()
+                    <= u64::from(limits.max_compute_work_group_invocations),
+            "{} local size exceeds device limits",
+            program.name
+        );
+        // Reflection gives the logical payload, not a guessed vec3 allocation
+        // stride. Pipeline creation and validated execution check driver layout.
+        ensure!(
+            program.shared_memory_bytes <= limits.max_compute_shared_memory_size as usize,
+            "{} Workgroup payload exceeds device shared-memory limit",
+            program.name
+        );
+        ensure!(
+            program
+                .capabilities
+                .iter()
+                .all(|c| matches!(*c, 0 | 1 | 50)),
+            "{} needs optional SPIR-V capabilities {:?}; this storage ABI enables core Shader/ImageQuery only",
+            program.name,
+            program.capabilities
+        );
+        for image in &program.images {
+            self.storage_image(image)?;
+        }
+        let d = &self.gpu.device;
+        let mut bindings = vec![vk::DescriptorSetLayoutBinding {
+            binding: 0,
+            descriptor_type: vk::DescriptorType::UniformBufferDynamic,
+            descriptor_count: 1,
+            stage_flags: vk::ShaderStageFlags::Compute,
+            ..Default::default()
+        }];
+        for s in &program.samplers {
+            bindings.push(vk::DescriptorSetLayoutBinding {
+                binding: s.binding,
+                descriptor_type: vk::DescriptorType::CombinedImageSampler,
+                descriptor_count: 1,
+                stage_flags: vk::ShaderStageFlags::Compute,
+                ..Default::default()
+            });
+        }
+        for image in &program.images {
+            bindings.push(vk::DescriptorSetLayoutBinding {
+                binding: image.binding,
+                descriptor_type: vk::DescriptorType::StorageImage,
+                descriptor_count: 1,
+                stage_flags: vk::ShaderStageFlags::Compute,
+                ..Default::default()
+            });
+        }
+        let layout = d.create_descriptor_set_layout(
+            &vk::DescriptorSetLayoutCreateInfo {
+                binding_count: bindings.len() as u32,
+                bindings: bindings.as_ptr(),
+                ..Default::default()
+            },
+            None,
+        )?;
+        let index = self.computes.len();
+        self.computes.push(ComputePass {
+            program,
+            layout,
+            pipeline_layout: vk::PipelineLayout::null(),
+            pipeline: vk::Pipeline::null(),
+            sets: Vec::new(),
+        });
+        let p = &mut self.computes[index];
+        p.pipeline_layout = d.create_pipeline_layout(
+            &vk::PipelineLayoutCreateInfo {
+                set_layout_count: 1,
+                set_layouts: &layout,
+                ..Default::default()
+            },
+            None,
+        )?;
+        let module = d.create_shader_module(
+            &vk::ShaderModuleCreateInfo {
+                code_size: std::mem::size_of_val(p.program.spirv.as_slice()),
+                code: p.program.spirv.as_ptr(),
+                ..Default::default()
+            },
+            None,
+        )?;
+        let result = d.create_compute_pipelines(
+            vk::PipelineCache::null(),
+            &[vk::ComputePipelineCreateInfo {
+                stage: vk::PipelineShaderStageCreateInfo {
+                    stage: vk::ShaderStageFlags::Compute,
+                    module,
+                    name: c"main".as_ptr(),
+                    ..Default::default()
+                },
+                layout: p.pipeline_layout,
+                ..Default::default()
+            }],
+            None,
+            std::slice::from_mut(&mut p.pipeline),
+        );
+        d.destroy_shader_module(module, None);
+        result.with_context(|| {
+            format!(
+                "compute pipeline {} (logical Workgroup payload {} bytes)",
+                p.program.name, p.program.shared_memory_bytes
+            )
+        })?;
+        let layouts = vec![layout; slots];
+        p.sets = vec![vk::DescriptorSet::null(); slots];
+        d.allocate_descriptor_sets(
+            &vk::DescriptorSetAllocateInfo {
+                descriptor_pool: self.descriptor_pool,
+                descriptor_set_count: slots as u32,
+                set_layouts: layouts.as_ptr(),
+                ..Default::default()
+            },
+            &mut p.sets,
+        )?;
+        Ok(())
+    }
+    fn build_execution(&mut self) -> Result<()> {
+        self.execution = execution_order(
+            &self
+                .passes
+                .iter()
+                .map(|p| p.program.name.as_str())
+                .collect::<Vec<_>>(),
+            &self
+                .computes
+                .iter()
+                .map(|p| p.program.base.as_str())
+                .collect::<Vec<_>>(),
+        )?;
+        Ok(())
+    }
+    fn execution_name(&self, execution: Execution) -> &str {
+        match execution {
+            Execution::Graphics(index) => &self.passes[index].program.name,
+            Execution::Compute(index) => &self.computes[index].program.name,
+        }
+    }
+    fn storage_image(&self, image: &StorageImage) -> Result<&Image> {
+        let index = image
+            .name
+            .strip_prefix("colorimg")
+            .and_then(|s| s.parse::<usize>().ok())
+            .filter(|i| *i < self.colors.len())
+            .with_context(|| {
+                format!(
+                    "unbound storage image {}; this ABI supports colorimg0..15",
+                    image.name
+                )
+            })?;
+        let color = &self.colors[index];
+        ensure!(
+            image.name == format!("colorimg{index}"),
+            "noncanonical storage image name {}",
+            image.name
+        );
+        let target = &color.images[color.front];
+        // Require exact Vulkan format equivalence rather than reinterpret a
+        // packed HDR fallback through an incompatible formatted image view.
+        let expected = format(&image.format.to_ascii_uppercase())?;
+        ensure!(
+            target.format == expected,
+            "storage image {} format {} disagrees with {:?}",
+            image.name,
+            image.format,
+            target.format
+        );
+        Ok(target)
+    }
+    fn record_compute(
+        &mut self,
+        cmd: &vk::CommandBuffer,
+        slot: usize,
+        index: usize,
+        values: &BTreeMap<String, Value>,
+    ) -> Result<()> {
+        let p = &self.computes[index];
+        let bytes = self
+            .compiled
+            .abi
+            .bytes(values, &p.program.active_uniforms)?;
+        let offset = (self.passes.len() + index) * self.uniform_stride;
+        self.uniform_buffers[slot].write(offset, &bytes)?;
+        let p = &self.computes[index];
+        let images = p
+            .program
+            .images
+            .iter()
+            .map(|i| self.storage_image(i))
+            .collect::<Result<Vec<_>>>()?;
+        // A sampler/storage alias names the same CURRENT front. Both descriptors
+        // and all mip levels use GENERAL for the whole compute dispatch. Compute
+        // writes do not flip the raster ping-pong front.
+        for image in &images {
+            image.transition(cmd, vk::ImageLayout::General);
+        }
+        let sampled = p
+            .program
+            .samplers
+            .iter()
+            .map(|s| -> Result<_> {
+                let image = self.named_sampler(&p.program.name, s)?;
+                let layout = if images.iter().any(|i| i.handle == image.handle) {
+                    vk::ImageLayout::General
+                } else {
+                    vk::ImageLayout::ShaderReadOnlyOptimal
+                };
+                image.transition(cmd, layout);
+                Ok(vk::DescriptorImageInfo {
+                    sampler: if s.ty == "sampler2DShadow" {
+                        image.comparison
+                    } else {
+                        image.sampling()
+                    },
+                    image_view: image.view,
+                    image_layout: layout,
+                })
+            })
+            .collect::<Result<Vec<_>>>()?;
+        let stored = images
+            .iter()
+            .map(|image| vk::DescriptorImageInfo {
+                image_view: image.attachment,
+                image_layout: vk::ImageLayout::General,
+                ..Default::default()
+            })
+            .collect::<Vec<_>>();
+        let buffer = vk::DescriptorBufferInfo {
+            buffer: self.uniform_buffers[slot].handle,
+            offset: 0,
+            range: self.compiled.abi.uniform_size as u64,
+        };
+        let set = p.sets[slot];
+        let mut writes = vec![vk::WriteDescriptorSet {
+            dst_set: set,
+            dst_binding: 0,
+            descriptor_count: 1,
+            descriptor_type: vk::DescriptorType::UniformBufferDynamic,
+            buffer_info: &buffer,
+            ..Default::default()
+        }];
+        for (s, info) in p.program.samplers.iter().zip(&sampled) {
+            writes.push(vk::WriteDescriptorSet {
+                dst_set: set,
+                dst_binding: s.binding,
+                descriptor_count: 1,
+                descriptor_type: vk::DescriptorType::CombinedImageSampler,
+                image_info: info,
+                ..Default::default()
+            });
+        }
+        for (image, info) in p.program.images.iter().zip(&stored) {
+            writes.push(vk::WriteDescriptorSet {
+                dst_set: set,
+                dst_binding: image.binding,
+                descriptor_count: 1,
+                descriptor_type: vk::DescriptorType::StorageImage,
+                image_info: info,
+                ..Default::default()
+            });
+        }
+        self.gpu.device.update_descriptor_sets(&writes, &[]);
+        cmd.bind_pipeline(vk::PipelineBindPoint::Compute, p.pipeline);
+        cmd.bind_descriptor_sets(
+            vk::PipelineBindPoint::Compute,
+            p.pipeline_layout,
+            0,
+            &[set],
+            &[offset as u32],
+        );
+        let crate::compute::Dispatch::Fixed(groups) = p.program.dispatch;
+        cmd.dispatch(groups[0], groups[1], groups[2]);
+        for (image, declaration) in images.iter().zip(&p.program.images) {
+            if declaration.access != ImageAccess::ReadOnly {
+                image.invalidate_mipmaps();
+            }
+            // The conservative transition supplies shader-write visibility to
+            // subsequent computes, fragment reads, copies and mip generation.
+            image.transition(cmd, vk::ImageLayout::ShaderReadOnlyOptimal);
+        }
+        self.compute_dispatches.push(ComputeDispatch {
+            program: p.program.name.clone(),
+            groups,
+            local_size: p.program.local_size,
+            storage_images: p.program.images.iter().map(|i| i.name.clone()).collect(),
+        });
         Ok(())
     }
     fn clear_all(&self, cmd: &vk::CommandBuffer) {
@@ -827,7 +1273,7 @@ impl Engine {
                 );
             }
         }
-        let needed = self.uniform_stride * (self.passes.len() + geometry.draws.len() * 2);
+        let needed = self.uniform_stride * (self.execution.len() + geometry.draws.len() * 2);
         ensure!(
             needed <= u32::MAX as usize,
             "dynamic actor uniform offsets exceed Vulkan range"
@@ -850,13 +1296,22 @@ impl Engine {
         Ok(())
     }
     fn sampler(&self, p: &Program, s: &Sampler) -> Result<&Image> {
-        let category = if p.name.starts_with("deferred") {
+        self.named_sampler(&p.name, s)
+    }
+    fn named_sampler(&self, name: &str, s: &Sampler) -> Result<&Image> {
+        let category = if name.starts_with("deferred") {
             "deferred"
-        } else if p.name.starts_with("composite") || p.name == "final" {
+        } else if name.starts_with("composite") || name == "final" {
             "composite"
-        } else if p.name.starts_with("prepare") {
+        } else if name.starts_with("prepare") {
             "prepare"
-        } else if is_shadow(&p.name) {
+        } else if name.starts_with("shadowcomp") {
+            "shadowcomp"
+        } else if name.starts_with("begin") {
+            "begin"
+        } else if name.starts_with("setup") {
+            "setup"
+        } else if is_shadow(name) {
             "shadow"
         } else {
             "gbuffers"
@@ -868,7 +1323,7 @@ impl Engine {
             .or_else(|| self.custom.get(&format!("{key}.1")))
             .filter(|t| (t.extent.depth > 1) == (s.ty == "sampler3D"))
         {
-            return Ok(tex);
+            return Self::checked_sampler(s, tex);
         }
         let result = if let Some(i) = s
             .name
@@ -903,7 +1358,29 @@ impl Engine {
                 _ => None,
             }
         };
-        result.with_context(|| format!("unbound Vulkan sampler {}:{} in {}", s.name, s.ty, p.name))
+        let image = result
+            .with_context(|| format!("unbound Vulkan sampler {}:{} in {}", s.name, s.ty, name))?;
+        Self::checked_sampler(s, image)
+    }
+    fn checked_sampler<'a>(sampler: &Sampler, image: &'a Image) -> Result<&'a Image> {
+        // Every format currently allocated by the pack's format/custom-texture
+        // parser is floating point or normalized. Integer, cube and array
+        // sampler ABIs require separate resource/view support.
+        let compatible = match sampler.ty.as_str() {
+            "sampler2D" => image.extent.depth == 1,
+            "sampler3D" => image.extent.depth > 1 && !image.depth,
+            "sampler2DShadow" => image.extent.depth == 1 && image.depth,
+            _ => false,
+        };
+        ensure!(
+            compatible,
+            "unsupported sampler resource {}:{} for {:?} {:?}",
+            sampler.name,
+            sampler.ty,
+            image.extent,
+            image.format
+        );
+        Ok(image)
     }
     pub fn record(
         &mut self,
@@ -914,6 +1391,9 @@ impl Engine {
         let cut = history_discontinuity(self.previous.as_ref(), input);
         if cut {
             self.clear_all(cmd);
+            // clear_all also clears setup-owned color images. Rerun setup
+            // after this reset so its initialized data is not silently lost.
+            self.setup_done = false;
             self.uniforms.reset();
             self.invalidations += 1;
         }
@@ -994,13 +1474,30 @@ impl Engine {
         }
         let values = self.uniforms.evaluate(&base, input.delta_seconds as f64)?;
         self.geometry_stages.clear();
+        self.compute_dispatches.clear();
         let geometry = Arc::clone(&self.geometry);
-        let mut actor_uniform = self.passes.len();
+        let mut actor_uniform = self.execution.len();
         let query = self.query_pools[slot];
-        cmd.reset_query_pool(query, 0, self.passes.len() as u32 * 2);
+        cmd.reset_query_pool(query, 0, self.execution.len() as u32 * 2);
         self.cpu_timings[slot].clear();
-        for n in 0..self.passes.len() {
+        for step in 0..self.execution.len() {
             let cpu_start = std::time::Instant::now();
+            let n = match self.execution[step] {
+                Execution::Graphics(n) => n,
+                Execution::Compute(c) => {
+                    cmd.write_timestamp(vk::PipelineStageFlags::TopOfPipe, query, step as u32 * 2);
+                    if !self.computes[c].program.base.starts_with("setup") || !self.setup_done {
+                        self.record_compute(cmd, slot, c, &values)?;
+                    }
+                    cmd.write_timestamp(
+                        vk::PipelineStageFlags::BottomOfPipe,
+                        query,
+                        step as u32 * 2 + 1,
+                    );
+                    self.cpu_timings[slot].push(cpu_start.elapsed().as_secs_f64() * 1000.);
+                    continue;
+                }
+            };
             let mut values = values.clone();
             let is_shadow = is_shadow(&self.passes[n].program.name);
             if is_shadow && self.passes[n].program.name == "shadow" {
@@ -1065,7 +1562,7 @@ impl Engine {
                     .bytes(&values, &self.passes[n].program.active_uniforms)?;
                 self.uniform_buffers[slot].write(n * self.uniform_stride, &bytes)?;
             }
-            cmd.write_timestamp(vk::PipelineStageFlags::TopOfPipe, query, n as u32 * 2);
+            cmd.write_timestamp(vk::PipelineStageFlags::TopOfPipe, query, step as u32 * 2);
             let name = self.passes[n].program.name.clone();
             if name == "gbuffers_hand" {
                 self.depths[0].copy_to(cmd, &self.depths[2]);
@@ -1499,21 +1996,22 @@ impl Engine {
             cmd.write_timestamp(
                 vk::PipelineStageFlags::BottomOfPipe,
                 query,
-                n as u32 * 2 + 1,
+                step as u32 * 2 + 1,
             );
             self.cpu_timings[slot].push(cpu_start.elapsed().as_secs_f64() * 1000.);
         }
+        self.setup_done = true;
         self.previous = Some(input.clone());
         self.previous_view = relative;
         self.previous_projection = projection;
         Ok(())
     }
     pub fn timings(&self, slot: usize) -> Result<Vec<PassTiming>> {
-        let mut bytes = vec![0; self.passes.len() * 2 * 8];
+        let mut bytes = vec![0; self.execution.len() * 2 * 8];
         self.gpu.device.get_query_pool_results(
             self.query_pools[slot],
             0,
-            self.passes.len() as u32 * 2,
+            self.execution.len() as u32 * 2,
             &mut bytes,
             8,
             vk::QueryResultFlags::Type64 | vk::QueryResultFlags::Wait,
@@ -1525,51 +2023,58 @@ impl Engine {
             .map(|b| u64::from_le_bytes(*b))
             .collect::<Vec<_>>();
         let period = self.gpu.physical.get_properties().limits.timestamp_period as f64;
+        let bits = self.gpu.physical.get_queue_family_properties()[self.gpu.queue_family as usize]
+            .timestamp_valid_bits;
         Ok(self
-            .passes
+            .execution
             .iter()
             .enumerate()
             .map(|(i, p)| PassTiming {
-                pass: p.program.name.clone(),
-                gpu_ms: timestamps[2 * i + 1].wrapping_sub(timestamps[2 * i]) as f64 * period / 1e6,
+                pass: self.execution_name(*p).to_owned(),
+                gpu_ms: timestamp_elapsed(timestamps[2 * i], timestamps[2 * i + 1], bits) as f64
+                    * period
+                    / 1e6,
                 cpu_submit_ms: self.cpu_timings[slot][i],
             })
             .collect())
     }
     pub fn screenshot(&self, path: &Path) -> Result<()> {
-        let bytes = Buffer::new(
-            &self.gpu,
-            &vec![0; self.width as usize * self.height as usize * 4],
-            vk::BufferUsageFlags::TransferDst,
-        )?;
-        self.gpu.submit(|cmd| {
-            self.output
-                .transition(cmd, vk::ImageLayout::TransferSrcOptimal);
-            cmd.copy_image_to_buffer(
-                self.output.handle,
-                vk::ImageLayout::TransferSrcOptimal,
-                bytes.handle,
-                &[vk::BufferImageCopy {
-                    image_subresource: self.output.layers(),
-                    image_extent: self.output.extent,
-                    ..Default::default()
-                }],
-            );
-            self.output
-                .transition(cmd, vk::ImageLayout::ShaderReadOnlyOptimal);
-            Ok(())
-        })?;
-        let mut img = image::RgbaImage::from_raw(self.width, self.height, bytes.bytes()?.to_vec())
+        let mut img = image::RgbaImage::from_raw(self.width, self.height, self.output.readback()?)
             .context("invalid Vulkan screenshot")?;
         image::imageops::flip_vertical_in_place(&mut img);
         img.save(path)?;
         Ok(())
     }
     pub fn pass_names(&self) -> Vec<String> {
-        self.passes.iter().map(|p| p.program.name.clone()).collect()
+        self.execution
+            .iter()
+            .map(|e| self.execution_name(*e).to_owned())
+            .collect()
+    }
+    pub fn compute_manifest(&self) -> serde_json::Value {
+        serde_json::Value::Array(
+            self.computes
+                .iter()
+                .map(|p| {
+                    let crate::compute::Dispatch::Fixed(groups) = p.program.dispatch;
+                    serde_json::json!({"program":p.program.name,"base":p.program.base,
+                "groups":groups,"local_size":p.program.local_size,
+                "shared_memory_logical_bytes":p.program.shared_memory_bytes,
+                "shared_memory_driver_allocation_bytes":null,
+                "spirv_capabilities":p.program.capabilities,
+                "samplers":p.program.samplers,"images":p.program.images})
+                })
+                .collect(),
+        )
     }
     pub fn depth_image(&self) -> &Image {
         &self.depths[0]
+    }
+    /// Current color-buffer front for explicit diagnostics after completion.
+    pub fn color_snapshot(&self, index: usize) -> Option<&Image> {
+        self.colors
+            .get(index)
+            .map(|color| &color.images[color.front])
     }
     /// depthtex0: complete world, depthtex1: pre-translucent (including solid
     /// hand), depthtex2: opaque world before the hand, matching Iris.
@@ -1587,6 +2092,11 @@ impl Drop for Engine {
             }
             d.destroy_pipeline(p.pipeline, None);
             d.destroy_render_pass(p.render_pass, None);
+            d.destroy_pipeline_layout(p.pipeline_layout, None);
+            d.destroy_descriptor_set_layout(p.layout, None);
+        }
+        for p in &self.computes {
+            d.destroy_pipeline(p.pipeline, None);
             d.destroy_pipeline_layout(p.pipeline_layout, None);
             d.destroy_descriptor_set_layout(p.layout, None);
         }
@@ -1919,4 +2429,68 @@ fn blend_key(
         b.alpha_blend_op,
         b.color_write_mask,
     )
+}
+
+#[cfg(test)]
+mod compute_order_tests {
+    use super::{Execution, execution_order, timestamp_elapsed};
+
+    #[test]
+    fn timestamps_wrap_at_the_queue_counter_width() {
+        assert_eq!(timestamp_elapsed(u32::MAX as u64 - 2, 2, 32), 5);
+        assert_eq!(timestamp_elapsed(u64::MAX - 2, 2, 64), 5);
+        assert_eq!(timestamp_elapsed((1u64 << 40) - 3, 2, 40), 5);
+        assert_eq!(timestamp_elapsed(7, 19, 32), 12);
+    }
+
+    #[test]
+    fn standalone_computes_and_suffixes_run_before_associated_fragments() {
+        let graphics = [
+            "begin",
+            "shadow",
+            "shadow_entities",
+            "shadowcomp",
+            "prepare",
+            "gbuffers_terrain",
+            "deferred2",
+            "gbuffers_water",
+            "composite",
+            "final",
+        ];
+        let computes = [
+            "setup",
+            "begin",
+            "shadowcomp",
+            "prepare",
+            "deferred1",
+            "deferred2",
+            "deferred2",
+            "composite",
+        ];
+        assert_eq!(
+            execution_order(&graphics, &computes).unwrap(),
+            vec![
+                Execution::Compute(0),
+                Execution::Compute(1),
+                Execution::Graphics(0),
+                Execution::Graphics(1),
+                Execution::Graphics(2),
+                Execution::Compute(2),
+                Execution::Graphics(3),
+                Execution::Compute(3),
+                Execution::Graphics(4),
+                Execution::Graphics(5),
+                Execution::Compute(4),
+                Execution::Compute(5),
+                Execution::Compute(6),
+                Execution::Graphics(6),
+                Execution::Graphics(7),
+                Execution::Compute(7),
+                Execution::Graphics(8),
+                Execution::Graphics(9),
+            ]
+        );
+        assert!(execution_order(&["unexpected"], &[]).is_err());
+        assert!(execution_order(&[], &["deferred100"]).is_err());
+    }
 }

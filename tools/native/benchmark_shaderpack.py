@@ -8,13 +8,18 @@ import subprocess
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--pack', required=True, type=Path)
-parser.add_argument('--binary', type=Path, default=Path('target/release/pomme-shaderpack'))
+parser.add_argument('--backend', choices=['opengl', 'vulkan'], default='opengl')
+parser.add_argument('--binary', type=Path)
 parser.add_argument('--atlas', type=Path)
 parser.add_argument('--output', type=Path, default=Path('native-benchmarks'))
 parser.add_argument('--preset', default='photon-low-compat')
 parser.add_argument('--frames', type=int, default=120)
 parser.add_argument('--warmup', type=int, default=60)
 args = parser.parse_args()
+if args.frames < 1 or args.warmup < 0:
+    parser.error('frames must be positive and warmup nonnegative')
+if args.binary is None:
+    args.binary = Path('target/release/pomme-pack-vulkan' if args.backend == 'vulkan' else 'target/release/pomme-shaderpack')
 presets = json.loads(Path(__file__).with_name('photon-presets.json').read_text())
 preset = presets[args.preset]
 scenes = [
@@ -26,22 +31,27 @@ scenes = [
     ('orbit', 'terrain', 6000, 0, 'orbit'),
     ('state-changes', 'terrain', 6000, 0, 'state-changes'),
 ]
-summary = {'measurement': 'serialized offscreen frames, excludes presentation; not GTX 1650 Ti qualification', 'preset': args.preset, 'runs': []}
+summary = {'measurement': 'serialized offscreen frames, excludes presentation; not GTX 1650 Ti qualification', 'backend': args.backend, 'preset': args.preset, 'runs': []}
 for name, scene, time, rain, scenario in scenes:
     output = args.output / name
     command = [str(args.binary.resolve()), '--pack', str(args.pack.resolve()), '--profile', preset['profile'], '--width', str(preset['resolution'][0]), '--height', str(preset['resolution'][1]), '--frames', str(args.frames), '--warmup', str(args.warmup), '--scene', scene, '--time', str(time), '--rain', str(rain), '--scenario', scenario, '--output', str(output)]
+    if args.backend == 'vulkan':
+        command.append('--render')
     for option in preset['options']:
         command.extend(['--option', option])
     if args.atlas:
         command.extend(['--atlas', str(args.atlas.resolve())])
     print('Running', name, flush=True)
     subprocess.run(command, check=True)
-    report = json.loads((output / 'benchmark.json').read_text())
+    report_path = output / ('vulkan.json' if args.backend == 'vulkan' else 'benchmark.json')
+    report = json.loads(report_path.read_text())
     walls = sorted(s['wall_ms'] for s in report['samples'])
     gpu = {}
     for sample in report['samples']:
         for timing in sample['passes']:
             gpu.setdefault(timing['pass'], []).append(timing['gpu_ms'])
-    summary['runs'].append({'name': name, 'command': command, 'renderer': report['capabilities']['renderer'], 'pack_sha256': report['pack_sha256'], 'median_wall_ms': statistics.median(walls), 'p95_wall_ms': walls[min(len(walls)-1, int(len(walls)*.95))], 'mean_gpu_ms_by_pass': {p: statistics.mean(t) for p, t in gpu.items()}, 'raw_report': str(output / 'benchmark.json')})
+    renderer = report['device'] if args.backend == 'vulkan' else report['capabilities']['renderer']
+    pack_hash = report['manifest']['source_hash'] if args.backend == 'vulkan' else report['pack_sha256']
+    summary['runs'].append({'name': name, 'command': command, 'renderer': renderer, 'pack_sha256': pack_hash, 'median_wall_ms': statistics.median(walls), 'p95_wall_ms': walls[min(len(walls)-1, int(len(walls)*.95))], 'mean_gpu_ms_by_pass': {p: statistics.mean(t) for p, t in gpu.items()}, 'raw_report': str(report_path)})
 args.output.mkdir(parents=True, exist_ok=True)
 (args.output / 'summary.json').write_text(json.dumps(summary, indent=2)+'\n')

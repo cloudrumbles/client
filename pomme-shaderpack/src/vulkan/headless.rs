@@ -38,7 +38,8 @@ impl Headless {
                 p.get_queue_family_properties()
                     .iter()
                     .position(|q| {
-                        q.queue_flags.contains(vk::QueueFlags::Graphics)
+                        q.queue_flags
+                            .contains(vk::QueueFlags::Graphics | vk::QueueFlags::Compute)
                             && q.timestamp_valid_bits > 0
                     })
                     .map(|i| (p, i as u32))
@@ -94,6 +95,7 @@ impl Headless {
             physical,
             queue,
             pool,
+            queue_family: family,
             allocator: allocator.clone(),
             independent_blend: enabled.independent_blend == vk::TRUE,
         };
