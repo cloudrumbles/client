@@ -33,7 +33,7 @@ impl Fixture {
         self.write("shaders.properties", "profile.base = TONE=0.2 FOG\nprofile.changed = profile.base TONE=0.8 !FOG\n#if defined FOG\nprogram.deferred.enabled = true\n#else\nprogram.deferred.enabled = false\n#endif\n");
         self.write(
             "block.properties",
-            "block.41 = water\nblock.72 = oak_leaves\n",
+            "block.41 = water\nblock.72 = oak_leaves\nblock.73 = oak_leaves:persistent=true\n",
         );
     }
     fn zip(&self, output: &Path) {
@@ -71,6 +71,22 @@ fn directories_zips_profiles_and_materials_agree() {
     assert!(!pack.enabled("deferred").unwrap());
     assert!(pack.source("final.fsh").unwrap().contains("vec3(0.8"));
     assert_eq!(pack.block_material_id("minecraft:water"), 41);
+    assert_eq!(
+        pack.block_material_id("minecraft:oak_leaves[persistent=true,distance=7]"),
+        73
+    );
+    assert_eq!(
+        pack.block_material_id("minecraft:oak_leaves[persistent=false,distance=7]"),
+        72
+    );
+    assert_eq!(
+        pomme_shaderpack::pack::minecraft_version_code("26.2").unwrap(),
+        260200
+    );
+    assert_eq!(
+        pomme_shaderpack::pack::minecraft_version_code("1.21.11").unwrap(),
+        12111
+    );
     let scene = Scene::fixture("water");
     assert!(
         scene

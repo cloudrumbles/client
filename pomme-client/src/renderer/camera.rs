@@ -508,6 +508,12 @@ impl Camera {
         }
     }
 
+    #[cfg(feature = "shader-packs")]
+    pub fn shader_view(&self) -> (Vec3, Vec3, Vec3) {
+        let (forward, up) = self.view_basis();
+        let position = self.position.as_vec3() + self.third_person_offset();
+        (position, position + forward, up)
+    }
     pub fn fov_degrees(&self) -> f32 {
         self.fov_radians(self.render_partial_tick).to_degrees()
     }

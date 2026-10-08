@@ -143,6 +143,8 @@ pub struct RenderTimings {
 }
 
 pub struct Renderer {
+    #[cfg(feature = "shader-packs")]
+    shader_bridge: Option<crate::shaderpack::Bridge>,
     ctx: VulkanContext,
     swapchain: Swapchain,
     camera: Camera,
@@ -187,6 +189,7 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn new(
+        _events: &winit::event_loop::ActiveEventLoop,
         window: Arc<Window>,
         font_sources: FontSources<'_>,
         game_dir: &Path,
@@ -470,7 +473,11 @@ impl Renderer {
             &registry,
         );
 
+        #[cfg(feature = "shader-packs")]
+        let shader_bridge = crate::shaderpack::Bridge::start(_events, &atlas);
         Ok(Self {
+            #[cfg(feature = "shader-packs")]
+            shader_bridge,
             ctx,
             swapchain: swapchain_state,
             camera,
@@ -1013,7 +1020,27 @@ impl Renderer {
     /// Upload a batch of chunk meshes in a single coalesced transfer. Returns,
     /// per mesh that hit pool exhaustion, the section indices dropped (need
     /// re-mesh); empty on success.
+    #[cfg(feature = "shader-packs")]
+    pub fn shader_environment(&mut self, game: &crate::app::phases::in_game::GameState) {
+        if let Some(bridge) = &mut self.shader_bridge {
+            bridge.environment(game, self.camera.shader_view().0);
+        }
+    }
+    #[cfg(feature = "shader-packs")]
+    pub fn shader_window_event(
+        &mut self,
+        id: winit::window::WindowId,
+        event: &winit::event::WindowEvent,
+    ) -> bool {
+        self.shader_bridge
+            .as_mut()
+            .is_some_and(|bridge| bridge.event(id, event))
+    }
     pub fn upload_chunk_meshes(&mut self, meshes: &[ChunkMeshData]) -> Vec<(ChunkPos, Vec<i32>)> {
+        #[cfg(feature = "shader-packs")]
+        if let Some(bridge) = &self.shader_bridge {
+            bridge.meshes(meshes);
+        }
         self.chunk_buffers.upload_batch(
             &self.ctx.device,
             &self.ctx.allocator,
@@ -1023,10 +1050,18 @@ impl Renderer {
     }
 
     pub fn remove_chunk_mesh(&mut self, pos: &ChunkPos) {
+        #[cfg(feature = "shader-packs")]
+        if let Some(bridge) = &self.shader_bridge {
+            bridge.remove(pos);
+        }
         self.chunk_buffers.remove(pos);
     }
 
     pub fn clear_chunk_meshes(&mut self) {
+        #[cfg(feature = "shader-packs")]
+        if let Some(bridge) = &self.shader_bridge {
+            bridge.clear();
+        }
         self.wait_for_all_frames();
         self.chunk_buffers.clear();
     }
@@ -1109,6 +1144,10 @@ impl Renderer {
         book_preview: Option<BookPreview>,
         eyes_in_water: bool,
     ) -> Result<(), RendererError> {
+        #[cfg(feature = "shader-packs")]
+        if let Some(bridge) = &mut self.shader_bridge {
+            bridge.frame(&self.camera, &sky, render_distance, eyes_in_water);
+        }
         // Refresh the far plane before this frame's view/projection and fog.
         self.camera.set_render_distance(render_distance);
         let held_item = held_item.map(|(name, light)| {
@@ -1220,6 +1259,10 @@ impl Renderer {
             Some(packs),
         )
         .expect("failed to rebuild atlas");
+        #[cfg(feature = "shader-packs")]
+        if let Some(bridge) = &self.shader_bridge {
+            bridge.atlas(&self.atlas);
+        }
 
         self.chunk_pipeline
             .rebind_atlas(&self.ctx.device, &self.atlas);

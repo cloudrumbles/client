@@ -161,6 +161,7 @@ pub struct PassTiming {
 pub struct FrameInput {
     pub camera: Vec3,
     pub target: Vec3,
+    pub up: Vec3,
     pub world_time: i32,
     pub world_day: i32,
     pub rain: f32,
@@ -171,12 +172,19 @@ pub struct FrameInput {
     pub world_revision: u64,
     pub lighting_revision: u64,
     pub material_revision: u64,
+    pub fov_degrees: f32,
+    pub far: f32,
+    pub eye_in_water: bool,
+    pub eye_brightness: [f32; 2],
+    pub temperature: f32,
+    pub rainfall: f32,
 }
 impl FrameInput {
     pub fn fixture(scene: &Scene, frame: u32, time: i32, rain: f32) -> Self {
         Self {
             camera: scene.camera,
             target: scene.target,
+            up: Vec3::Y,
             world_time: time,
             world_day: 0,
             rain,
@@ -187,6 +195,12 @@ impl FrameInput {
             world_revision: 0,
             lighting_revision: 0,
             material_revision: 0,
+            fov_degrees: 70.0,
+            far: 256.0,
+            eye_in_water: false,
+            eye_brightness: [0.0, 240.0],
+            temperature: 0.8,
+            rainfall: 0.4,
         }
     }
 }
@@ -203,6 +217,12 @@ fn history_discontinuity(previous: Option<&FrameInput>, input: &FrameInput) -> b
             || p.world_day != input.world_day
             || p.rain != input.rain
             || p.wetness != input.wetness
+            || p.fov_degrees != input.fov_degrees
+            || p.far != input.far
+            || p.eye_in_water != input.eye_in_water
+            || p.eye_brightness != input.eye_brightness
+            || p.temperature != input.temperature
+            || p.rainfall != input.rainfall
     })
 }
 pub struct Runtime {
@@ -828,6 +848,36 @@ impl Runtime {
     /// The caller supplies the world revision in FrameInput after changing
     /// geometry. Replaces static vertex data only when chunks change, never
     /// for camera motion.
+    pub fn replace_atlas(&mut self, size: [u32; 2], pixels: &[u8]) -> Result<()> {
+        ensure!(
+            size.into_iter()
+                .all(|s| s > 0 && s <= self.capabilities.max_texture_size as u32),
+            "invalid atlas size"
+        );
+        ensure!(
+            pixels.len() == size[0] as usize * size[1] as usize * 4,
+            "invalid atlas pixel count"
+        );
+        let next = texture(
+            &self.gl,
+            size[0],
+            size[1],
+            gl::RGBA8,
+            gl::RGBA,
+            gl::UNSIGNED_BYTE,
+            Some(pixels),
+            false,
+        );
+        if let Some(old) = self.owned.iter_mut().find(|t| t.id == self.atlas.id) {
+            *old = next;
+        }
+        unsafe {
+            self.gl.DeleteTextures(1, &self.atlas.id);
+        }
+        self.atlas = next;
+        self.previous = None;
+        self.check("atlas replacement")
+    }
     pub fn replace_geometry(&mut self, scene: &Scene) -> Result<()> {
         ensure!(
             scene.solid.len() <= i32::MAX as usize && scene.water.len() <= i32::MAX as usize,
@@ -941,13 +991,13 @@ impl Runtime {
             }
             self.attach(&[], Some(self.depths[0]))?;
             self.gl.Clear(gl::DEPTH_BUFFER_BIT);
-            let view = glam::camera::rh::view::look_at_mat4(input.camera, input.target, Vec3::Y);
+            let view = glam::camera::rh::view::look_at_mat4(input.camera, input.target, input.up);
             let relative = view * Mat4::from_translation(input.camera);
             let projection = glam::camera::rh::proj::opengl::perspective(
-                70f32.to_radians(),
+                input.fov_degrees.to_radians(),
                 self.width as f32 / self.height as f32,
                 0.05,
-                256.0,
+                input.far,
             );
             let angle = (input.world_time as f32 - 6000.0) / 24000.0 * std::f32::consts::TAU;
             let sun = Vec3::new(
@@ -969,6 +1019,10 @@ impl Runtime {
                 shadow,
                 shadow_projection,
                 sun,
+            );
+            base.insert(
+                "atlasSize".into(),
+                Value(vec![self.atlas.width as f64, self.atlas.height as f64]),
             );
             let previous = if discontinuity {
                 input
@@ -1566,12 +1620,12 @@ fn frame_uniforms(
         ("moonPhase", (i.world_day % 8) as f64),
         ("sunAngle", (i.world_time as f64 / 24000.0) % 1.0),
         ("near", 0.05),
-        ("far", 256.0),
+        ("far", i.far as f64),
         ("eyeAltitude", i.camera.y as f64),
         ("rainStrength", i.rain as f64),
         ("wetness", i.wetness as f64),
         ("screenBrightness", 0.5),
-        ("isEyeInWater", 0.0),
+        ("isEyeInWater", f64::from(i.eye_in_water)),
         ("blindness", 0.0),
         ("nightVision", 0.0),
         ("darknessFactor", 0.0),
@@ -1584,8 +1638,8 @@ fn frame_uniforms(
         ("isSleeping", 0.0),
         ("entityId", 0.0),
         ("blockEntityId", 0.0),
-        ("temperature", 0.8),
-        ("rainfall", 0.4),
+        ("temperature", i.temperature as f64),
+        ("rainfall", i.rainfall as f64),
         ("biome", 1.0),
         ("biome_category", 0.0),
         ("biome_precipitation", 1.0),
@@ -1619,8 +1673,8 @@ fn frame_uniforms(
         ),
         ("fogColor", vec![0.6, 0.7, 0.8]),
         ("skyColor", vec![0.45, 0.65, 0.9]),
-        ("eyeBrightness", vec![0.0, 240.0]),
-        ("eyeBrightnessSmooth", vec![0.0, 240.0]),
+        ("eyeBrightness", i.eye_brightness.to_vec()),
+        ("eyeBrightnessSmooth", i.eye_brightness.to_vec()),
         ("atlasSize", vec![64.0, 16.0]),
         ("entityColor", vec![0.0; 4]),
         ("lightningBoltPosition", vec![0.0; 4]),
@@ -1677,7 +1731,7 @@ mod tests {
         after.camera += Vec3::X * 0.1;
         after.target += Vec3::X * 0.1;
         assert!(!history_discontinuity(Some(&before), &after));
-        let mutations: [fn(&mut FrameInput); 9] = [
+        let mutations: [fn(&mut FrameInput); 12] = [
             |i| i.world_revision += 1,
             |i| i.lighting_revision += 1,
             |i| i.material_revision += 1,
@@ -1685,6 +1739,9 @@ mod tests {
             |i| i.world_day += 1,
             |i| i.rain = 1.0,
             |i| i.wetness = 0.5,
+            |i| i.eye_brightness[0] = 16.0,
+            |i| i.temperature = 0.0,
+            |i| i.rainfall = 0.0,
             |i| {
                 i.camera += Vec3::X * 9.0;
                 i.target += Vec3::X * 9.0;

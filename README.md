@@ -14,8 +14,8 @@ server, renders the world through Vulkan, and handles physics, networking,
 audio, and UI without any Mojang code. The goal is a lightweight, performant
 alternative to the official Java client.
 
-The private shader-performance project targets native Rust/Vulkan and Photon-level
-rendering at 60 FPS on a GTX 1650 Ti. Its goal, current checkpoint and remaining
+The private shader-performance project targets native Rust and actual replaceable Photon packs, with
+60 FPS on a GTX 1650 Ti as an unverified target. Its goal, current checkpoint and remaining
 work are documented in [NATIVE_RENDERING_GOAL.md](./NATIVE_RENDERING_GOAL.md).
 
 <p align="center">
@@ -58,10 +58,11 @@ version management, and spawns the client with the appropriate flags.
 ### Experimental original shader-pack runtime
 
 A native Rust/OpenGL compatibility runtime now executes external original Photon
-GLSL packs on deterministic block fixtures, with replaceable directory/ZIP pack
-inputs, native window controls and per-pass measurements. It is separate from the
-Vulkan gameplay renderer; live-world integration and GTX 1650 Ti qualification
-remain unfinished. Build/run commands and exact limits are in
+GLSL packs on fixtures and an experimental second viewport fed by the native
+game camera, real chunk meshes, resource atlas, light, time and weather. Directory
+and ZIP inputs are replaceable. The Vulkan game window retains entities, inventory
+and gameplay UI. Full shader gameplay rendering, Iris parity and GTX 1650 Ti
+qualification remain unfinished. Minecraft 26.3 is the primary integration target. Build/run commands and exact limits are in
 [pomme-shaderpack](./pomme-shaderpack/README.md).
 
 ### Experimental browser client

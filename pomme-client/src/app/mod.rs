@@ -228,6 +228,7 @@ impl ApplicationHandler for App {
                 };
 
                 let mut renderer = match Renderer::new(
+                    event_loop,
                     Arc::clone(&window),
                     crate::ui::font::FontSources {
                         jar_assets_dir: &self.core.data_dirs.jar_assets_dir,
@@ -322,9 +323,18 @@ impl ApplicationHandler for App {
     fn window_event(
         &mut self,
         event_loop: &ActiveEventLoop,
-        _window_id: WindowId,
+        window_id: WindowId,
         event: WindowEvent,
     ) {
+        if let Some(gfx) = self.phase.get_mut().gfx_mut() {
+            #[cfg(feature = "shader-packs")]
+            if gfx.renderer.shader_window_event(window_id, &event) {
+                return;
+            }
+            if window_id != gfx.window.id() {
+                return;
+            }
+        }
         match event {
             WindowEvent::CloseRequested | WindowEvent::Destroyed => {
                 // A world saves on the way out, so the window stays up for it

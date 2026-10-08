@@ -13,8 +13,12 @@ use serde::Serialize;
 struct Args {
     #[arg(long)]
     pack: PathBuf,
+    #[arg(long = "alternate-pack")]
+    alternate_packs: Vec<PathBuf>,
     #[arg(long, default_value = "world0")]
     dimension: String,
+    #[arg(long, default_value = "1.21.11")]
+    minecraft_version: String,
     #[arg(long)]
     profile: Option<String>,
     #[arg(long = "option")]
@@ -71,12 +75,16 @@ fn main() -> Result<()> {
         "window frames must be positive"
     );
     ensure!((0.0..=1.0).contains(&args.rain), "rain must be in [0,1]");
+    let minecraft_version =
+        pomme_shaderpack::pack::minecraft_version_code(&args.minecraft_version)?;
     if args.window {
         return pomme_shaderpack::viewer::run(pomme_shaderpack::viewer::ViewerOptions {
             pack: args.pack,
+            alternate_packs: args.alternate_packs,
             profile: args.profile,
             overrides: args.options,
             dimension: args.dimension,
+            minecraft_version,
             width: args.width,
             height: args.height,
             scene: args.scene,
@@ -87,11 +95,12 @@ fn main() -> Result<()> {
             output: args.output,
         });
     }
-    let pack = Pack::load(
+    let pack = Pack::load_for_version(
         &args.pack,
         &args.dimension,
         args.profile.as_deref(),
         &args.options,
+        minecraft_version,
     )?;
     std::fs::create_dir_all(&args.output)?;
     std::fs::write(
@@ -173,7 +182,7 @@ fn main() -> Result<()> {
         }
     }
     runtime.screenshot(&args.output.join("frame.png"))?;
-    let report = serde_json::json!({"schema":1,"runtime_revision":pomme_shaderpack::BUILD_REVISION,"build_profile":if cfg!(debug_assertions){"debug"}else{"release"},"os":std::env::consts::OS,"arch":std::env::consts::ARCH,"backend":"OpenGL compatibility","measurement":"serialized offscreen frames; GPU timer queries; excludes presentation; not target-GPU qualification","capabilities":runtime.capabilities,"pack_sha256":runtime.pack.digest,"profile":args.profile,"options":runtime.pack.options,"ignored_profile_options":runtime.pack.ignored_profile_options,"dimension":args.dimension,"resolution":[args.width,args.height],"scene":args.scene,"scenario":args.scenario,"scene_input":"deterministic block fixture; not a loaded Minecraft world","fixture_revision":2,"time":args.time,"rain":args.rain,"solid_vertices":scene.solid.len(),"water_vertices":scene.water.len(),"warmup":args.warmup,"invalidations":runtime.invalidations,"passes":runtime.pass_names(),"samples":samples});
+    let report = serde_json::json!({"schema":1,"runtime_revision":pomme_shaderpack::BUILD_REVISION,"build_profile":if cfg!(debug_assertions){"debug"}else{"release"},"os":std::env::consts::OS,"arch":std::env::consts::ARCH,"backend":"OpenGL compatibility","measurement":"serialized offscreen frames; GPU timer queries; excludes presentation; not target-GPU qualification","capabilities":runtime.capabilities,"pack_sha256":runtime.pack.digest,"profile":args.profile,"options":runtime.pack.options,"ignored_profile_options":runtime.pack.ignored_profile_options,"dimension":args.dimension,"minecraft_version":args.minecraft_version,"resolution":[args.width,args.height],"scene":args.scene,"scenario":args.scenario,"scene_input":"deterministic block fixture; not a loaded Minecraft world","fixture_revision":2,"time":args.time,"rain":args.rain,"solid_vertices":scene.solid.len(),"water_vertices":scene.water.len(),"warmup":args.warmup,"invalidations":runtime.invalidations,"passes":runtime.pass_names(),"samples":samples});
     std::fs::write(
         args.output.join("benchmark.json"),
         serde_json::to_vec_pretty(&report)?,

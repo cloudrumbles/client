@@ -24,6 +24,7 @@ pub struct Pack {
     pub options: BTreeMap<String, String>,
     pub properties: BTreeMap<String, String>,
     pub dimension: String,
+    pub minecraft_version: u32,
     pub block_materials: BTreeMap<String, i32>,
     pub ignored_profile_options: Vec<String>,
     option_rules: Vec<OptionRule>,
@@ -51,6 +52,15 @@ impl Pack {
         dimension: &str,
         profile: Option<&str>,
         overrides: &[String],
+    ) -> Result<Self> {
+        Self::load_for_version(path, dimension, profile, overrides, 12111)
+    }
+    pub fn load_for_version(
+        path: &Path,
+        dimension: &str,
+        profile: Option<&str>,
+        overrides: &[String],
+        minecraft_version: u32,
     ) -> Result<Self> {
         let mut files = BTreeMap::new();
         if path.is_dir() {
@@ -125,6 +135,7 @@ impl Pack {
             options: BTreeMap::new(),
             properties: BTreeMap::new(),
             dimension: dimension.to_owned(),
+            minecraft_version,
             block_materials: BTreeMap::new(),
             ignored_profile_options: Vec::new(),
             option_rules: Vec::new(),
@@ -290,11 +301,38 @@ impl Pack {
         Ok(pack)
     }
 
-    pub fn block_material_id(&self, name: &str) -> i32 {
-        self.block_materials
-            .get(name.strip_prefix("minecraft:").unwrap_or(name))
-            .copied()
-            .unwrap_or(0)
+    pub fn block_material_id(&self, descriptor: &str) -> i32 {
+        let descriptor = descriptor.strip_prefix("minecraft:").unwrap_or(descriptor);
+        let (name, props) = descriptor.split_once('[').unwrap_or((descriptor, ""));
+        let props = props
+            .trim_end_matches(']')
+            .split(',')
+            .filter_map(|s| s.split_once('='))
+            .collect::<BTreeMap<_, _>>();
+        let mut result = self.block_materials.get(name).copied().unwrap_or(0);
+        let mut specificity = 0;
+        for (selector, id) in &self.block_materials {
+            let Some(predicates) = selector
+                .strip_prefix(name)
+                .and_then(|s| s.strip_prefix(':'))
+            else {
+                continue;
+            };
+            let predicates = predicates.split(':').collect::<Vec<_>>();
+            if predicates.len() > specificity
+                && predicates.iter().all(|s| {
+                    s.split_once('=').is_some_and(|(k, v)| {
+                        props
+                            .get(k)
+                            .is_some_and(|actual| v.split(',').any(|allowed| allowed == *actual))
+                    })
+                })
+            {
+                result = *id;
+                specificity = predicates.len();
+            }
+        }
+        result
     }
     pub fn bytes(&self, name: &str) -> Result<&[u8]> {
         self.files
@@ -308,7 +346,10 @@ impl Pack {
 
     fn environment(&self) -> String {
         // Keep IS_IRIS absent until its optional CUSTOM_IMAGES contract is supported.
-        "#define MC_VERSION 12111\n#define MC_GL_VERSION 430\n#define MC_GLSL_VERSION 430\n#define MC_HAND_DEPTH 0.125\n#define MC_RENDER_QUALITY 1.0\n#define MC_SHADOW_QUALITY 1.0\n#define MC_NORMAL_MAP\n#define MC_SPECULAR_MAP\n".into()
+        format!(
+            "#define MC_VERSION {}\n#define MC_GL_VERSION 430\n#define MC_GLSL_VERSION 430\n#define MC_HAND_DEPTH 0.125\n#define MC_RENDER_QUALITY 1.0\n#define MC_SHADOW_QUALITY 1.0\n#define MC_NORMAL_MAP\n#define MC_SPECULAR_MAP\n",
+            self.minecraft_version
+        )
     }
     fn compile_option_rules(&mut self) -> Result<()> {
         self.option_rules = self
@@ -424,6 +465,23 @@ impl Pack {
     }
 }
 
+/// OptiFine/Iris numeric version convention: major * 10000 + minor * 100 +
+/// patch.
+pub fn minecraft_version_code(name: &str) -> Result<u32> {
+    let parts = name
+        .split('.')
+        .map(str::parse::<u32>)
+        .collect::<std::result::Result<Vec<_>, _>>()?;
+    ensure!(
+        parts.len() == 2 || parts.len() == 3,
+        "expected a release Minecraft version"
+    );
+    ensure!(
+        parts[0] < 100 && parts[1] < 100 && parts.get(2).is_none_or(|n| *n < 100),
+        "version component out of range"
+    );
+    Ok(parts[0] * 10000 + parts[1] * 100 + parts.get(2).copied().unwrap_or(0))
+}
 pub fn parse_properties(source: &str) -> BTreeMap<String, String> {
     let mut result = BTreeMap::new();
     let mut continued = String::new();
@@ -473,6 +531,7 @@ mod tests {
             options: BTreeMap::from([("FOG".into(), "false".into())]),
             properties: BTreeMap::new(),
             dimension: "world0".into(),
+            minecraft_version: 12111,
             block_materials: BTreeMap::new(),
             ignored_profile_options: Vec::new(),
             option_rules: Vec::new(),

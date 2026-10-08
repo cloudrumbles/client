@@ -5,11 +5,13 @@ OpenGL compatibility context. Photon is an external, replaceable input. The host
 implements pack preprocessing and rendering contracts; it contains no Photon-like
 replacement effects and does not bundle Photon or Minecraft assets.
 
-**This is a rendering integration milestone, not a playable Photon client.**
-Pomme's existing Vulkan gameplay client, Azalea-based protocol and SteelMC
-singleplayer remain separate. The current scene input is a deterministic block
-fixture. Full live-world/entity/UI integration, Iris image parity and GTX 1650 Ti
-performance qualification remain open. See [implementation status](IMPLEMENTATION.md).
+**This is partial live-world integration, not a complete Photon gameplay renderer.**
+The optional `shader-packs` client feature creates a second OpenGL viewport in
+Pomme's existing event loop. It consumes real chunk meshes, the stitched resource
+atlas, camera, separate block/sky light, time, rain and biome climate. Azalea-based
+networking, physics, entities, inventory and game UI continue in the Vulkan window.
+No second protocol implementation or client connection is created. Full actor/UI
+submission, Iris image parity and GTX 1650 Ti qualification remain open. See [implementation status](IMPLEMENTATION.md).
 
 ## Build and run
 
@@ -69,6 +71,42 @@ For optional vanilla fixture textures, use your own installed 1.21.11 client JAR
 The helper extracts grass, stone, leaves and the first water animation frame.
 Without `--atlas`, the same fixture uses four flat diagnostic tiles. Neither mode
 is a production resource-pack atlas or a full Minecraft world.
+
+## Live Minecraft 26.3 client
+
+Build the client with the optional host, using an existing launcher installation
+for the version's extracted JAR assets and asset-index/object directories:
+
+```sh
+cargo build -p pomme-client --no-default-features --features shader-packs --locked
+./target/debug/pomme-client --version 26.3 --username NativePhoton \
+  --assets-dir /path/to/assets --versions-dir /path/to/versions \
+  --game-dir /path/to/test-game --quick-access-multiplayer 127.0.0.1:25577 \
+  --shader-pack /tmp/photon --shader-profile low \
+  --shader-option SH_SKYLIGHT=false --shader-option SHADER_AO=0 \
+  --shader-width 640 --shader-height 360 --shader-frames 120 \
+  --shader-output live-26.3
+```
+
+Use an authorized local vanilla 26.3 server (Java 25). The shader viewport follows
+movement and mouse look in the game window. R in the shader window reloads the
+pack; add repeated `--shader-alternate-pack /path/to/another-pack` arguments and
+press P to switch user-supplied packs. Failure retains the active runtime. Closing
+the shader window or reaching `--shader-frames` hides it and leaves gameplay
+running. The saved manifest includes actual chunk/entity/inventory state and
+serialized viewport pass timings; these exclude main-window Vulkan rendering.
+There is no automated gameplay FPS claim. Standalone window mode accepts the
+corresponding `--alternate-pack` option and `--minecraft-version 26.3`.
+
+The adapter retains block-state predicates, normals, tangent/handedness, mid-UV,
+color and separate light in auxiliary CPU meshing data; the existing 16-byte
+Vulkan vertex format stays intact. When a pack is selected, greedy terrain quads
+are disabled to preserve the pack's atlas UV contract. Geometry/atlas changes
+invalidate history; old atlas UV meshes are discarded on resource reload. Vanilla
+dimension changes select world0/world-1/world1 programs. Modded dimensions fail
+explicitly until their mapping is implemented. This prototype retains all loaded
+section geometry in the GL viewport; section culling/batching and animation parity
+need further work before performance qualification.
 
 ## Reproducible measurements
 

@@ -11,16 +11,16 @@
   overrides and custom uniform/variable expressions with vectors and smoothing.
 - HDR MRT color buffers, depth/shadow inputs, flip/ping-pong histories, mipmaps,
   pack custom PNG/3D raw textures, texture metadata and per-attachment blend state.
-- Static fixture vertex buffers reused across frames, cached uniform/attribute
+- Static/live vertex buffers reused across frames, cached uniform/attribute
   reflection, cached option regular expressions, explicit geometry replacement.
 - Current/previous camera transforms and conservative temporal invalidation for
   camera cuts, world/light/material revisions, time/day commands, rain/wetness
   changes and pack reload. Shadows are rendered each frame; no unmeasured shadow
   cache is enabled.
-- Material IDs read from the selected pack's `block.properties` for exact fixture
-  block names, rather than Photon-specific host IDs.
+- Material IDs read from the selected pack's `block.properties` for actual block names and property predicates, rather than Photon-specific host IDs.
 - Native window controls/presentation and surfaceless EGL screenshot/measurement
-  mode; software window smoke check presented eight frames through Xvfb.
+  mode; software window smoke checks and a live 1.21.11 server-world check presented
+  40 frames through Xvfb.
 - Existing Vulkan renderer now queries/enables indirect features explicitly and
   falls back to bounded fixed indirect draws when count/multi-draw is unavailable.
 
@@ -28,7 +28,7 @@
 
 This is a partial pack host. It does not provide full OptiFine/Iris parity:
 custom images/SSBOs, uniform arrays, geometry shaders, arbitrary compute workgroup
-expressions, all shader stages/fallback rules, block-state predicates/tags/modded
+expressions, all shader stages/fallback rules, block tags/modded
 registries and Minecraft-named custom texture resources remain unsupported.
 Unimplemented programs outside the host stage list are not executed. Unknown active
 uniforms/resource types and malformed enabled conditions fail rather than receive
@@ -44,13 +44,30 @@ menu or inventory is submitted to this renderer. Reference Iris screenshots have
 not been compared. Visual inspection confirms rendered clouds, terrain, shadows
 and different time states but does not certify their physical or pixel accuracy.
 
-Full game integration needs a world/render adapter to retain separate sky and
-block light, block states, normals, tangents and material metadata in native meshing;
-the existing 16-byte packed Vulkan vertices have already combined some inputs.
-It also needs application/window lifecycle integration, resource-pack rebuilds,
-dimension-aware uniforms, actors/transparent sorting/UI, resize handling and shader
-selection/reload controls. Reuse the current protocol, chunk lifecycle, physics,
-assets and SteelMC integration. Do not replace them with a second implementation.
+The new adapter uses the existing meshing/chunk lifecycle and event loop. It
+preserves separate sky/block light, block states, normals, tangents, mid-UV and
+material metadata alongside the existing compact Vulkan vertices. It tracks
+section upload epochs (including empty-section tombstones), unloads, world clears
+and atlas rebuilds. Camera, FOV, third-person offset, underwater state, sky time,
+rain, eye light and biome temperature/downfall come from the actual game. Selected
+Minecraft version is passed to pack preprocessing. Vanilla dimension transitions
+reload the matching program set. The second viewport follows the Vulkan game's
+inputs; it is not the final single-window renderer. Actors, transparent sorting,
+animated atlas updates, held items, biome ID/category parity, overlays/UI and resize
+handling remain work. Pack R reload and P switching preserve the active pack on
+failure. No Photon-specific effects or material IDs are baked into this adapter.
+
+Minecraft 26.3 (protocol 777) is the primary integration target. This repository
+already has embedded 26.3 protocol/registry tables and a joinable translator to
+its pinned Azalea 26.2 / protocol 776 layout, with known passenger-teleport and
+new-component/parser limitations documented in `net/translate.rs`. Current
+upstream Azalea revision `8041a14706fbdb2b8c481d2e8960d7411e850796` directly
+reports 26.3 / 777, and Pumpkin revision
+`5ede4c217f4f74499cf52a748eac65d9437f2eaf` defines 26.3 / 777. Those observations
+are source capability evidence, not tests of every upstream gameplay feature.
+The pinned backend remains in place to preserve this client's existing translation
+and tests. Official vanilla 26.3 is used for end-to-end validation, with Java 25.
+The saved Pumpkin browser generator and SteelMC integration are preserved.
 
 The direct OpenGL path establishes pack execution using its original legacy GLSL
 ABI. The Vulkan gameplay renderer continues separately. A Vulkan shader backend

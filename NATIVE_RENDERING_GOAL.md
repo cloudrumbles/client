@@ -44,7 +44,10 @@ performance mods, or establish complete Minecraft or Photon image parity.
 Software WebGPU checks establish bounded correctness; **the 1650 Ti / 60 FPS
 target has not been measured**. A distinct native branch now adds original-pack execution in
 [pomme-shaderpack](pomme-shaderpack/README.md) and Vulkan indirect-feature fixes.
-The pack runtime renders fixtures; full playable integration remains unfinished.
+The pack runtime renders fixtures and a second live-world viewport using the
+existing client lifecycle. Minecraft 26.3 is the primary end-to-end target;
+1.21.11 remains an older-version regression. Actors/UI remain in the Vulkan
+window, and full playable shader integration remains unfinished.
 See its [status and limits](pomme-shaderpack/IMPLEMENTATION.md).
 
 ## Native implementation plan
