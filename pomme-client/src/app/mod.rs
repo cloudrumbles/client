@@ -418,6 +418,15 @@ impl ApplicationHandler for App {
                         renderer.request_screenshot();
                     }
 
+                    #[cfg(feature = "shader-packs")]
+                    if event.state.is_pressed()
+                        && !event.repeat
+                        && let PhysicalKey::Code(key @ (KeyCode::F6 | KeyCode::F7)) =
+                            event.physical_key
+                        && let Some(Gfx { renderer, .. }) = app.gfx_mut()
+                    {
+                        renderer.shader_pack_key(key);
+                    }
                     self.core.input.on_key_event(&event);
 
                     match app {

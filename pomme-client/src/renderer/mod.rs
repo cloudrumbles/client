@@ -1,7 +1,7 @@
 pub mod block_entity_model;
 pub mod camera;
 pub mod chunk;
-mod context;
+pub(crate) mod context;
 pub mod entity_model;
 pub(crate) mod packing;
 pub mod pipelines;
@@ -57,6 +57,9 @@ use crate::world::block::registry::BlockRegistry;
 
 #[derive(Error, Debug)]
 pub enum RendererError {
+    #[cfg(feature = "shader-packs")]
+    #[error("Vulkan shader pack: {0:#}")]
+    ShaderPack(anyhow::Error),
     #[error("failed to initialize GPU context: {0}")]
     Context(#[from] context::ContextError),
 
@@ -474,7 +477,7 @@ impl Renderer {
         );
 
         #[cfg(feature = "shader-packs")]
-        let shader_bridge = crate::shaderpack::Bridge::start(_events, &atlas);
+        let shader_bridge = crate::shaderpack::Bridge::start(_events, &atlas, &ctx);
         Ok(Self {
             #[cfg(feature = "shader-packs")]
             shader_bridge,
@@ -995,6 +998,13 @@ impl Renderer {
     }
 
     /// Arm a vanilla F2 screenshot; captured on the next presented frame.
+    #[cfg(feature = "shader-packs")]
+    pub fn shader_pack_key(&mut self, key: winit::keyboard::KeyCode) {
+        if let Some(b) = &mut self.shader_bridge {
+            b.key(key);
+        }
+    }
+
     pub fn request_screenshot(&mut self) {
         self.screenshot.arm();
     }
@@ -1497,6 +1507,25 @@ impl Renderer {
 
         let t_fence = std::time::Instant::now();
         self.ctx.device.wait_for_fences(&[fence], true, u64::MAX)?;
+        #[cfg(feature = "shader-packs")]
+        let pack_active = if matches!(&mode, RenderMode::World { .. }) {
+            if let Some(bridge) = &mut self.shader_bridge {
+                bridge
+                    .prepare(
+                        frame,
+                        self.swapchain.extent,
+                        self.swapchain.render_pass,
+                        self.swapchain.format.format,
+                    )
+                    .map_err(RendererError::ShaderPack)?
+            } else {
+                false
+            }
+        } else {
+            false
+        };
+        #[cfg(not(feature = "shader-packs"))]
+        let pack_active = false;
         let fence_ms = t_fence.elapsed().as_secs_f32() * 1000.0;
 
         // Fence signalled: reclaim chunk slices the GPU is now provably done with,
@@ -1554,7 +1583,6 @@ impl Renderer {
             window.set_cursor_visible(false);
         }
 
-        self.ctx.device.reset_fences(&[fence])?;
         cmd.reset(vk::CommandBufferResetFlags::empty())?;
 
         let begin_info = vk::CommandBufferBeginInfo {
@@ -1562,6 +1590,14 @@ impl Renderer {
             ..Default::default()
         };
         cmd.begin(&begin_info)?;
+        #[cfg(feature = "shader-packs")]
+        if pack_active {
+            self.shader_bridge
+                .as_mut()
+                .unwrap()
+                .record(&cmd, frame)
+                .map_err(RendererError::ShaderPack)?;
+        }
 
         let extent = self.swapchain.extent;
         let viewport = vk::Viewport {
@@ -1735,6 +1771,14 @@ impl Renderer {
         cmd.set_viewport(0, &[viewport]);
         cmd.set_scissor(0, &[scissor]);
 
+        #[cfg(feature = "shader-packs")]
+        if pack_active {
+            self.shader_bridge
+                .as_ref()
+                .unwrap()
+                .draw(&cmd, frame, self.swapchain.extent);
+            cmd.set_viewport(0, &[viewport]);
+        }
         let sw = self.swapchain.extent.width as f32;
         let sh = self.swapchain.extent.height as f32;
 
@@ -1764,7 +1808,7 @@ impl Renderer {
                 // Vanilla water fog hides the sky dome and clouds; the framebuffer
                 // is cleared to the water fog color, so skipping them tints the view
                 // when looking up out of geometry.
-                if !*eyes_in_water {
+                if !pack_active && !*eyes_in_water {
                     self.sky_pipeline.update_and_draw(
                         &self.ctx.device,
                         cmd,
@@ -1777,10 +1821,12 @@ impl Renderer {
                 let t_cull = std::time::Instant::now();
                 // Solid (no discard) first so it lays down depth and early-Z lets
                 // the front-to-back order reject occluded fragments; cutout after.
-                self.chunk_pipeline.bind(cmd, frame, false);
-                self.chunk_buffers.draw_indirect(cmd, frame, false);
-                self.chunk_pipeline.bind(cmd, frame, true);
-                self.chunk_buffers.draw_indirect(cmd, frame, true);
+                if !pack_active {
+                    self.chunk_pipeline.bind(cmd, frame, false);
+                    self.chunk_buffers.draw_indirect(cmd, frame, false);
+                    self.chunk_pipeline.bind(cmd, frame, true);
+                    self.chunk_buffers.draw_indirect(cmd, frame, true);
+                }
                 let cull_ms = t_cull.elapsed().as_secs_f32() * 1000.0;
 
                 let anchor = self.camera.anchor();
@@ -1829,18 +1875,20 @@ impl Renderer {
                 // blends over them; depth-tested (occluded by geometry in front)
                 // but doesn't write depth. CPU frustum-culled, reusing the entity
                 // frustum/eye.
-                self.chunk_pipeline.bind_water(cmd, frame);
-                self.chunk_buffers.draw_water(
-                    cmd,
-                    self.chunk_pipeline.pipeline_layout,
-                    &ent_frustum,
-                    anchor,
-                    eye,
-                );
+                if !pack_active {
+                    self.chunk_pipeline.bind_water(cmd, frame);
+                    self.chunk_buffers.draw_water(
+                        cmd,
+                        self.chunk_pipeline.pipeline_layout,
+                        &ent_frustum,
+                        anchor,
+                        eye,
+                    );
+                }
 
                 // Clouds draw after opaque world geometry (so terrain occludes
                 // them) and before weather, depth-tested against the scene.
-                if !*eyes_in_water {
+                if !pack_active && !*eyes_in_water {
                     self.cloud_pipeline
                         .update_and_draw(cmd, frame, &self.camera, sky, *cloud_mode);
                 }
@@ -2051,6 +2099,7 @@ impl Renderer {
             ..Default::default()
         };
 
+        self.ctx.device.reset_fences(&[fence])?;
         self.ctx.graphics_queue.submit(&[submit_info], fence)?;
 
         let present_info = vk::PresentInfoKHR {

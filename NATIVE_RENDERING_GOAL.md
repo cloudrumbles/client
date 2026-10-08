@@ -46,10 +46,10 @@ performance mods, or establish complete Minecraft or Photon image parity.
 Software WebGPU checks establish bounded correctness; **the 1650 Ti / 60 FPS
 target has not been measured**. A distinct native branch now adds original-pack execution in
 [pomme-shaderpack](pomme-shaderpack/README.md) and Vulkan indirect-feature fixes.
-The pack runtime renders fixtures and a second live-world viewport using the
-existing client lifecycle. Minecraft 26.3 is the primary end-to-end target;
-1.21.11 remains an older-version regression. Actors/UI remain in the Vulkan
-window, and full playable shader integration remains unfinished.
+The pack runtime now executes original Photon in the main Vulkan game window,
+with a separate optional GL reference host, using the existing client lifecycle. Minecraft 26.3 is the primary end-to-end target;
+1.21.11 remains an older-version regression. Actors/UI share that window, with forward actor shading still outside the pack
+graph. Full shader integration and persistent distant terrain remain unfinished.
 See its [status and limits](pomme-shaderpack/IMPLEMENTATION.md).
 
 ## Native implementation plan
@@ -118,7 +118,10 @@ browser scope remains in [PARITY.md](pomme-web/PARITY.md), lighting/cache behavi
 in [LIGHTING.md](pomme-web/LIGHTING.md), and source/effect boundaries in the
 [Photon effect audit](pomme-web/docs/photon-effect-audit.md).
 
-Native Photon compatibility, native Voxy integration, optional Vulkan mesh/task
-paths, target GPU profiling and 60 FPS qualification remain future work.
-Development is paused after committing and submitting this checkpoint, as
-requested.
+Full native Photon compatibility, native Voxy integration, optional Vulkan
+mesh/task paths, target GPU profiling and 60 FPS qualification remain work.
+Voxy-style distant terrain is required, with reuse/port of actual Voxy code as
+the default. Preserve nearby detail, persistent multiresolution received/imported
+world data, streaming and edit/light/dimension invalidation; test seams, transitions,
+fog, transparency and pack interaction. Never fabricate unexplored multiplayer
+terrain. Distance/quality presets require measured memory and frame-time evidence.

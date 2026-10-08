@@ -204,7 +204,7 @@ impl FrameInput {
         }
     }
 }
-fn history_discontinuity(previous: Option<&FrameInput>, input: &FrameInput) -> bool {
+pub(crate) fn history_discontinuity(previous: Option<&FrameInput>, input: &FrameInput) -> bool {
     previous.is_none_or(|p| {
         let previous_direction = (p.target - p.camera).normalize_or_zero();
         let direction = (input.target - input.camera).normalize_or_zero();
@@ -419,24 +419,7 @@ fn program(g: &gl::Gl, pack: &Pack, name: &str, compute: bool) -> Result<Pass> {
             g.GetProgramInfoLog(id, size, std::ptr::null_mut(), log.as_mut_ptr().cast());
             bail!("{name} linking: {}", String::from_utf8_lossy(&log))
         }
-        let targets = Regex::new(r"(?:RENDERTARGETS|DRAWBUFFERS):\s*([0-9, ]+)")?
-            .captures_iter(&sources)
-            .last()
-            .map(|c| {
-                let s = c[1].trim();
-                if s.contains(',') {
-                    s.split(',')
-                        .map(|s| s.trim().parse())
-                        .collect::<std::result::Result<Vec<usize>, _>>()
-                } else {
-                    s.chars()
-                        .filter(|c| !c.is_whitespace())
-                        .map(|c| c.to_string().parse())
-                        .collect()
-                }
-            })
-            .transpose()?
-            .unwrap_or_else(|| vec![0]);
+        let targets = crate::pack::render_targets(&sources)?;
         ensure!(
             targets.iter().all(|i| *i < 16),
             "unsupported target above colortex15"
@@ -1597,7 +1580,7 @@ fn load_custom(g: &gl::Gl, pack: &Pack, value: &str) -> Result<Texture> {
     }
 }
 #[allow(clippy::too_many_arguments)] // Frame transforms and dimensions form the host ABI.
-fn frame_uniforms(
+pub(crate) fn frame_uniforms(
     i: &FrameInput,
     w: u32,
     h: u32,

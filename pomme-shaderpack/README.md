@@ -1,30 +1,30 @@
 # Original shader-pack runtime (experimental)
 
-This Rust executable runs original OptiFine/Iris-style GLSL programs in a desktop
-OpenGL compatibility context. Photon is an external, replaceable input. The host
-implements pack preprocessing and rendering contracts; it contains no Photon-like
-replacement effects and does not bundle Photon or Minecraft assets.
+The native client translates original OptiFine/Iris-style GLSL to an explicit
+Vulkan ABI and executes the selected pack in its existing gameplay window.
+Photon remains an external, replaceable directory or ZIP; the host does not
+bundle its sources or substitute Photon-like effects. An optional OpenGL host
+remains available for compatibility/reference tests.
 
-**This is partial live-world integration, not a complete Photon gameplay renderer.**
-The final renderer direction remains native Rust/Vulkan. This OpenGL host is a
-compatibility/reference harness, not a replacement commitment.
-The optional `shader-packs` client feature creates a second OpenGL viewport in
-Pomme's existing event loop. It consumes real chunk meshes, the stitched resource
-atlas, camera, separate block/sky light, time, rain and biome climate. Azalea-based
-networking, physics, entities, inventory and game UI continue in the Vulkan window.
-No second protocol implementation or client connection is created. Full actor/UI
-submission, Iris image parity and GTX 1650 Ti qualification remain open. See [implementation status](IMPLEMENTATION.md).
+**This is a working single-window prototype, with compatibility and performance
+work remaining.** Actual chunk meshes, stitched resource atlas, block/sky light,
+camera, time, weather and climate drive the Vulkan pack graph. Existing native
+entities, held items, particles, weather geometry and UI draw afterwards with
+shared scene depth; those forward draws do not yet use the pack's corresponding
+geometry programs or contribute to its shadows/postprocessing. Full Iris visual
+parity, Voxy-style distant terrain and GTX 1650 Ti qualification remain open.
+See [implementation status](IMPLEMENTATION.md).
 
 ## Build and run
 
-On Debian/Ubuntu, install a C/C++ build toolchain, `cpp`, `pkg-config`, development
+On Debian/Ubuntu, install a Vulkan loader/driver, a C/C++ build toolchain, `cpp`, `pkg-config`, development
 headers for X11/Wayland, and an OpenGL/EGL driver. For software checks, install
 `libegl1`, `libgl1`, `libgl1-mesa-dri` and `xvfb`. Use the repository's pinned Rust
 toolchain; `cargo` picks up `rust-toolchain.toml`. This package does not build
 SteelMC, download game assets or require the launcher.
 
 ```sh
-cargo build -p pomme-shaderpack --release --locked
+cargo build -p pomme-shaderpack --release --features vulkan --locked
 cargo test -p pomme-shaderpack --locked
 cargo test -p pomme-shaderpack --test pack_inputs -- --ignored
 cargo clippy -p pomme-shaderpack --all-targets -- -D warnings
@@ -90,15 +90,31 @@ cargo build -p pomme-client --no-default-features --features shader-packs --lock
   --shader-output live-26.3
 ```
 
-Use an authorized local vanilla 26.3 server (Java 25). The shader viewport follows
-movement and mouse look in the game window. R in the shader window reloads the
-pack; add repeated `--shader-alternate-pack /path/to/another-pack` arguments and
-press P to switch user-supplied packs. Failure retains the active runtime. Closing
-the shader window or reaching `--shader-frames` hides it and leaves gameplay
-running. The saved manifest includes actual chunk/entity/inventory state and
-serialized viewport pass timings; these exclude main-window Vulkan rendering.
-There is no automated gameplay FPS claim. Standalone window mode accepts the
-corresponding `--alternate-pack` option and `--minecraft-version 26.3`.
+Use an authorized local vanilla 26.3 server (Java 25). Movement, mouse look,
+inventory and the original pack appear in one Vulkan window. F6 reloads the pack;
+F7 cycles repeated `--shader-alternate-pack /path/to/pack` arguments. A failed
+compatible reload retains the active pack. Internal pack resolution fits the
+requested shader width/height within the window aspect ratio; resize rebuilds
+its targets. `--shader-frames` captures pass evidence and leaves gameplay running.
+F2 captures the complete native window, including UI and forward actors.
+
+For the separate GL reference viewport, add `--shader-reference-window`; R/P
+operate in that window. Standalone GL mode accepts `--alternate-pack` and
+`--minecraft-version 26.3`. Vulkan does not use a GL window or CPU pixel bridge.
+
+To execute the original pack graph on a Vulkan device without a display:
+
+```sh
+./target/release/pomme-pack-vulkan --pack /tmp/photon --profile low \
+  --option SH_SKYLIGHT=false --render --width 640 --height 360 \
+  --frames 120 --output vulkan-photon
+```
+
+Omit `--render` to export translated GLSL, SPIR-V and the resource ABI for
+inspection. This compiler output is diagnostic; execution/visual tests are also
+required. The Vulkan path rejects active compute, custom images/SSBOs and unknown
+active inputs until their corresponding execution contracts are implemented.
+`SH_SKYLIGHT=false` is an explicit, recorded setting for this path.
 
 The adapter retains block-state predicates, normals, tangent/handedness, mid-UV,
 color and separate light in auxiliary CPU meshing data; the existing 16-byte
@@ -107,7 +123,7 @@ are disabled to preserve the pack's atlas UV contract. Geometry/atlas changes
 invalidate history; old atlas UV meshes are discarded on resource reload. Vanilla
 dimension changes select world0/world-1/world1 programs. Modded dimensions fail
 explicitly until their mapping is implemented. This prototype retains all loaded
-section geometry in the GL viewport; section culling/batching and animation parity
+section geometry in the pack graph; section culling/batching and animation parity
 need further work before performance qualification.
 
 ## Reproducible measurements

@@ -1,6 +1,45 @@
 # Native rendering implementation status
 
-## Implemented and exercised
+## Vulkan game-window milestone
+
+The `shader-packs` feature now uses the existing gameplay Vulkan device by
+default. Original Photon GLSL is preprocessed, transformed to GLSL 450 explicit
+stage/resource interfaces and compiled to Vulkan 1.2 SPIR-V. The backend executes
+prepare, shadow, terrain, deferred, water, composite and final programs on GPU
+images, with std140 uniform encoding, optimized active-input reflection,
+descriptor sets, HDR MRT, depth copies, flip histories, custom PNG/raw 3D textures,
+per-attachment blends, mipmaps, barriers and timestamp queries. A GPU compositor
+presents the pack's display-encoded color with the correct SRGB conversion and
+writes its scene depth into the main game render pass. It uses no GL window or
+CPU pixel transfer. F6 reload/F7 selection rebuild the selected original pack.
+
+Actual Photon low-profile graph execution has passed Vulkan validation on Mesa
+llvmpipe, followed by a 40-frame vanilla 26.3 world run with 81 loaded columns,
+entities, inventory and frozen server time. CPU material resolution was moved
+from every vertex to each palette entry after the first live upload stalled.
+Validation also exposed and repaired an existing item push-constant stage-mask
+mismatch. These are software checks, not physical GTX 1650 Ti measurements.
+
+Current geometry stages are terrain/water/shadow. Native forward actors, held
+items, weather geometry, particles and UI share the same window/depth afterwards;
+they are not yet shaded by the corresponding pack geometry programs or included
+in its shadows/postprocessing. Compute, storage images/SSBOs, geometry shaders,
+all host uniforms/stage fallbacks, animated atlas parity and Iris visual parity
+remain unsupported. Unsupported active resources fail explicitly. Packed HDR can
+use a wider RGBA16F target if the device cannot filter/blit that packed format;
+the substitution is reported. No shader effect is rewritten for Photon.
+
+Voxy-style persistent distant terrain is an explicit acceptance requirement.
+Current Voxy `dev` was inspected at `534d58ec8b4aa412ef314b884295552c69d480a6`;
+its notice says "All rights reserved. Do not redistribute." The public client
+checkout contains no Voxy source/port. A separate local port assessment preserves
+that notice and compares its voxel reduction to the original Java implementation;
+10,000 randomized reductions match. This is not LOD rendering or persistent
+streaming. A distributable Voxy port needs permitted source/authorization; the
+requested distant terrain remains unfinished. Unreceived multiplayer terrain
+must remain unknown.
+
+## OpenGL reference host, implemented and exercised
 
 - Original GLSL driver compilation/linking and ordered prepare, shadow, terrain,
   deferred, water, composite and final execution. Compute entry points with
@@ -51,8 +90,8 @@ section upload epochs (including empty-section tombstones), unloads, world clear
 and atlas rebuilds. Camera, FOV, third-person offset, underwater state, sky time,
 rain, eye light and biome temperature/downfall come from the actual game. Selected
 Minecraft version is passed to pack preprocessing. Vanilla dimension transitions
-reload the matching program set. The second viewport follows the Vulkan game's
-inputs; it is not the final single-window renderer. Actors, transparent sorting,
+reload the matching program set. The optional GL reference viewport follows the Vulkan game's
+inputs. The default pack path now executes inside the main Vulkan window. Actors, transparent sorting,
 animated atlas updates, held items, biome ID/category parity, overlays/UI and resize
 handling remain work. Pack R reload and P switching preserve the active pack on
 failure. No Photon-specific effects or material IDs are baked into this adapter.
@@ -70,9 +109,9 @@ and tests. Official vanilla 26.3 is used for end-to-end validation, with Java 25
 The saved Pumpkin browser generator and SteelMC integration are preserved.
 
 The direct OpenGL path establishes pack execution using its original legacy GLSL
-ABI. The Vulkan gameplay renderer continues separately. A Vulkan shader backend
-would additionally require binding/matrix ABI translation and synchronization;
-compiling GLSL to SPIR-V alone does not implement these contracts. No Vulkan/GL
+ABI. The Vulkan backend above adds binding/matrix ABI translation, real image/pass
+execution and synchronization; compiling GLSL to SPIR-V alone would not implement
+these contracts. No Vulkan/GL
 CPU-readback bridge was added because it would create an unqualified performance
 bottleneck before the world inputs are complete.
 

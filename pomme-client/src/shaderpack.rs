@@ -1,5 +1,4 @@
-//! Experimental second viewport driven by the existing game, not a second
-//! client.
+//! Replaceable original packs on the game Vulkan device; optional GL reference.
 use std::sync::{Arc, OnceLock};
 
 use glam::Vec3;
@@ -14,6 +13,7 @@ use crate::renderer::pipelines::sky::SkyState;
 
 struct Options {
     pack: String,
+    reference: bool,
     alternates: Vec<String>,
     minecraft_version: u32,
     profile: Option<String>,
@@ -32,6 +32,7 @@ pub fn configure(args: &crate::args::LaunchArgs, version: &str) {
         };
         let _ = OPTIONS.set(Options {
             pack: pack.clone(),
+            reference: args.shader_reference_window,
             alternates: args.shader_alternate_packs.clone(),
             minecraft_version,
             profile: args.shader_profile.clone(),
@@ -53,7 +54,8 @@ pub struct ShaderMeshVertex {
 }
 pub struct Bridge {
     shared: SharedWorld,
-    viewport: pomme_shaderpack::viewer::LiveViewport,
+    viewport: Option<pomme_shaderpack::viewer::LiveViewport>,
+    native: Option<NativePack>,
     eye_brightness: [f32; 2],
     climate: [f32; 2],
 }
@@ -61,6 +63,7 @@ impl Bridge {
     pub fn start(
         events: &winit::event_loop::ActiveEventLoop,
         atlas: &TextureAtlas,
+        ctx: &crate::renderer::context::VulkanContext,
     ) -> Option<Self> {
         let options = OPTIONS.get()?;
         let shared = LiveWorld::shared();
@@ -69,6 +72,23 @@ impl Bridge {
             size: atlas.cpu_size,
             pixels: Arc::clone(&atlas.cpu_pixels),
         });
+        if !options.reference {
+            let gpu = pomme_shaderpack::vulkan::resource::Gpu {
+                device: ctx.device.clone(),
+                physical: ctx.physical_device,
+                allocator: Arc::clone(&ctx.allocator),
+                queue: ctx.graphics_queue,
+                pool: ctx.command_pool,
+                independent_blend: ctx.independent_blend,
+            };
+            return Some(Self {
+                shared,
+                viewport: None,
+                native: Some(NativePack::new(gpu)),
+                eye_brightness: [0., 240.],
+                climate: [0.8, 0.4],
+            });
+        }
         let viewer = pomme_shaderpack::viewer::ViewerOptions {
             pack: options.pack.clone().into(),
             alternate_packs: options.alternates.iter().map(Into::into).collect(),
@@ -88,7 +108,8 @@ impl Bridge {
         match pomme_shaderpack::viewer::LiveViewport::new(events, viewer, Arc::clone(&shared)) {
             Ok(viewport) => Some(Self {
                 shared,
-                viewport,
+                viewport: Some(viewport),
+                native: None,
                 eye_brightness: [0.0, 240.0],
                 climate: [0.8, 0.4],
             }),
@@ -103,10 +124,13 @@ impl Bridge {
         id: winit::window::WindowId,
         event: &winit::event::WindowEvent,
     ) -> bool {
-        if id != self.viewport.window_id() {
+        let Some(viewport) = &mut self.viewport else {
+            return false;
+        };
+        if id != viewport.window_id() {
             return false;
         }
-        self.viewport.event(event);
+        viewport.event(event);
         true
     }
     pub fn atlas(&self, atlas: &TextureAtlas) {
@@ -247,9 +271,54 @@ impl Bridge {
         frame.temperature = self.climate[0];
         frame.rainfall = self.climate[1];
         self.shared.lock().unwrap().frame = Some(frame);
-        if let Err(error) = self.viewport.tick() {
+        if let Some(viewport) = &mut self.viewport
+            && let Err(error) = viewport.tick()
+        {
             tracing::error!("Live shader frame failed: {error:#}");
             self.shared.lock().unwrap().active = false;
+        }
+    }
+    pub fn prepare(
+        &mut self,
+        slot: usize,
+        extent: pyronyx::vk::Extent2D,
+        rp: pyronyx::vk::RenderPass,
+        format: pyronyx::vk::Format,
+    ) -> anyhow::Result<bool> {
+        let Some(native) = &mut self.native else {
+            return Ok(false);
+        };
+        native.prepare(&self.shared, slot, extent, rp, format)
+    }
+    pub fn record(&mut self, cmd: &pyronyx::vk::CommandBuffer, slot: usize) -> anyhow::Result<()> {
+        if let Some(n) = &mut self.native {
+            n.record(cmd, slot)
+        } else {
+            Ok(())
+        }
+    }
+    pub fn draw(
+        &self,
+        cmd: &pyronyx::vk::CommandBuffer,
+        slot: usize,
+        extent: pyronyx::vk::Extent2D,
+    ) {
+        if let Some(n) = &self.native
+            && let Some(p) = &n.presenter
+        {
+            p.draw(cmd, slot, extent);
+        }
+    }
+    pub fn key(&mut self, key: winit::keyboard::KeyCode) {
+        if let Some(n) = &mut self.native {
+            match key {
+                winit::keyboard::KeyCode::F6 => n.reload = true,
+                winit::keyboard::KeyCode::F7 => {
+                    n.next_pack = true;
+                    n.reload = true;
+                }
+                _ => {}
+            }
         }
     }
 }
@@ -258,5 +327,219 @@ impl Drop for Bridge {
         if let Ok(mut state) = self.shared.lock() {
             state.active = false;
         }
+    }
+}
+
+struct NativePack {
+    engine: Option<pomme_shaderpack::vulkan::engine::Engine>,
+    presenter: Option<pomme_shaderpack::vulkan::present::Presenter>,
+    gpu: pomme_shaderpack::vulkan::resource::Gpu,
+    size: [u32; 2],
+    dimension: String,
+    path: usize,
+    world_revision: u64,
+    atlas_revision: u64,
+    input: Option<FrameInput>,
+    frame: u32,
+    start: std::time::Instant,
+    last: std::time::Instant,
+    pending: Vec<Option<serde_json::Value>>,
+    samples: Vec<serde_json::Value>,
+    reloads: Vec<serde_json::Value>,
+    saved: bool,
+    reload: bool,
+    next_pack: bool,
+}
+impl NativePack {
+    fn new(gpu: pomme_shaderpack::vulkan::resource::Gpu) -> Self {
+        Self {
+            engine: None,
+            presenter: None,
+            gpu,
+            size: [0; 2],
+            dimension: String::new(),
+            path: 0,
+            world_revision: u64::MAX,
+            atlas_revision: 0,
+            input: None,
+            frame: 0,
+            start: std::time::Instant::now(),
+            last: std::time::Instant::now(),
+            pending: vec![None; crate::renderer::MAX_FRAMES_IN_FLIGHT],
+            samples: Vec::new(),
+            reloads: Vec::new(),
+            saved: false,
+            reload: false,
+            next_pack: false,
+        }
+    }
+    fn prepare(
+        &mut self,
+        shared: &SharedWorld,
+        slot: usize,
+        extent: pyronyx::vk::Extent2D,
+        rp: pyronyx::vk::RenderPass,
+        format: pyronyx::vk::Format,
+    ) -> anyhow::Result<bool> {
+        use pomme_shaderpack::pack::Pack;
+        use pomme_shaderpack::vulkan::engine::Engine;
+        use pomme_shaderpack::vulkan::present::Presenter;
+        let options = OPTIONS.get().unwrap();
+        if let Some(mut sample) = self.pending[slot].take()
+            && let Some(e) = &self.engine
+        {
+            sample["passes"] = serde_json::to_value(e.timings(slot)?)?;
+            if !self.saved {
+                self.samples.push(sample);
+            }
+        }
+        if !self.saved
+            && options
+                .frames
+                .is_some_and(|n| self.samples.len() >= n as usize)
+        {
+            let e = self.engine.as_ref().unwrap();
+            self.gpu.device.wait_idle()?;
+            let output = std::path::Path::new(&options.output);
+            std::fs::create_dir_all(output)?;
+            e.screenshot(&output.join("vulkan-live.png"))?;
+            self.samples.sort_by_key(|s| s["frame"].as_u64());
+            std::fs::write(
+                output.join("vulkan-live.json"),
+                serde_json::to_vec_pretty(
+                    &serde_json::json!({"backend":"Vulkan in native game window","device":unsafe{std::ffi::CStr::from_ptr(self.gpu.physical.get_properties().device_name.as_ptr())}.to_string_lossy(),"revision":pomme_shaderpack::BUILD_REVISION,"pack_hash":e.pack.digest,"options":e.pack.options,"size":self.size,"passes":e.pass_names(),"measurement":"Vulkan pack-pass timestamp queries; excludes forward actors, UI and presentation; not gameplay FPS","samples":self.samples,"reloads":self.reloads}),
+                )?,
+            )?;
+            self.saved = true;
+            tracing::info!("Vulkan shader capture completed: {}", options.output);
+        }
+        let state = shared.lock().unwrap();
+        let Some(mut input) = state.frame.clone() else {
+            return Ok(false);
+        };
+        let dimension = match state.game.dimension.as_str() {
+            "minecraft:overworld" | "" => "world0",
+            "minecraft:the_nether" => "world-1",
+            "minecraft:the_end" => "world1",
+            other => anyhow::bail!("shader dimension mapping unsupported: {other}"),
+        };
+        let width = options.width.min(extent.width).max(1);
+        let height =
+            (width as u64 * extent.height as u64 / extent.width.max(1) as u64).max(1) as u32;
+        let size = [width, height];
+        if self.engine.is_none() || self.size != size || self.dimension != dimension || self.reload
+        {
+            self.gpu.device.wait_idle()?;
+            // Collect every outstanding old query before replacing its pool.
+            if let Some(e) = &self.engine {
+                for sample_slot in 0..self.pending.len() {
+                    if let Some(mut s) = self.pending[sample_slot].take() {
+                        s["passes"] = serde_json::to_value(e.timings(sample_slot)?)?;
+                        if !self.saved {
+                            self.samples.push(s);
+                        }
+                    }
+                }
+            }
+            let next = if self.next_pack {
+                (self.path + 1) % (options.alternates.len() + 1)
+            } else {
+                self.path
+            };
+            let path = if next == 0 {
+                &options.pack
+            } else {
+                &options.alternates[next - 1]
+            };
+            let result = (|| -> anyhow::Result<_> {
+                let pack = Pack::load_for_version(
+                    std::path::Path::new(path),
+                    dimension,
+                    options.profile.as_deref(),
+                    &options.options,
+                    options.minecraft_version,
+                )?;
+                let scene = state.scene();
+                let atlas = state.atlas.as_ref().map(|a| (a.size, a.pixels.as_slice()));
+                let engine = Engine::new(
+                    self.gpu.clone(),
+                    pack,
+                    width,
+                    height,
+                    &scene,
+                    atlas,
+                    crate::renderer::MAX_FRAMES_IN_FLIGHT,
+                )?;
+                let presenter = Presenter::new(
+                    self.gpu.clone(),
+                    rp,
+                    matches!(
+                        format,
+                        pyronyx::vk::Format::B8G8R8A8Srgb | pyronyx::vk::Format::R8G8B8A8Srgb
+                    ),
+                    crate::renderer::MAX_FRAMES_IN_FLIGHT,
+                )?;
+                Ok((engine, presenter))
+            })();
+            match result {
+                Ok((engine, presenter)) => {
+                    self.reloads.push(serde_json::json!({"frame":self.frame,"pack_hash":engine.pack.digest,"path":path,"dimension":dimension}));
+                    self.engine = Some(engine);
+                    self.presenter = Some(presenter);
+                    self.size = size;
+                    self.dimension = dimension.into();
+                    self.path = next;
+                    self.world_revision = state.revision;
+                    self.atlas_revision = state.atlas.as_ref().map_or(0, |a| a.revision);
+                }
+                Err(e)
+                    if self.engine.is_some()
+                        && self.size == size
+                        && self.dimension == dimension =>
+                {
+                    tracing::error!("Vulkan pack reload failed; keeping active pack: {e:#}")
+                }
+                Err(e) => return Err(e),
+            }
+            self.reload = false;
+            self.next_pack = false;
+        }
+        let e = self.engine.as_mut().unwrap();
+        if self.world_revision != state.revision {
+            e.replace_scene(&state.scene())?;
+            self.world_revision = state.revision;
+        }
+        if let Some(a) = &state.atlas
+            && a.revision != self.atlas_revision
+        {
+            e.replace_atlas(a.size, &a.pixels)?;
+            self.atlas_revision = a.revision;
+        }
+        let now = std::time::Instant::now();
+        input.frame = self.frame;
+        input.seconds = self.start.elapsed().as_secs_f32();
+        input.delta_seconds = now.duration_since(self.last).as_secs_f32().min(0.1);
+        input.world_revision = self.world_revision;
+        input.material_revision = self.atlas_revision;
+        self.last = now;
+        self.input = Some(input);
+        let input = self.input.as_ref().unwrap();
+        self.pending[slot] = Some(
+            serde_json::json!({"frame":self.frame,"world_time":input.world_time,"world_day":input.world_day,"rain":input.rain,"eye_in_water":input.eye_in_water,"world_revision":input.world_revision,"camera":input.camera.to_array(),"pack_hash":e.pack.digest,"history_invalidations":e.invalidations,"game":state.game}),
+        );
+        Ok(true)
+    }
+    fn record(&mut self, cmd: &pyronyx::vk::CommandBuffer, slot: usize) -> anyhow::Result<()> {
+        let e = self.engine.as_mut().unwrap();
+        e.record(cmd, slot, self.input.as_ref().unwrap())?;
+        if let Some(s) = &mut self.pending[slot] {
+            s["history_invalidations"] = e.invalidations.into();
+        }
+        self.presenter
+            .as_ref()
+            .unwrap()
+            .prepare(cmd, slot, &e.output, e.depth_image());
+        self.frame += 1;
+        Ok(())
     }
 }

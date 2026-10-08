@@ -5276,6 +5276,7 @@ dependencies = [
 name = "pomme-client"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "arboard",
  "azalea-auth",
  "azalea-block",
@@ -5406,11 +5407,14 @@ dependencies = [
  "image",
  "khronos-egl",
  "libloading 0.9.0",
+ "pomme-gpu-allocator",
+ "pyronyx",
  "raw-window-handle",
  "regex",
  "serde",
  "serde_json",
  "sha2 0.11.0",
+ "shaderc",
  "winit",
  "zip",
 ]

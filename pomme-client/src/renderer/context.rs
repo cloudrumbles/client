@@ -72,6 +72,7 @@ pub struct VulkanContext {
     pub gpu_name: String,
     pub vulkan_version: String,
     pub draw_indirect_count: bool,
+    pub independent_blend: bool,
 }
 
 impl VulkanContext {
@@ -202,6 +203,7 @@ impl VulkanContext {
             supports_indirect_count(physical_device) && supported.multi_draw_indirect == vk::TRUE;
         let enabled = vk::PhysicalDeviceFeatures {
             multi_draw_indirect: supported.multi_draw_indirect,
+            independent_blend: supported.independent_blend,
             draw_indirect_first_instance: vk::TRUE,
             ..Default::default()
         };
@@ -296,6 +298,7 @@ impl VulkanContext {
             gpu_name,
             vulkan_version,
             draw_indirect_count,
+            independent_blend: supported.independent_blend == vk::TRUE,
         })
     }
 

@@ -3,11 +3,14 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(name = "pomme", about = "Minecraft client")]
 pub struct LaunchArgs {
-    /// Original pack directory/ZIP in an experimental second native live-world
-    /// viewport.
+    /// Original pack directory/ZIP rendered by Vulkan in the game window.
     #[cfg(feature = "shader-packs")]
     #[arg(long)]
     pub shader_pack: Option<String>,
+    /// Run the separate OpenGL compatibility reference viewport instead.
+    #[cfg(feature = "shader-packs")]
+    #[arg(long)]
+    pub shader_reference_window: bool,
     /// Additional user pack paths; P in the shader viewport cycles them.
     #[cfg(feature = "shader-packs")]
     #[arg(long = "shader-alternate-pack")]

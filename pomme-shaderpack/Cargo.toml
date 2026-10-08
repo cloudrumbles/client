@@ -5,6 +5,9 @@ edition = "2024"
 default-run = "pomme-shaderpack"
 license = "GPL-3.0-or-later"
 
+[features]
+vulkan = ["dep:shaderc", "dep:pyronyx", "dep:pomme-gpu-allocator"]
+
 [dependencies]
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
@@ -21,6 +24,9 @@ glutin = "0.32"
 glutin-winit = "0.5"
 raw-window-handle = "0.6"
 winit = "0.30"
+shaderc = { version = "0.10", optional = true }
+pyronyx = { workspace = true, optional = true }
+pomme-gpu-allocator = { path = "../pomme-gpu-allocator", optional = true }
 
 [build-dependencies]
 gl_generator = "0.14"

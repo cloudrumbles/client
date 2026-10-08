@@ -30,6 +30,33 @@ pub struct Pack {
     option_rules: Vec<OptionRule>,
 }
 
+/// RENDERTARGETS lists integer indices; legacy DRAWBUFFERS concatenates digits.
+pub(crate) fn render_targets(source: &str) -> Result<Vec<usize>> {
+    let re = Regex::new(r"(RENDERTARGETS|DRAWBUFFERS):\s*([0-9, ]+)")?;
+    let targets = if let Some(c) = re.captures_iter(source).last() {
+        let value = c[2].trim();
+        if &c[1] == "RENDERTARGETS" {
+            value
+                .split(',')
+                .map(|v| v.trim().parse())
+                .collect::<std::result::Result<Vec<usize>, _>>()?
+        } else {
+            value
+                .chars()
+                .filter(|c| !c.is_whitespace())
+                .map(|c| c.to_string().parse())
+                .collect::<std::result::Result<Vec<usize>, _>>()?
+        }
+    } else {
+        vec![0]
+    };
+    ensure!(
+        !targets.is_empty() && targets.iter().all(|i| *i < 16),
+        "invalid render target declaration"
+    );
+    Ok(targets)
+}
+
 fn normalized(path: &str) -> Result<String> {
     let mut parts = Vec::new();
     ensure!(!path.contains('\\'), "backslash in pack path {path}");
@@ -523,6 +550,19 @@ fn cpp(source: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn render_targets_keep_multidigit_indices() {
+        assert_eq!(render_targets("/* RENDERTARGETS: 13 */").unwrap(), vec![13]);
+        assert_eq!(
+            render_targets("/* RENDERTARGETS: 9,10 */").unwrap(),
+            vec![9, 10]
+        );
+        assert_eq!(
+            render_targets("/* DRAWBUFFERS: 013 */").unwrap(),
+            vec![0, 1, 3]
+        );
+        assert!(render_targets("/* RENDERTARGETS: 16 */").is_err());
+    }
     #[test]
     fn boolean_option_preserves_next_line() {
         let mut pack = Pack {

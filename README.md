@@ -39,7 +39,7 @@ work are documented in [NATIVE_RENDERING_GOAL.md](./NATIVE_RENDERING_GOAL.md).
 
 ```bash
 pomme-client/         # Minecraft client (Rust, Vulkan)
-pomme-shaderpack/     # Experimental original GLSL pack host (Rust, OpenGL)
+pomme-shaderpack/     # Original pack Vulkan backend and OpenGL reference host (Rust)
 pomme-launcher/       # Launcher app (Tauri, React, TypeScript)
 pomme-protocol/       # Per-version protocol data and wire encoding
 pomme-block/          # Data-free stand-in for azalea-block; block tables are Pomme's own
@@ -57,12 +57,13 @@ version management, and spawns the client with the appropriate flags.
 
 ### Experimental original shader-pack runtime
 
-A native Rust/OpenGL compatibility runtime now executes external original Photon
-GLSL packs on fixtures and an experimental second viewport fed by the native
-game camera, real chunk meshes, resource atlas, light, time and weather. Directory
-and ZIP inputs are replaceable. The Vulkan game window retains entities, inventory
-and gameplay UI. Full shader gameplay rendering, Iris parity and GTX 1650 Ti
-qualification remain unfinished. Minecraft 26.3 is the primary integration target. Build/run commands and exact limits are in
+The native Rust/Vulkan client now executes external original Photon GLSL packs in
+its gameplay window, using real chunk meshes, resource atlas, light, time and
+weather. Directory/ZIP packs are replaceable; F6 reloads and F7 switches supplied
+packs. Native forward entities/inventory/UI share that window, with actor pack
+shading, Voxy-style distant terrain, Iris parity and GTX 1650 Ti qualification
+still unfinished. Minecraft 26.3 is the primary integration target. An optional
+OpenGL reference host remains available. Build/run commands and exact limits are in
 [pomme-shaderpack](./pomme-shaderpack/README.md).
 
 ### Experimental browser client

@@ -5,6 +5,8 @@ pub mod pack;
 pub mod runtime;
 pub mod scene;
 pub mod viewer;
+#[cfg(feature = "vulkan")]
+pub mod vulkan;
 
 #[allow(unsafe_op_in_unsafe_fn, clippy::all)]
 pub mod gl {
