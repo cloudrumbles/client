@@ -1,0 +1,41 @@
+{
+  "revision": "2e278c08eb24e54ec163155aeec002b403305662",
+  "pr": "https://github.com/cloudrumbles/client/pull/5",
+  "platform": "linux-x86_64",
+  "build": "cargo build --release --locked --no-default-features -p pomme-client --features shader-packs",
+  "source_dependencies_reused_from": "3bc54e5eaa77d80e03e4ef486a3ace4c70947c46",
+  "target_hardware_tested": false,
+  "unbundled": [
+    "Minecraft assets",
+    "Photon shader pack",
+    "private Voxy port"
+  ],
+  "checksums": {
+    "COPYING": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "Cargo.lock": "049c195ca2ab161ce305de792b1aaeb257cdafe3d424755eb148ee27d21d4a8e",
+    "LICENSE": "ae468e0990205edd38c9caa7309aa84bac7ea4b767988ee3766fc046a1eea4f3",
+    "README.txt": "acc3f8c2c83e39d8c88d4a17a48e70a8e0984e2257a9ea7388554f9ce834c14c",
+    "SteelMC-submodule-source.tar.gz": "046969648f6d364c482d5980f21f2ee75dd998319a0b439418f4da3cd08ee023",
+    "THIRD_PARTY_LICENSES.md": "9f1f5cd3ba52a02fcb070fe0e62ad4b8d89848b30ee1dedcf3a11f3b420afb22",
+    "dependencies.json": "3a31e50dacb84072bd980c5594e995b5099b1a7ba524fb8babd6b90e00d09c29",
+    "evidence/clippy_native.log": "8734ccc8804300dc829aebd77a5e7cb3f0cff431fe5bf414898cb51610078c29",
+    "evidence/clippy_shader.log": "5e00d290f11cfb992c69199fd0ad98dddd22a3172d056ef952c49f8035d57750",
+    "evidence/evidence.json": "47f380b6eb9f9587b528d91659b16f675dc1bb6631c4801e90954ff1aec50430",
+    "evidence/format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evidence/native-window.png": "814e39b670872f281a442dffcc90b5ec0adf22509680ca0aa95d8f6ca7b76465",
+    "evidence/official_assets.log": "3f2693e8c5426b218200add35b498c54f0cfdf10507f041b09e1d97488bc3d95",
+    "evidence/release.log": "539a20e3c7398f91e0fc5381d9577cbd91f44ffd5b6afc3f7f130a7e8caa04be",
+    "evidence/tests.log": "4e98874e839b398759b86f9e0d5d95dfa481353fff662e67f1e94db016e083b2",
+    "evidence/vulkan_fixture.log": "603fa9d1d8a345d160eec5cc38ebc5020e3ae0c74d83d3580255bad375c19427",
+    "git-dependency-workspaces.tar.gz": "362a1f1d10ae95a4dbb58635b34c101cdfe56bce6fd080de19017dbaaff3f820",
+    "lib/libshaderc.so.1": "31400b359d2f4b4a43168978412a72913474725befb87966068cfac1922ac6c9",
+    "notices/iris/LICENSE": "a5681bf9b05db14d86776930017c647ad9e6e56ff6bbcfdf21e5848288dfaf1b",
+    "notices/iris/NOTICE": "d896336848792852978a01cf6e69bdf97d8d59f7b75f0e0c4829218d47cb7157",
+    "notices/libshaderc-copyright": "82eb30e969cd07912a318337aeb602866c09a071b45dd8e1481e9ab592ae7a12",
+    "pomme-client": "ddebd3114f7b00322f6c1447051dffa60217d6589212ead0c7c672040956416a",
+    "project-source.tar.gz": "cb0913d0a7b9c99a2a7a5a23e32a9b1983f72d7657411225b94878e12faf2a9e",
+    "run-native.sh": "e942a0be44248c2bc6dbd7dd851ff7eeca0932a24da0a4eb0882ef9278432178",
+    "rust-dependency-sources.tar.gz": "cb9f870dc63785771759c605e975c177efdbbdfefedacd9826c5aa501edb9dc7",
+    "rust-toolchain.toml": "b26d39d64b417b0049eecc9108671772ad6c368fda6c395e584071c4ba402a5f"
+  }
+}

@@ -1,0 +1,41 @@
+   Compiling syn v2.0.117
+   Compiling link-cplusplus v1.0.12
+   Compiling cmake v0.1.58
+   Compiling tracing-core v0.1.36
+   Compiling pyronyx v0.4.0+1.4.357
+   Compiling shaderc-sys v0.10.1
+   Compiling shaderc v0.10.1
+   Compiling thiserror-impl v1.0.69
+   Compiling tracing-attributes v0.1.31
+   Compiling tracing v0.1.44
+   Compiling thiserror v1.0.69
+   Compiling calloop v0.13.0
+   Compiling calloop-wayland-source v0.3.0
+   Compiling smithay-client-toolkit v0.19.2
+   Compiling sctk-adwaita v0.10.1
+   Compiling winit v0.30.13
+   Compiling pomme-gpu-allocator v0.1.0 (/workspace/minecraft-client/pomme-gpu-allocator)
+   Compiling glutin-winit v0.5.0
+   Compiling pomme-shaderpack v0.1.0 (/workspace/minecraft-client/pomme-shaderpack)
+    Finished `release` profile [optimized] target(s) in 2m 27s
+warning: the following packages contain code that will be rejected by a future version of Rust: glutin v0.32.3, glutin-winit v0.5.0, winit v0.30.13
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 2`
+     Running tests/actor_vulkan.rs (target/release/build/pomme-shaderpack/ce227a67d1c16188/out/actor_vulkan-ce227a67d1c16188)
+
+running 1 test
+Vulkan compiled shadow: 7 uniforms, 1 samplers
+Vulkan compiled shadow_entities: 7 uniforms, 1 samplers
+Vulkan compiled shadow_block: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_terrain: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_entities: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_block: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_hand: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_water: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_entities_translucent: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_block_translucent: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_hand_water: 7 uniforms, 1 samplers
+Vulkan compiled final: 2 uniforms, 1 samplers
+test actor_stages_use_real_texture_light_material_poses_and_fallbacks_with_bounded_uploads ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+

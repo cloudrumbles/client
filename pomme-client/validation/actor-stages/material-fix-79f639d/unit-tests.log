@@ -1,0 +1,24 @@
+   Compiling pomme-shaderpack v0.1.0 (/workspace/minecraft-client-actor-review/pomme-shaderpack)
+    Finished `release` profile [optimized] target(s) in 4.95s
+warning: the following packages contain code that will be rejected by a future version of Rust: glutin v0.32.3, glutin-winit v0.5.0, winit v0.30.13
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 2`
+     Running unittests src/lib.rs (/workspace/minecraft-client/target/release/build/pomme-shaderpack/f50de142c7e683cd/out/pomme_shaderpack-f50de142c7e683cd)
+
+running 14 tests
+test expression::tests::missing_inputs_and_cycles_fail ... ok
+test expression::tests::expressions_follow_frame_and_reset ... ok
+test pack::tests::boolean_option_preserves_next_line ... ok
+test pack::tests::paths_and_continuations ... ok
+test pack::tests::render_targets_keep_multidigit_indices ... ok
+test runtime::tests::blend_factors_validate_and_preserve_separate_alpha ... ok
+test live::tests::frame_lease_retains_geometry_materials_atlas_and_dimension_after_clear ... ok
+test stages::tests::iris_fallback_contract_preserves_distinct_roots_and_actor_chains ... ok
+test runtime::tests::history_survives_motion_and_resets_for_state_changes ... ok
+test live::tests::empty_newer_sections_prevent_stale_mesh_resurrection ... ok
+test vulkan::abi::tests::std140_matrix_padding_and_active_inputs ... ok
+test live::tests::unload_keeps_epoch_tombstone_until_world_clear ... ok
+test vulkan::abi::tests::compatibility_ftransform_compiles_for_vulkan ... ok
+test vulkan::abi::tests::material_vec3_and_vec4_aliases_compile_with_all_components_used ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+

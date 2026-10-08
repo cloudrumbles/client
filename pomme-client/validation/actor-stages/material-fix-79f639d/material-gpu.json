@@ -1,0 +1,75 @@
+{
+  "build_revision": "79f639df7e3c71f585aa72f56eac4b435398e423",
+  "cases": [
+    {
+      "branch": "mesh",
+      "expected": [
+        191,
+        128,
+        128,
+        255
+      ],
+      "material_id": 75,
+      "pixel": [
+        191,
+        128,
+        128,
+        255
+      ],
+      "type": "vec3"
+    },
+    {
+      "branch": "actor",
+      "expected": [
+        128,
+        0,
+        128,
+        255
+      ],
+      "material_id": 50,
+      "pixel": [
+        128,
+        0,
+        128,
+        255
+      ],
+      "type": "vec3"
+    },
+    {
+      "branch": "mesh",
+      "expected": [
+        191,
+        128,
+        128,
+        255
+      ],
+      "material_id": 75,
+      "pixel": [
+        191,
+        128,
+        128,
+        255
+      ],
+      "type": "vec4"
+    },
+    {
+      "branch": "actor",
+      "expected": [
+        128,
+        0,
+        128,
+        255
+      ],
+      "material_id": 50,
+      "pixel": [
+        128,
+        0,
+        128,
+        255
+      ],
+      "type": "vec4"
+    }
+  ],
+  "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "target_gpu_tested": false
+}

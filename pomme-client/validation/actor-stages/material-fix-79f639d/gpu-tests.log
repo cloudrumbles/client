@@ -1,0 +1,208 @@
+    Blocking waiting for file lock on build directory
+   Compiling pomme-shaderpack v0.1.0 (/workspace/minecraft-client-actor-review/pomme-shaderpack)
+    Finished `release` profile [optimized] target(s) in 2m 37s
+warning: the following packages contain code that will be rejected by a future version of Rust: glutin v0.32.3, glutin-winit v0.5.0, winit v0.30.13
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 2`
+     Running tests/actor_vulkan.rs (/workspace/minecraft-client/target/release/build/pomme-shaderpack/ce227a67d1c16188/out/actor_vulkan-ce227a67d1c16188)
+
+running 2 tests
+test actor_stages_use_real_texture_light_material_poses_and_fallbacks_with_bounded_uploads ... [Vulkan Loader] LAYER:          Searching for implicit layer manifest files
+[Vulkan Loader] LAYER:             In following locations:
+[Vulkan Loader] LAYER:                /home/agent/.config/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /etc/xdg/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /etc/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /home/agent/.local/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /usr/local/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /usr/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:             Found no files
+[Vulkan Loader] LAYER:          Searching for explicit layer manifest files
+[Vulkan Loader] LAYER:             In following locations:
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d
+[Vulkan Loader] LAYER:             Found the following files:
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_MESA_overlay.json
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_INTEL_nullhw.json
+[Vulkan Loader] WARNING | LAYER: env var 'VK_INSTANCE_LAYERS' defined and adding layers "VK_LAYER_KHRONOS_validation"
+[Vulkan Loader] WARNING | LAYER: env var 'VK_INSTANCE_LAYERS' defined and adding layers "VK_LAYER_KHRONOS_validation"
+[Vulkan Loader] DEBUG | LAYER:  Loading layer library libVkLayer_khronos_validation.so
+[Vulkan Loader] INFO | LAYER:   Insert instance layer "VK_LAYER_KHRONOS_validation" (libVkLayer_khronos_validation.so)
+[Vulkan Loader] LAYER:          vkCreateInstance layer callstack setup to:
+[Vulkan Loader] LAYER:             <Application>
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             <Loader>
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             VK_LAYER_KHRONOS_validation
+[Vulkan Loader] LAYER:                     Type: Explicit
+[Vulkan Loader] LAYER:                     Enabled By: Environment Variable VK_INSTANCE_LAYERS
+[Vulkan Loader] LAYER:                     Manifest: /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                     Library:  libVkLayer_khronos_validation.so
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             <Drivers>
+[Vulkan Loader] INFO | LAYER:   Inserted device layer "VK_LAYER_KHRONOS_validation" (libVkLayer_khronos_validation.so)
+[Vulkan Loader] DRIVER:         vkCreateDevice layer callstack setup to:
+[Vulkan Loader] DRIVER:            <Application>
+[Vulkan Loader] DRIVER:              ||
+[Vulkan Loader] DRIVER:            <Loader>
+[Vulkan Loader] DRIVER:              ||
+[Vulkan Loader] LAYER:             VK_LAYER_KHRONOS_validation
+[Vulkan Loader] LAYER:                     Type: Explicit
+[Vulkan Loader] LAYER:                     Enabled By: Environment Variable VK_INSTANCE_LAYERS
+[Vulkan Loader] LAYER:                     Manifest: /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                     Library:  libVkLayer_khronos_validation.so
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] DRIVER:            <Device>
+[Vulkan Loader] DRIVER:                Using "llvmpipe (LLVM 19.1.7, 256 bits)" with driver: "libvulkan_lvp.so"
+Vulkan compiled shadow: 7 uniforms, 1 samplers
+Vulkan compiled shadow_entities: 7 uniforms, 1 samplers
+Vulkan compiled shadow_block: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_terrain: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_entities: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_block: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_hand: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_water: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_entities_translucent: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_block_translucent: 7 uniforms, 1 samplers
+Vulkan compiled gbuffers_hand_water: 7 uniforms, 1 samplers
+Vulkan compiled final: 2 uniforms, 1 samplers
+[Vulkan Loader] DEBUG | LAYER:  Unloading layer library libVkLayer_khronos_validation.so
+ok
+test material_vec3_and_vec4_use_actor_ids_and_mesh_default_fourth_component_on_gpu ... [Vulkan Loader] LAYER:          Searching for implicit layer manifest files
+[Vulkan Loader] LAYER:             In following locations:
+[Vulkan Loader] LAYER:                /home/agent/.config/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /etc/xdg/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /etc/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /home/agent/.local/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /usr/local/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /usr/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:             Found no files
+[Vulkan Loader] LAYER:          Searching for explicit layer manifest files
+[Vulkan Loader] LAYER:             In following locations:
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d
+[Vulkan Loader] LAYER:             Found the following files:
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_MESA_overlay.json
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_INTEL_nullhw.json
+[Vulkan Loader] WARNING | LAYER: env var 'VK_INSTANCE_LAYERS' defined and adding layers "VK_LAYER_KHRONOS_validation"
+[Vulkan Loader] WARNING | LAYER: env var 'VK_INSTANCE_LAYERS' defined and adding layers "VK_LAYER_KHRONOS_validation"
+[Vulkan Loader] DEBUG | LAYER:  Loading layer library libVkLayer_khronos_validation.so
+[Vulkan Loader] INFO | LAYER:   Insert instance layer "VK_LAYER_KHRONOS_validation" (libVkLayer_khronos_validation.so)
+[Vulkan Loader] LAYER:          vkCreateInstance layer callstack setup to:
+[Vulkan Loader] LAYER:             <Application>
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             <Loader>
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             VK_LAYER_KHRONOS_validation
+[Vulkan Loader] LAYER:                     Type: Explicit
+[Vulkan Loader] LAYER:                     Enabled By: Environment Variable VK_INSTANCE_LAYERS
+[Vulkan Loader] LAYER:                     Manifest: /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                     Library:  libVkLayer_khronos_validation.so
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             <Drivers>
+[Vulkan Loader] INFO | LAYER:   Inserted device layer "VK_LAYER_KHRONOS_validation" (libVkLayer_khronos_validation.so)
+[Vulkan Loader] DRIVER:         vkCreateDevice layer callstack setup to:
+[Vulkan Loader] DRIVER:            <Application>
+[Vulkan Loader] DRIVER:              ||
+[Vulkan Loader] DRIVER:            <Loader>
+[Vulkan Loader] DRIVER:              ||
+[Vulkan Loader] LAYER:             VK_LAYER_KHRONOS_validation
+[Vulkan Loader] LAYER:                     Type: Explicit
+[Vulkan Loader] LAYER:                     Enabled By: Environment Variable VK_INSTANCE_LAYERS
+[Vulkan Loader] LAYER:                     Manifest: /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                     Library:  libVkLayer_khronos_validation.so
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] DRIVER:            <Device>
+[Vulkan Loader] DRIVER:                Using "llvmpipe (LLVM 19.1.7, 256 bits)" with driver: "libvulkan_lvp.so"
+Vulkan compiled gbuffers_terrain: 5 uniforms, 0 samplers
+Vulkan compiled gbuffers_entities: 5 uniforms, 0 samplers
+Vulkan compiled gbuffers_block: 5 uniforms, 0 samplers
+Vulkan compiled gbuffers_water: 5 uniforms, 0 samplers
+Vulkan compiled gbuffers_entities_translucent: 5 uniforms, 0 samplers
+Vulkan compiled gbuffers_block_translucent: 5 uniforms, 0 samplers
+Vulkan compiled final: 2 uniforms, 1 samplers
+Vulkan compiled gbuffers_terrain: 5 uniforms, 0 samplers
+Vulkan compiled gbuffers_entities: 5 uniforms, 0 samplers
+Vulkan compiled gbuffers_block: 5 uniforms, 0 samplers
+Vulkan compiled gbuffers_water: 5 uniforms, 0 samplers
+Vulkan compiled gbuffers_entities_translucent: 5 uniforms, 0 samplers
+Vulkan compiled gbuffers_block_translucent: 5 uniforms, 0 samplers
+Vulkan compiled final: 2 uniforms, 1 samplers
+{
+  "build_revision": "79f639df7e3c71f585aa72f56eac4b435398e423",
+  "cases": [
+    {
+      "branch": "mesh",
+      "expected": [
+        191,
+        128,
+        128,
+        255
+      ],
+      "material_id": 75,
+      "pixel": [
+        191,
+        128,
+        128,
+        255
+      ],
+      "type": "vec3"
+    },
+    {
+      "branch": "actor",
+      "expected": [
+        128,
+        0,
+        128,
+        255
+      ],
+      "material_id": 50,
+      "pixel": [
+        128,
+        0,
+        128,
+        255
+      ],
+      "type": "vec3"
+    },
+    {
+      "branch": "mesh",
+      "expected": [
+        191,
+        128,
+        128,
+        255
+      ],
+      "material_id": 75,
+      "pixel": [
+        191,
+        128,
+        128,
+        255
+      ],
+      "type": "vec4"
+    },
+    {
+      "branch": "actor",
+      "expected": [
+        128,
+        0,
+        128,
+        255
+      ],
+      "material_id": 50,
+      "pixel": [
+        128,
+        0,
+        128,
+        255
+      ],
+      "type": "vec4"
+    }
+  ],
+  "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "target_gpu_tested": false
+}
+[Vulkan Loader] DEBUG | LAYER:  Unloading layer library libVkLayer_khronos_validation.so
+ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.46s
+

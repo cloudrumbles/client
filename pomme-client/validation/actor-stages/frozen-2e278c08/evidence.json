@@ -1,0 +1,351 @@
+{
+  "commit": "2e278c08eb24e54ec163155aeec002b403305662",
+  "pr": "https://github.com/cloudrumbles/client/pull/5",
+  "checks": {
+    "format": "passed",
+    "clippy_shader": "passed",
+    "release": "passed",
+    "tests": "passed",
+    "vulkan_fixture": "passed",
+    "official_assets": "passed",
+    "clippy_native": "passed"
+  },
+  "client_tests": {
+    "passed": 777,
+    "ignored_in_suite": 1,
+    "installed_assets_test_explicitly_passed": 1
+  },
+  "shaderpack_tests": {
+    "unit_passed": 13,
+    "directory_zip_passed": 1,
+    "vulkan_fixture_explicitly_passed": 1,
+    "GL_driver_unrun_this_checkpoint": true
+  },
+  "shared": {
+    "revision": "2e278c08eb24e54ec163155aeec002b403305662",
+    "samples": 120,
+    "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+    "camera": [
+      0.5,
+      67.62000274658203,
+      12.5
+    ],
+    "time": 6000,
+    "rain": 0.0,
+    "path": "shared",
+    "actor_lowering": {
+      "block_entities": 1,
+      "draws": 28,
+      "entities": 4,
+      "gaps": [
+        {
+          "category": "entity",
+          "input": 2,
+          "reason": "actor kind is outside the supported pack geometry slice"
+        },
+        {
+          "category": "entity",
+          "input": 3,
+          "reason": "actor kind is outside the supported pack geometry slice"
+        },
+        {
+          "category": "entity",
+          "input": 6,
+          "reason": "actor kind is outside the supported pack geometry slice"
+        }
+      ],
+      "held_item": true,
+      "preparation_ms": 0.026861
+    },
+    "geometry": {
+      "cpu_ms": 0.004887,
+      "draws": 28,
+      "mesh_assets": 3,
+      "mesh_upload_bytes": 0,
+      "texture_assets": 3,
+      "texture_upload_bytes": 0,
+      "uniform_capacity_bytes": 262144
+    },
+    "stages": [
+      {
+        "draws": 24,
+        "material_ids": [
+          10015
+        ],
+        "requested": "shadow_entities",
+        "resolved": "shadow_entities",
+        "vertices": 1440
+      },
+      {
+        "draws": 3,
+        "material_ids": [
+          10030
+        ],
+        "requested": "shadow_block",
+        "resolved": "shadow_block",
+        "vertices": 108
+      },
+      {
+        "draws": 24,
+        "material_ids": [
+          10015
+        ],
+        "requested": "gbuffers_entities",
+        "resolved": "gbuffers_entities",
+        "vertices": 1440
+      },
+      {
+        "draws": 3,
+        "material_ids": [
+          10030
+        ],
+        "requested": "gbuffers_block",
+        "resolved": "gbuffers_block",
+        "vertices": 108
+      },
+      {
+        "draws": 1,
+        "material_ids": [
+          -1
+        ],
+        "requested": "gbuffers_hand",
+        "resolved": "gbuffers_hand",
+        "vertices": 36
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "gbuffers_entities_translucent",
+        "resolved": "gbuffers_entities_translucent",
+        "vertices": 0
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "gbuffers_block_translucent",
+        "resolved": "gbuffers_block_translucent",
+        "vertices": 0
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "gbuffers_hand_water",
+        "resolved": "gbuffers_hand_water",
+        "vertices": 0
+      }
+    ],
+    "validation_errors": 0
+  },
+  "baby": {
+    "revision": "2e278c08eb24e54ec163155aeec002b403305662",
+    "samples": 40,
+    "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+    "camera": [
+      0.5,
+      67.62000274658203,
+      12.5
+    ],
+    "time": 6000,
+    "rain": 0.0,
+    "path": "shared",
+    "actor_lowering": {
+      "block_entities": 1,
+      "draws": 28,
+      "entities": 4,
+      "gaps": [
+        {
+          "category": "entity",
+          "input": 1,
+          "reason": "actor kind is outside the supported pack geometry slice"
+        },
+        {
+          "category": "entity",
+          "input": 5,
+          "reason": "actor kind is outside the supported pack geometry slice"
+        },
+        {
+          "category": "entity",
+          "input": 6,
+          "reason": "actor kind is outside the supported pack geometry slice"
+        }
+      ],
+      "held_item": true,
+      "preparation_ms": 0.019700000000000002
+    },
+    "geometry": {
+      "cpu_ms": 0.004397000000000001,
+      "draws": 28,
+      "mesh_assets": 4,
+      "mesh_upload_bytes": 0,
+      "texture_assets": 4,
+      "texture_upload_bytes": 0,
+      "uniform_capacity_bytes": 262144
+    },
+    "stages": [
+      {
+        "draws": 24,
+        "material_ids": [
+          10015
+        ],
+        "requested": "shadow_entities",
+        "resolved": "shadow_entities",
+        "vertices": 1404
+      },
+      {
+        "draws": 3,
+        "material_ids": [
+          10030
+        ],
+        "requested": "shadow_block",
+        "resolved": "shadow_block",
+        "vertices": 108
+      },
+      {
+        "draws": 24,
+        "material_ids": [
+          10015
+        ],
+        "requested": "gbuffers_entities",
+        "resolved": "gbuffers_entities",
+        "vertices": 1404
+      },
+      {
+        "draws": 3,
+        "material_ids": [
+          10030
+        ],
+        "requested": "gbuffers_block",
+        "resolved": "gbuffers_block",
+        "vertices": 108
+      },
+      {
+        "draws": 1,
+        "material_ids": [
+          -1
+        ],
+        "requested": "gbuffers_hand",
+        "resolved": "gbuffers_hand",
+        "vertices": 36
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "gbuffers_entities_translucent",
+        "resolved": "gbuffers_entities_translucent",
+        "vertices": 0
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "gbuffers_block_translucent",
+        "resolved": "gbuffers_block_translucent",
+        "vertices": 0
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "gbuffers_hand_water",
+        "resolved": "gbuffers_hand_water",
+        "vertices": 0
+      }
+    ],
+    "validation_errors": 0
+  },
+  "legacy": {
+    "revision": "2e278c08eb24e54ec163155aeec002b403305662",
+    "samples": 40,
+    "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+    "camera": [
+      0.5,
+      67.62000274658203,
+      12.5
+    ],
+    "time": 6000,
+    "rain": 0.0,
+    "path": "legacy",
+    "actor_lowering": null,
+    "geometry": {
+      "cpu_ms": 0.000541,
+      "draws": 0,
+      "mesh_assets": 0,
+      "mesh_upload_bytes": 0,
+      "texture_assets": 0,
+      "texture_upload_bytes": 0,
+      "uniform_capacity_bytes": 94240
+    },
+    "stages": [
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "shadow_entities",
+        "resolved": "shadow_entities",
+        "vertices": 0
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "shadow_block",
+        "resolved": "shadow_block",
+        "vertices": 0
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "gbuffers_entities",
+        "resolved": "gbuffers_entities",
+        "vertices": 0
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "gbuffers_block",
+        "resolved": "gbuffers_block",
+        "vertices": 0
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "gbuffers_hand",
+        "resolved": "gbuffers_hand",
+        "vertices": 0
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "gbuffers_entities_translucent",
+        "resolved": "gbuffers_entities_translucent",
+        "vertices": 0
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "gbuffers_block_translucent",
+        "resolved": "gbuffers_block_translucent",
+        "vertices": 0
+      },
+      {
+        "draws": 0,
+        "material_ids": [],
+        "requested": "gbuffers_hand_water",
+        "resolved": "gbuffers_hand_water",
+        "vertices": 0
+      }
+    ],
+    "validation_errors": 0
+  },
+  "binary_sha256": "ddebd3114f7b00322f6c1447051dffa60217d6589212ead0c7c672040956416a",
+  "target_gpu_tested": false,
+  "complete_photon_compatibility": false,
+  "ci": {
+    "workflow": "CI",
+    "run": "https://github.com/cloudrumbles/client/actions/runs/37781154803",
+    "job": "https://github.com/cloudrumbles/client/actions/runs/37781154803/job/113324303081",
+    "head": "2e278c08eb24e54ec163155aeec002b403305662",
+    "all_jobs": 8,
+    "conclusion": "success",
+    "feature_client_tests_executed": true
+  }
+}

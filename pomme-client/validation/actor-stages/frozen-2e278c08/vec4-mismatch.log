@@ -1,0 +1,7 @@
+/tmp/actor-review-vec4-frozen.vsh
+ERROR: /tmp/actor-review-vec4-frozen.vsh:5: ':' :  wrong operand types: no operation ':' exists that takes a left-hand operand of type 'layout( column_major std140) uniform highp 3-component vector of float' and a right operand of type 'layout( location=6) in highp 4-component vector of float' (or there is no acceptable conversion)
+ERROR: /tmp/actor-review-vec4-frozen.vsh:5: '' : compilation terminated 
+ERROR: 2 compilation errors.  No code generated.
+
+
+SPIR-V is not generated for failed compile or link

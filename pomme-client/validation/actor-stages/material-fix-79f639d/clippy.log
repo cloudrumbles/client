@@ -1,0 +1,56 @@
+    Checking once_cell v1.21.4
+    Checking log v0.4.34
+    Checking libc v0.2.186
+    Checking wayland-sys v0.31.11
+    Checking wayland-backend v0.3.15
+    Checking wayland-client v0.31.14
+    Checking thiserror v1.0.69
+    Checking bytemuck v1.25.2
+    Checking calloop v0.13.0
+    Checking ttf-parser v0.25.1
+    Checking wayland-protocols v0.32.12
+    Checking wayland-cursor v0.31.14
+    Checking owned_ttf_parser v0.25.1
+    Checking calloop-wayland-source v0.3.0
+    Checking tiny-skia-path v0.11.4
+    Checking wayland-csd-frame v0.3.0
+    Checking x11-dl v2.21.0
+    Checking memmap2 v0.9.10
+    Checking tracing-core v0.1.36
+    Checking wayland-protocols-wlr v0.3.12
+    Checking arrayvec v0.7.6
+    Checking tiny-skia v0.11.4
+    Checking smithay-client-toolkit v0.19.2
+    Checking tracing v0.1.44
+    Checking ab_glyph v0.2.32
+    Checking getrandom v0.3.4
+    Checking zerocopy v0.8.48
+    Checking x11rb v0.13.2
+    Checking sctk-adwaita v0.10.1
+    Checking num-traits v0.2.19
+    Checking glutin_glx_sys v0.6.1
+    Checking serde_core v1.0.229
+    Checking ahash v0.8.12
+    Checking wayland-protocols-plasma v0.3.12
+    Checking link-cplusplus v1.0.12
+    Checking xkbcommon-dl v0.4.2
+    Checking moxcms v0.8.1
+    Checking winit v0.30.13
+    Checking regex-automata v0.4.18
+    Checking zopfli v0.8.3
+    Checking shaderc-sys v0.10.1
+    Checking glutin v0.32.3
+    Checking pyronyx v0.4.0+1.4.357
+   Compiling pomme-shaderpack v0.1.0 (/workspace/minecraft-client-actor-review/pomme-shaderpack)
+    Checking serde_json v1.0.151
+    Checking zip v8.6.0
+    Checking image v0.25.10
+    Checking serde v1.0.229
+    Checking regex v1.13.1
+    Checking glutin-winit v0.5.0
+    Checking shaderc v0.10.1
+    Checking khronos-egl v6.0.0
+    Checking pomme-gpu-allocator v0.1.0 (/workspace/minecraft-client-actor-review/pomme-gpu-allocator)
+    Finished `release` profile [optimized] target(s) in 22.29s
+warning: the following packages contain code that will be rejected by a future version of Rust: glutin v0.32.3, glutin-winit v0.5.0, winit v0.30.13
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 2`
