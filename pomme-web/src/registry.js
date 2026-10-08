@@ -1,5 +1,5 @@
 import { registryStates } from './anvil.js';
-import { MATERIAL_FLAGS as F, FACE_NAMES } from './assets.js';
+import { MATERIAL_FLAGS as F, FACE_NAMES, nativeBlockTint, nativeContainedFluid } from './assets.js';
 
 /** The generated registry contains names/data, never proprietary textures. */
 export async function loadMinecraftRegistry({ url = '/data/1.20.4-registry.json', fetcher = globalThis.fetch } = {}) {
@@ -44,7 +44,16 @@ export function fallbackMaterials(registry) {
     if (name === 'light') emitLight = Number(state.properties.level ?? emitLight);
     if (emitLight > 0) flags |= F.EMISSIVE;
     const collisionBoxes = boxes ?? (solid ? [[0, 0, 0, 1, 1, 1]] : []);
-    materials.set(state.id, { id: state.id, name: state.name, properties: state.properties, color: fallbackColor(name), flags, faces: {}, fullCube: true, collisionBoxes, templateVertices: null, emitLight, opacity: block.filterLight, procedural: true });
+    const coloring = nativeBlockTint(name, state.properties, 0), faces = {};
+    let color = fallbackColor(name);
+    if (coloring.tintKind) {
+      color = [1, 1, 1];
+      for (const face of FACE_NAMES) faces[face] = { tile: -1, tintKind: name === 'grass_block' && face !== 'up' ? 0 : coloring.tintKind,
+        tint: name === 'grass_block' && face !== 'up' ? fallbackColor('dirt') : [1, 1, 1] };
+    } else if (coloring.tint.some(channel => channel !== 1)) color = coloring.tint;
+
+    const contained = nativeContainedFluid(name, state.properties);
+    materials.set(state.id, { id: state.id, name: state.name, properties: state.properties, fluid: contained ? { ...contained, stillTile: -1, flowTile: -1 } : null, color, flags, faces, fullCube: true, collisionBoxes, templateVertices: null, emitLight, opacity: block.filterLight, procedural: true });
   }
   return materials;
 }
@@ -57,11 +66,16 @@ function end(core) { if (core.block_registry_end) accepted(core.block_registry_e
 function metadata(core, material, flags) {
   const { id } = material, color = material.color ?? [1, 1, 1];
   accepted(core.block_register(id, ...color, flags), 'material metadata', id);
+  if (core.block_fluid_register) {
+    const fluid = material.fluid;
+    accepted(core.block_fluid_register(id, fluid?.kind ?? 0, fluid?.level ?? 0, fluid?.stillTile ?? -1, fluid?.flowTile ?? -1), 'contained fluid', id);
+  }
   if (core.block_light_emission) accepted(core.block_light_emission(id, material.emitLight ?? 0), 'light emission', id);
   for (let i = 0; i < FACE_NAMES.length; i++) {
     const face = material.faces?.[FACE_NAMES[i]], uv = face?.uv ?? [0, 0, 1, 1];
     if (core.block_face_tile) accepted(core.block_face_tile(id, i, face?.tile ?? -1, face?.rotation ?? 0), 'face texture', id);
     if (core.block_face_uv) accepted(core.block_face_uv(id, i, ...uv), 'face UV', id);
+    if (core.block_face_tint) accepted(core.block_face_tint(id, i, face?.tintKind ?? 0, ...(face?.tint ?? color)), 'face tint', id);
   }
 }
 function stage(core, values, action, id, count = values.length) {
@@ -96,7 +110,12 @@ export function activateMaterials(core, materials, ids, activatedSet = new Set()
       if (!material) throw new Error(`Unknown native Minecraft block state: ${id}`);
       const template = material.templateVertices;
       const custom = !!(material.flags & F.CUSTOM_MODEL) && template?.length > 0;
-      if (custom) stage(core, template, 'block_model_register', id);
+      if (custom) {
+        stage(core, template, 'block_model_register', id);
+        const kinds = material.templateTintKinds ?? new Uint8Array(template.length / 14);
+        if (kinds.length !== template.length / 14) throw new Error(`Invalid model tint metadata for block state ${id}`);
+        if (core.block_model_tints) stage(core, kinds, 'block_model_tints', id);
+      }
       const boxes = material.collisionBoxes;
       if (boxes) {
         const flattened = new Float32Array(boxes.length * 6);
@@ -113,8 +132,8 @@ export function activateMaterials(core, materials, ids, activatedSet = new Set()
 /** Lightweight worker initialization; requested definitions carry the heavy templates later. */
 export function serializableMaterials(materials) {
   return new Map(Array.from(entries(materials), material => [material.id, {
-    id: material.id, name: material.name, color: material.color, flags: material.flags, fullCube: material.fullCube, emitLight: material.emitLight, opacity: material.opacity,
-    faces: Object.fromEntries(Object.entries(material.faces ?? {}).map(([name, face]) => [name, { tile: face.tile, uv: face.uv, rotation: face.rotation ?? 0 }])),
+    id: material.id, name: material.name, color: material.color, flags: material.flags, fluid: material.fluid ? { ...material.fluid } : null, fullCube: material.fullCube, emitLight: material.emitLight, opacity: material.opacity,
+    faces: Object.fromEntries(Object.entries(material.faces ?? {}).map(([name, face]) => [name, { tile: face.tile, uv: face.uv, rotation: face.rotation ?? 0, ...(face.tint ? { tint: face.tint } : {}), ...(face.tintKind ? { tintKind: face.tintKind } : {}) }])),
   }]));
 }
 

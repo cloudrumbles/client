@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { gzipSync, zlibSync } from '../vendor/fflate.js';
 import { decodeNBT } from '../src/nbt.js';
-import { importAnvil, importLevelDat, registryStates } from '../src/anvil.js';
+import { importAnvil, importLevelDat, registryStates, decodeSectionBiomes } from '../src/anvil.js';
 
 const enc = new TextEncoder();
 const join = arrays => { const out = new Uint8Array(arrays.reduce((n, a) => n + a.length, 0)); let at = 0; for (const a of arrays) { out.set(a, at); at += a.length; } return out; };
@@ -19,12 +19,13 @@ function payload(type, value) {
 }
 const nbt = value => join([integer(1, 10), text(''), payload(10, value)]);
 const registry = { blocks: Array.from({ length: 32 }, (_, id) => ({ name: id === 0 ? 'air' : `test_${id}`, minStateId: id, maxStateId: id, states: [] })) };
-function regionFixture({ compression = 2, sectionY = -4, paletteCount = 32, dataVersion = 3700, external = false } = {}) {
+function regionFixture({ compression = 2, sectionY = -4, sectionYType = 1, extraSections = [], paletteCount = 32, dataVersion = 3700, external = false, biomes, blockEntities,
+  skyLightTag = [7, new Uint8Array(2048).fill(0xab)], blockLightTag = [7, new Uint8Array(2048).fill(0x21)] } = {}) {
   const values = Array.from({ length: paletteCount }, (_, id) => ({ Name: [8, `minecraft:${id === 0 ? 'air' : `test_${id}`}`] }));
   const bits = Math.max(4, Math.ceil(Math.log2(paletteCount))), perLong = Math.floor(64 / bits);
   const longs = Array.from({ length: Math.ceil(4096 / perLong) }, () => 0n);
   for (let i = 0; i < 4096; i++) longs[Math.floor(i / perLong)] |= BigInt(i % paletteCount) << BigInt((i % perLong) * bits);
-  const bytes = nbt({ DataVersion: [3, dataVersion], xPos: [3, -32], zPos: [3, 64], sections: [9, { type: 10, values: [{ Y: [1, sectionY], SkyLight: [7, new Uint8Array(2048).fill(0xab)], BlockLight: [7, new Uint8Array(2048).fill(0x21)], block_states: [10, { palette: [9, { type: 10, values }], ...(paletteCount > 1 ? { data: [12, longs.map(n => BigInt.asIntN(64, n))] } : {}) }] }] }] });
+  const bytes = nbt({ DataVersion: [3, dataVersion], xPos: [3, -32], zPos: [3, 64], sections: [9, { type: 10, values: [{ Y: [sectionYType, sectionY], ...(skyLightTag ? { SkyLight: skyLightTag } : {}), ...(blockLightTag ? { BlockLight: blockLightTag } : {}), ...(biomes ? { biomes: [10, biomes] } : {}), block_states: [10, { palette: [9, { type: 10, values }], ...(paletteCount > 1 ? { data: [12, longs.map(n => BigInt.asIntN(64, n))] } : {}) }] }, ...extraSections] }], ...(blockEntities ? { block_entities: [9, { type: 10, values: blockEntities }] } : {}) });
   const compressed = compression === 1 ? gzipSync(bytes) : compression === 2 ? zlibSync(bytes) : bytes;
   const sectors = Math.ceil((compressed.length + 5) / 4096), region = new Uint8Array((2 + sectors) * 4096), view = new DataView(region.buffer);
   view.setUint32(0, 2 * 256 + sectors); view.setUint32(8192, compressed.length + 1); region[8196] = compression | (external ? 128 : 0); region.set(compressed, 8197);
@@ -59,6 +60,65 @@ test('real deflated Anvil NBT decodes negative region coordinates, build height,
   assert.deepEqual(result.diagnostics.dataVersions, [3700]); assert.deepEqual(result.diagnostics.unknownStates, []);
 });
 
+test('native imported section bounds precede streaming and preserve terrain outside Overworld height', async () => {
+  for (const sy of [-30, 36, -134217727, 134217726]) {
+    const calls = [];
+    const result = await importAnvil(regionFixture({ sectionY: sy, sectionYType: 3 }), { regionX: -1, regionZ: 2, registry,
+      onBounds: async bounds => { calls.push(['bounds', bounds]); await Promise.resolve(); }, onSection: section => calls.push(['section', section.sy]) });
+    assert.deepEqual(result.bounds, { minY: sy * 16, height: 16 });
+    assert.deepEqual(calls, [['bounds', result.bounds], ['section', sy]]);
+    assert.deepEqual(result.diagnostics.skippedChunks, []);
+  }
+  const extra = { Y: [3, 27], block_states: [10, { palette: [9, { type: 10, values: [{ Name: [8, 'minecraft:air'] }] }] }] };
+  const calls = [];
+  const result = await importAnvil(regionFixture({ sectionY: 24, extraSections: [extra] }), { regionX: -1, regionZ: 2, registry,
+    onBounds: bounds => calls.push(['bounds', bounds]), onSection: section => calls.push(['section', section.sy]) });
+  assert.deepEqual(result.bounds, { minY: 384, height: 64 });
+  assert.deepEqual(calls, [['bounds', result.bounds], ['section', 24], ['section', 27]]);
+});
+
+test('selected dimension bounds clip explicitly and reject unrepresentable or excessive extents', async () => {
+  const options = { regionX: -1, regionZ: 2, registry };
+  const clipped = await importAnvil(regionFixture({ sectionY: 24 }), { ...options, minY: 0, height: 256 });
+  assert.deepEqual(clipped.bounds, { minY: 0, height: 256 }); assert.equal(clipped.sections.length, 0);
+  assert.match(clipped.diagnostics.skippedChunks[0].reason, /selected build height/);
+  for (const dimension of [{ minY: 0 }, { minY: 1, height: 256 }, { minY: 0, height: 2048 }, { minY: -2147483648, height: 16 }]) {
+    await assert.rejects(importAnvil(regionFixture(), { ...options, ...dimension }), /Imported build height/);
+  }
+  await assert.rejects(importAnvil(regionFixture({ sectionY: 134217727, sectionYType: 3 }), options), /Imported build height/);
+  const distant = { Y: [3, 65], block_states: [10, { palette: [9, { type: 10, values: [{ Name: [8, 'minecraft:air'] }] }] }] };
+  await assert.rejects(importAnvil(regionFixture({ sectionY: 0, extraSections: [distant] }), options), /Imported build height/);
+});
+
+test('NBT typed-list metadata preserves public arrays and each nested element type', () => {
+  const lists = new WeakMap();
+  const bytes = nbt({ nested: [9, { type: 9, values: [{ type: 1, values: [-1, -128, 127] }, { type: 3, values: [0, 127] }] }] });
+  const plain = decodeNBT(bytes).value, typed = decodeNBT(bytes, { onList: (list, type) => lists.set(list, type) }).value;
+  assert.deepEqual(typed, plain); assert.equal(lists.get(typed.nested), 9);
+  assert.equal(lists.get(typed.nested[0]), 1); assert.equal(lists.get(typed.nested[1]), 3);
+});
+
+test('Pumpkin saved List<Byte> light retains exact signed-byte nibble values and normalizes streamed columns', async () => {
+  const signed = Array.from({ length: 2048 }, (_, i) => (i % 256) - 128);
+  const columns = []; const result = await importAnvil(regionFixture({ skyLightTag: [9, { type: 1, values: signed }], blockLightTag: [9, { type: 1, values: Array(2048).fill(-1) }] }),
+    { regionX: -1, regionZ: 2, registry, onColumn: column => columns.push(column) });
+  const section = result.sections[0];
+  assert.ok(section.skyLight instanceof Uint8Array); assert.ok(section.blockLight instanceof Uint8Array);
+  for (let i = 0; i < 2048; i++) assert.equal(section.skyLight[i], signed[i] & 255);
+  assert.ok(section.blockLight.every(byte => byte === 255));
+  assert.equal(columns[0].sections[0].skyLight, section.skyLight); assert.equal(columns[0].sections[0].blockLight, section.blockLight);
+});
+
+test('saved light rejects wrong lengths and non-byte NBT tags rather than coercing corrupt data', async () => {
+  for (const tag of [[7, new Uint8Array(2047)], [9, { type: 1, values: Array(2047).fill(0) }],
+    [9, { type: 3, values: Array(2048).fill(0) }], [9, { type: 2, values: Array(2048).fill(0) }], [9, { type: 8, values: Array(2048).fill('0') }]]) {
+    await assert.rejects(importAnvil(regionFixture({ skyLightTag: tag }), { regionX: -1, regionZ: 2, registry }), /SkyLight nibble array/);
+    await assert.rejects(importAnvil(regionFixture({ blockLightTag: tag }), { regionX: -1, regionZ: 2, registry }), /BlockLight nibble array/);
+  }
+  const absent = await importAnvil(regionFixture({ skyLightTag: null, blockLightTag: null }), { regionX: -1, regionZ: 2, registry });
+  assert.equal(absent.sections[0].skyLight, undefined); assert.equal(absent.sections[0].blockLight, undefined);
+});
+
 test('gzip, raw, single-entry palettes and section streaming preserve the actual NBT content', async () => {
   for (const compression of [1, 3]) {
     const received = [];
@@ -66,6 +126,20 @@ test('gzip, raw, single-entry palettes and section streaming preserve the actual
     assert.equal(result.sections.length, 0); assert.equal(received.length, 1); assert.equal(received[0].sy, 19);
     assert.ok(received[0].states.every(id => id === 0));
   }
+});
+
+test('Anvil column streaming preserves native biome palettes and complete block entity NBT', async () => {
+  const biomeRegistry = { ...registry, biomes: [{ name: 'plains', id: 1 }, { name: 'desert', id: 2 }, { name: 'snowy_plains', id: 3 }] }, values = [0n, 0n];
+  for (let i = 0; i < 64; i++) values[Math.floor(i / 32)] |= BigInt(i % 3) << BigInt(i % 32 * 2);
+  const fixture = regionFixture({ biomes: { palette: [9, { type: 8, values: ['minecraft:plains', 'minecraft:desert', 'minecraft:snowy_plains'] }], data: [12, values] }, blockEntities: [{ id: [8, 'minecraft:sign'], x: [3, -512], y: [3, -60], z: [3, 1024], front_text: [10, { messages: [9, { type: 8, values: ['{"text":"Native world"}', '"日本語"'] }], color: [8, 'blue'] }], seed: [4, 9223372036854775807n] }] });
+  const columns = [], received = []; const result = await importAnvil(fixture, { regionX: -1, regionZ: 2, registry: biomeRegistry, onSection: section => received.push(section), onColumn: column => columns.push(column) });
+  assert.equal(result.columns.length, 0); assert.equal(result.sections.length, 0); assert.equal(columns.length, 1);
+  const column = columns[0]; assert.deepEqual([column.x, column.z, column.sections[0].sectionY], [-32, 64, -4]); assert.equal(column.sections[0].blocks, received[0].states);
+  assert.deepEqual(column.sections[0].biomes, Uint32Array.from({ length: 64 }, (_, i) => i % 3 + 1));
+  assert.equal(column.blockEntities[0].front_text.messages[1], '"日本語"'); assert.equal(column.blockEntities[0].seed, 9223372036854775807n); assert.deepEqual(result.diagnostics.unknownBiomes, []);
+  const singleton = decodeSectionBiomes({ palette: ['minecraft:desert'] }, biomeRegistry); assert.ok(singleton.every(id => id === 2));
+  assert.throws(() => decodeSectionBiomes({ palette: ['minecraft:plains', 'minecraft:desert'], data: [] }, biomeRegistry), /packed-biome/);
+  const diagnostics = { unknownBiomes: [] }; assert.ok(decodeSectionBiomes({ palette: ['custom:forest'] }, biomeRegistry, diagnostics).every(id => id === 1)); assert.deepEqual(diagnostics.unknownBiomes, ['custom:forest']);
 });
 
 test('Anvil rejects invalid sectors, overlap, wrong coordinates and oversized inflation; external chunks are explicit', async () => {

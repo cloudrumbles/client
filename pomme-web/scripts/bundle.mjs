@@ -16,11 +16,11 @@ async function collect(relative) {
     }
   } else if (info.isFile()) files[`pomme-browser/${relative}`] = new Uint8Array(await readFile(path));
 }
-for (const required of ['public/core.wasm', 'data/1.20.4-registry.json', 'vendor/fflate.js']) {
+for (const required of ['public/core.wasm', 'authority/authority.wasm', 'data/1.20.4-registry.json', 'data/1.21.11-registry.json', 'data/26.1-registry.json', 'vendor/fflate.js']) {
   try { await stat(resolve(root, required)); }
   catch { throw new Error(`Missing ${required}. Run npm run build before bundling.`); }
 }
-for (const entry of ['index.html', 'src', 'public', 'data', 'vendor', 'scripts', 'licenses', 'core', 'tests', 'package.json', 'package-lock.json', 'README.md', 'LIGHTING.md', '.gitignore']) await collect(entry);
+for (const entry of ['index.html', 'src', 'public', 'data', 'vendor', 'scripts', 'licenses', 'core', 'authority', 'tests', 'package.json', 'package-lock.json', 'README.md', 'LIGHTING.md', 'PARITY.md', '.gitignore']) await collect(entry);
 files['pomme-browser/LICENSE'] = new Uint8Array(await readFile(new URL('../../LICENSE', import.meta.url)));
 let commit = 'unknown', modified = null;
 try {
@@ -29,7 +29,7 @@ try {
 } catch {}
 files['pomme-browser/BUILD.json'] = strToU8(JSON.stringify({
   builtAt: new Date().toISOString(), commit, modified,
-  minecraftVersion: '1.20.4', backend: 'Rust/WASM + WebGPU',
+  minecraftVersions: ['1.20.4', '1.21.11', '26.1'], backend: 'Rust/WASM + WebGPU',
   targetHardware: { gpu: 'NVIDIA GeForce GTX 1650 Ti', fps: 60, verified: false },
   assets: 'Load your own Minecraft client JAR or resource-pack ZIP.',
   run: 'node scripts/serve.mjs',

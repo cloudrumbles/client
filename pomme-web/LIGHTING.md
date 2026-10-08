@@ -12,14 +12,17 @@ the camera image from them.
 | --- | --- | --- |
 | Full native sections | Sparse WASM near window; compressed IndexedDB imports | Actual edits, server chunks/unloads or world identity |
 | Terrain surface geometry | Worker mesh and retained GPU buffers | Changed section/block and boundary/AO neighbours |
+| Terrain GPU draw commands | Bounded render-bundle LRU for visible terrain and shadow casters | Visible mesh set, retained buffers, pipeline or texture bindings |
 | Vertex ambient occlusion | Computed during meshing | Nearby geometry changes |
 | Native sky/block light | Packed per-section arrays | Authoritative server light packets or local edit propagation |
+| Colored local light and diffuse bounce | Bounded near-world 3D textures solved in a worker | Source blocks/light, a snapped camera band or quantized sun |
 | Local propagated light | Background 3×3-column solves; bounded cache | Source/opacity/emission revisions |
 | Distant terrain | Persisted 4/8/16m cells and retained regional meshes | Actual source columns/edits, near coverage or LOD selection |
 | Static directional shadows | Retained terrain depth | Sun-angle bucket, geometry inside the light frustum, coverage region, quality or atlas |
 | Dynamic shadows | Static depth copied; only entity casters drawn, at most 30 Hz | Dynamic geometry/light coverage; removal restores static depth |
 | Sky/cloud environment | Retained HDR direction map sampled by sky/water | Sun bucket, cloud-wind bucket, camera region or quality |
 | Animated texture pixels | Predecoded native frame sequences | Their `.mcmeta` clock advances to a different frame |
+| Map terrain, decorations and labels | Persisted color bytes and held/frame atlas tiles | Map patches, decoration updates, world identity or resource-pack reload |
 | Temporal HDR history | Reprojected previous samples at output resolution | Depth mismatch/disocclusion, edits, cuts, lighting jumps, world/atlas/resolution changes |
 | Visible HDR color/depth and reflection rays | Scaled rasterization with temporal accumulation | Current camera frame |
 
@@ -40,6 +43,11 @@ Entity animation leaves static terrain depth intact; its separate combined depth
 layer is refreshed with bounded dynamic draws. Transparent glass does not become
 an opaque shadow caster.
 
+First-person arms/items render after the world with separate depth behavior.
+They do not enter world visibility or shadow-caster lists. Stationary hand
+geometry is retained, while animation and item changes update only its buffer.
+Weather changes invalidate quantized sky lighting, and lightning is transient.
+
 The native server provides per-section sky/block light. Local imported-world
 edits use a separate worker that propagates emission and attenuated sky light
 through known neighboring columns. Unknown columns block propagation. Jobs are
@@ -52,6 +60,17 @@ Distant light remains approximate: compact LOD uses exposed full-sky lighting an
 does not retain the complete propagated near light field. Terrain reductions are
 conservative and column boundaries are closed, but transitions are stepped rather
 than a full watertight Voxy hierarchy. Unknown terrain is never invented.
+
+The colored-light cache preserves native scalar block-light intensity. It adds
+artistic source hues and one material-colored sun bounce using nearby voxel
+barriers. Two unfiltered 48×32×48 RGBA16F volumes use 1.125 MiB; they update only
+when a completed worker result changes. Unknown cells retain the scalar fallback,
+and individual voxel loads prevent color interpolation through solid walls. The
+solver retains one bounded source mirror and one in-flight job. Sun-only changes
+reuse local light propagation, while rain attenuates bounce when shading.
+This is an approximate bounce field: short occlusion rays and averaged material
+colors do not establish physical GI or original Photon image parity. Material
+bounce currently uses imported face colors without per-position biome adjustment.
 
 ## Camera-dependent work
 
@@ -72,11 +91,20 @@ One 2048² 32-bit shadow map uses 16 MiB. Precomputing 240 sun positions would u
 invalidate portions of that data. The implementation instead retains static and
 combined dynamic maps plus bounded light/terrain caches.
 
-The complete imported 1.20.4 atlas uses 16 MiB of GPU texture storage, with under
-1 MiB of predecoded animated frames. Distant meshes are capped at 64 MiB and
+The complete imported 1.20.4 atlas uses approximately 32 MiB of GPU texture
+storage after entity, item, font, particle and map textures, with under 1 MiB
+of predecoded animated frames. Runtime skins/maps use a padded atlas extension
+with a 64 MiB allocation cap. Distant meshes are capped at 64 MiB and
 resident coarse voxel records at 32 MiB. Full imported chunk storage uses a
 32 MiB decoded LRU and a 512 MiB disk budget; the active near window is separate.
 Renderer statistics expose actual geometry, render-target and atlas allocations.
+
+GPU profiling records thirteen ordered rendering stages using a fixed query
+set and three asynchronous readback buffers, totaling 832 bytes of GPU buffer
+storage. Cache hits omit the corresponding pass timestamps. Benchmark exports
+retain frame IDs, submission times, exact nanosecond strings and per-pass
+durations; pending readbacks and dropped samples are reported separately.
+Profiling-on and profiling-off readbacks preserve identical HDR and depth pixels.
 
 Tests inspect actual GPU texture/depth readbacks to prove terrain reflections,
 animated atlas changes, transparent background preservation, dynamic shadow

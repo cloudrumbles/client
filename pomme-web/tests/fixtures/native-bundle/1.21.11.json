@@ -1,0 +1,51 @@
+{
+  "version": "1.21.11",
+  "source": {
+    "producer": "BundleNativeProof.java invoking official BundleContents.CODEC with HashOps.CRC32C_INSTANCE and BundleContents.STREAM_CODEC",
+    "officialClientJarSha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
+    "classes": [
+      "net.minecraft.world.item.component.BundleContents",
+      "net.minecraft.world.item.ItemStack",
+      "net.minecraft.util.HashOps"
+    ],
+    "mappedRuntimeJarSha1": "e0b9e56009df4ead71ad855536a048db5a2aade7"
+  },
+  "cases": {
+    "empty": {
+      "hash": -1978007022,
+      "wire": "00"
+    },
+    "stone1": {
+      "hash": -2010854724,
+      "wire": "0101010000"
+    },
+    "stone12": {
+      "hash": 1258123371,
+      "wire": "010c010000"
+    },
+    "varint_boundary": {
+      "hash": -1773489401,
+      "wire": "02017f00006380010000"
+    },
+    "stone64": {
+      "hash": -1777817905,
+      "wire": "0140010000"
+    },
+    "stone12dirt3": {
+      "hash": -1247583737,
+      "wire": "020c010000031c0000"
+    },
+    "stone98max99": {
+      "hash": 942261629,
+      "wire": "01620101000163"
+    },
+    "nested": {
+      "hash": -1564064178,
+      "wire": "02018c080100300108010000341c0000"
+    },
+    "removed_damage": {
+      "hash": -1399439148,
+      "wire": "0101aa07000103"
+    }
+  }
+}

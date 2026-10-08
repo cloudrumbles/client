@@ -192,6 +192,13 @@ try {
   assert.match(await page.getByRole('log', { name: 'Server chat' }).textContent(), /Browser integration ready/);
   assert.equal(proof.renderer.temporalEnabled, true); assert.equal(proof.renderer.ssrEnabled, true);
   assert.equal(proof.renderer.dynamicMeshes, 1); assert.ok(proof.renderer.entityTriangles > 0);
+  // Initial colored-light work is asynchronous and legitimately invalidates
+  // history when its first volume arrives. Establish the empty-mesh baseline
+  // after that source snapshot is complete instead of racing its publication.
+  await page.waitForFunction(() => {
+    const cache = window.pomme.world.irradiance, state = cache.stats();
+    return state.volumeUploads > 0 && !state.busy && !state.pending && cache.completedKey === cache.currentKey() && window.pomme.renderer.stats().historyUsed;
+  }, null, { timeout: 30000 });
   // An empty worker result advances diagnostics without changing visible
   // geometry. The application must preserve the renderer's temporal history.
   const emptyMesh = await page.evaluate(() => {
@@ -203,12 +210,12 @@ try {
       opaque: new Float32Array(), water: new Float32Array(), stride: 14,
       origin: [x, 0, z], bounds: { min: [x, -64, z], max: [x + 16, 320, z + 16] },
     } });
-    return { frames: before.frameCount, resets: before.temporalResets, revision };
+    return { frames: before.frameCount, resets: before.temporalResets, reason: before.lastTemporalReset, revision };
   });
   await page.waitForFunction(frames => window.pomme.renderer.stats().frameCount >= frames + 3, emptyMesh.frames);
   const emptyAfter = await page.evaluate(() => ({ revision: window.pomme.revision, ...window.pomme.renderer.stats() }));
   assert.ok(emptyAfter.revision > emptyMesh.revision, 'empty uploads still advance application diagnostics');
-  assert.equal(emptyAfter.temporalResets, emptyMesh.resets, 'empty streamed columns preserve actual application temporal history');
+  assert.equal(emptyAfter.temporalResets, emptyMesh.resets, `empty streamed columns preserve actual application temporal history: ${JSON.stringify({ before: emptyMesh, after: { frames: emptyAfter.frameCount, reason: emptyAfter.lastTemporalReset, revision: emptyAfter.revision } })}`);
   assert.equal(emptyAfter.historyUsed, true);
   assert.equal((await received.wait('teleport_confirm')).params.teleportId, 7);
   await received.wait('keep_alive'); await received.wait('chunk_batch_received');
@@ -310,16 +317,25 @@ try {
   const beforeLocalEdit = imported.renderer.meshUploadCount;
   assert.equal(await page.evaluate(state => window.pomme.edit(-23,-60,-24,state), slab), true);
   await page.waitForFunction(before => window.pomme.renderer.stats().meshUploadCount > before, beforeLocalEdit);
-  await page.waitForFunction(state => {
+  assert.equal(await page.evaluate(() => window.pomme.authority.authority.blockAt(-23,-60,-24)), slab, 'native authority receives the imported edit');
+  assert.equal(await page.evaluate(() => {
     const key = `pomme-web-edits:${window.pomme.world.worldKey}`;
-    return JSON.parse(localStorage.getItem(key) || '[]').some(block => block[0] === -23 && block[1] === -60 && block[2] === -24 && block[3] === state);
-  }, slab);
+    return JSON.parse(localStorage.getItem(key) || '[]').some(block => block[0] === -23 && block[1] === -60 && block[2] === -24);
+  }), false, 'saved authority owns this voxel after retiring the temporary overlay');
   const generation = await page.evaluate(() => window.pomme.world.generation);
   // Re-import the same on-disk files, which retain their lastModified timestamp:
   // the user's native-ID edit must be restored over the original air voxel.
   await input.evaluate(element => { element.value = ''; });
   await input.setInputFiles([fileURLToPath(regionPath), fileURLToPath(levelPath)]);
-  await page.waitForFunction(({ state, previous }) => window.pomme.world.generation > previous && window.pomme.ready && window.pomme.core.block_get(-23,-60,-24) === state, { state: slab, previous: generation }, { timeout: 30000 });
+  try {
+    await page.waitForFunction(({ state, previous }) => window.pomme.world.generation > previous && window.pomme.ready && window.pomme.core.block_get(-23,-60,-24) === state, { state: slab, previous: generation }, { timeout: 30000 });
+  } catch (error) {
+    console.error('Re-import diagnostics:', await page.evaluate(() => ({ mode: window.pomme.mode, ready: window.pomme.ready,
+      generation: window.pomme.world.generation, worldKey: window.pomme.world.worldKey, block: window.pomme.core.block_get(-23,-60,-24),
+      status: document.querySelector('#status')?.textContent, edits: localStorage.getItem(`pomme-web-edits:${window.pomme.world.worldKey}`),
+      authority: window.pomme.authority?.authority?.initial, columns: [...window.pomme.world.keys] })), browserErrors);
+    throw error;
+  }
   assert.equal(await page.evaluate(() => window.pomme.world.worldKey), imported.worldKey);
   await page.screenshot({ path: new URL('../test-results/minecraft-import.png', import.meta.url).pathname });
   await page.reload();

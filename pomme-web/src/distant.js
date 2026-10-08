@@ -1,13 +1,18 @@
-import { reduceColumn, meshColumn, meshRegion, updateReducedBlock } from './distant.worker.js';
+import { reduceColumn, meshColumn, meshRegion, updateReducedBlock, dimensionBounds, validColumnCoordinates } from './distant.worker.js';
+import { createBiomeSampler } from './biome-tints.js';
 
-export const DISTANT_CACHE_VERSION = 1;
+export const DISTANT_CACHE_VERSION = 3;
 export const DISTANT_DATABASE = 'pomme-distant-terrain';
 const SIZES = [4, 8, 16];
-// Every valid coarse record has these fixed typed-array lengths. The bound also
-// grows to include metadata from older formats and every other cached world.
-const COARSE_RECORD_BYTES = 3072 * Uint32Array.BYTES_PER_ELEMENT
-  + SIZES.reduce((sum, size) => sum + (16 / size) ** 2 * 384 / size
-    * (Uint16Array.BYTES_PER_ELEMENT + Int16Array.BYTES_PER_ELEMENT), 0) + 256;
+export function dimensionRecordBytes(height) {
+  ({ height } = dimensionBounds({ minY: 0, height }));
+  return 4 * 4 * height / 4 * 2 * Uint32Array.BYTES_PER_ELEMENT
+    + height / 16 * 64 * Uint32Array.BYTES_PER_ELEMENT
+    + SIZES.reduce((sum, size) => sum + (16 / size) ** 2 * height / size
+      * (Uint16Array.BYTES_PER_ELEMENT + Int32Array.BYTES_PER_ELEMENT), 0) + 256;
+}
+const MAX_RECORD_BYTES = dimensionRecordBytes(1024);
+const BUDGET_ID = 'global';
 const columnKey = (x, z) => `${x},${z}`;
 const lodKey = key => `lod:${key}`;
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
@@ -23,17 +28,25 @@ export function materialSignature(materials) {
   return (hash >>> 0).toString(16);
 }
 
-export function validCachedColumn(record, signature) {
-  return record?.schemaVersion === DISTANT_CACHE_VERSION && record.signature === signature
-    && Number.isInteger(record.x) && Number.isInteger(record.z) && record.minY === -64 && record.height === 384
-    && record.occupancy instanceof Uint32Array && record.occupancy.length === 3072
-    && SIZES.every(size => record.levels?.[size] instanceof Uint16Array
-      && record.levels[size].length === (16 / size) ** 2 * 384 / size
-      && record.topHeights?.[size] instanceof Int16Array && record.topHeights[size].length === record.levels[size].length);
+export function validCachedColumn(record, signature, bounds = {}) {
+  let minY, height;
+  try { ({ minY, height } = dimensionBounds(bounds)); } catch { return false; }
+  if (record?.schemaVersion !== DISTANT_CACHE_VERSION || record.signature !== signature
+    || !validColumnCoordinates(record.x, record.z) || record.minY !== minY || record.height !== height
+    || record.revision !== undefined && (!Number.isSafeInteger(record.revision) || record.revision < 0)
+    || !(record.biomes instanceof Uint32Array) || record.biomes.length !== height / 16 * 64
+    || !(record.occupancy instanceof Uint32Array) || record.occupancy.length !== 4 * 4 * height / 4 * 2) return false;
+  return SIZES.every(size => {
+    const n = 16 / size, level = record.levels?.[size], tops = record.topHeights?.[size];
+    if (!(level instanceof Uint16Array) || level.length !== n * n * height / size
+      || !(tops instanceof Int32Array) || tops.length !== level.length) return false;
+    return tops.every((top, cell) => level[cell] ? top >= minY + Math.floor(cell / (n * n)) * size
+      && top < minY + (Math.floor(cell / (n * n)) + 1) * size : top === minY - 1);
+  });
 }
 
 export function recordBytes(record) {
-  return record.occupancy.byteLength + SIZES.reduce((sum, size) => sum + record.levels[size].byteLength + record.topHeights[size].byteLength, 0) + 256;
+  return record.occupancy.byteLength + (record.biomes?.byteLength ?? 0) + SIZES.reduce((sum, size) => sum + record.levels[size].byteLength + record.topHeights[size].byteLength, 0) + 256;
 }
 
 export function chooseCellSize(distance) { return distance >= 1024 ? 16 : distance >= 512 ? 8 : 4; }
@@ -49,19 +62,49 @@ function transactionDone(transaction) {
   });
 }
 function openDatabase(factory) {
-  const request = factory.open(DISTANT_DATABASE, 1);
+  const request = factory.open(DISTANT_DATABASE, 2);
   request.onupgradeneeded = () => {
     const database = request.result;
-    database.createObjectStore('columns', { keyPath: 'id' });
-    const metadata = database.createObjectStore('metadata', { keyPath: 'id' });
-    metadata.createIndex('worldKey', 'worldKey');
+    if (!database.objectStoreNames.contains('columns')) database.createObjectStore('columns', { keyPath: 'id' });
+    if (!database.objectStoreNames.contains('metadata')) {
+      const metadata = database.createObjectStore('metadata', { keyPath: 'id' }); metadata.createIndex('worldKey', 'worldKey');
+    }
+    if (!database.objectStoreNames.contains('budget')) database.createObjectStore('budget', { keyPath: 'id' });
   };
   return requestResult(request);
+}
+function normalizedMetadata(value) {
+  if (!value || typeof value.worldKey !== 'string' || !value.worldKey || value.worldKey.length > 4096
+    || !validColumnCoordinates(value.x, value.z)
+    || value.key !== columnKey(value.x, value.z) || value.id !== `${value.worldKey}\0${value.key}`
+    || !Number.isInteger(value.schemaVersion) || value.schemaVersion < 1 || typeof value.signature !== 'string' || value.signature.length > 128
+    || !Number.isSafeInteger(value.bytes) || value.bytes < 1 || value.bytes > MAX_RECORD_BYTES) return null;
+  if (value.schemaVersion === DISTANT_CACHE_VERSION) {
+    if (!Number.isInteger(value.minY) || !Number.isInteger(value.height)) return null;
+    try { dimensionBounds(value); if (value.bytes !== dimensionRecordBytes(value.height)) return null; } catch { return null; }
+  }
+  return { ...value, accessedAt: Number.isSafeInteger(value.accessedAt) && value.accessedAt >= 0 ? Math.min(Date.now(), value.accessedAt) : 0 };
+}
+function validBudget(value) {
+  return value?.id === BUDGET_ID && Number.isSafeInteger(value.count) && value.count >= 0
+    && Number.isSafeInteger(value.bytes) && value.bytes >= value.count && value.bytes <= value.count * MAX_RECORD_BYTES;
+}
+/** Repair older or tampered accounting within the same serialized transaction. */
+async function scanBudget(transaction) {
+  const store = transaction.objectStore('metadata'), values = await requestResult(store.getAll()), valid = [];
+  for (const value of values) {
+    const metadata = normalizedMetadata(value);
+    if (metadata) valid.push(metadata);
+    else { store.delete(value.id); transaction.objectStore('columns').delete(value.id); }
+  }
+  const budget = { id: BUDGET_ID, count: valid.length, bytes: valid.reduce((sum, value) => sum + value.bytes, 0) };
+  transaction.objectStore('budget').put(budget);
+  return { values: valid, budget };
 }
 function slimMaterials(materials) {
   return [...materials].map(([id, value]) => [id, { name: value.name, flags: value.flags, color: value.color,
     faces: Object.fromEntries(Object.entries(value.faces ?? {}).map(([face, properties]) => [face, {
-      tile: properties.tile, uv: properties.uv, rotation: properties.rotation, tint: properties.tint,
+      tile: properties.tile, uv: properties.uv, rotation: properties.rotation, tint: properties.tint, tintKind: properties.tintKind ?? 0,
     }])) }]);
 }
 
@@ -72,11 +115,15 @@ function slimMaterials(materials) {
  */
 export class DistantTerrain {
   constructor({ worldKey, materials = new Map(), onMesh = () => {}, onRemove = () => {}, onStatus = () => {},
-    indexedDB = globalThis.indexedDB, workerFactory, maxDiskBytes = 128 * 1024 * 1024,
+    minY = -64, height = 384,
+    biomeConfiguration = null, biomeSeed = 0n, biomeBlendRadius = 2, indexedDB = globalThis.indexedDB, workerFactory, maxDiskBytes = 128 * 1024 * 1024,
     maxMemoryBytes = 32 * 1024 * 1024, maxMeshBytes = 64 * 1024 * 1024, maxGpuColumns = 2048, regionBatchSize = 1 } = {}) {
     if (typeof worldKey !== 'string' || !worldKey || worldKey.length > 4096) throw new Error('Distant terrain requires a stable server/world identity.');
     this.worldKey = worldKey; this.materials = materials instanceof Map ? materials : new Map(materials);
+    ({ minY: this.minY, height: this.height } = dimensionBounds({ minY, height }));
     this.signature = materialSignature(this.materials);
+    this.biomeConfiguration = biomeConfiguration; this.biomeSeed = BigInt(biomeSeed); this.biomeBlendRadius = biomeBlendRadius;
+    this.biomeSampler = biomeConfiguration ? 'javascript' : 'none';
     if (![1, 2, 4, 8].includes(regionBatchSize)) throw new Error('Distant region batching must use 1, 2, 4 or 8 columns.');
     this.onMesh = onMesh; this.onRemove = onRemove; this.onStatus = onStatus;
     this.factory = indexedDB; this.workerFactory = workerFactory;
@@ -86,7 +133,7 @@ export class DistantTerrain {
     this.eye = [0, 80, 0]; this.lastCameraCell = ''; this.clock = 0; this.closed = false;
     this.jobs = new Map(); this.operations = new Map(); this.nextJob = 1;
     this.memoryBytes = 0; this.meshBytes = 0; this.initializing = null; this.refreshing = false; this.refreshAgain = false;
-    this.metadataByteBound = COARSE_RECORD_BYTES;
+    this.metadataByteBound = dimensionRecordBytes(this.height);
   }
 
   async init() {
@@ -108,9 +155,11 @@ export class DistantTerrain {
           const error = new Error(event.message || 'Distant terrain worker failed');
           for (const pending of this.jobs.values()) pending.reject(error);
           this.jobs.clear(); this.worker?.terminate(); this.worker = null;
+          this.biomeSampler = this.biomeConfiguration ? 'javascript' : 'none';
           this.onStatus(`Distant worker stopped: ${error.message}`);
         };
-        await this.run('materials', { materials: slimMaterials(this.materials) });
+        const ready = await this.run('materials', { minY: this.minY, height: this.height, materials: slimMaterials(this.materials), biomeConfiguration: this.biomeConfiguration, biomeSeed: this.biomeSeed, biomeBlendRadius: this.biomeBlendRadius });
+        this.biomeSampler = ready.biomeSampler ?? this.biomeSampler;
       } catch (error) { this.worker?.terminate(); this.worker = null; this.onStatus(`Distant worker unavailable: ${error.message}`); }
     }
     if (this.factory) {
@@ -120,7 +169,8 @@ export class DistantTerrain {
         const metadata = await this.readMetadata();
         for (const value of metadata) {
           if (value.worldKey !== this.worldKey) continue;
-          if (value.schemaVersion !== DISTANT_CACHE_VERSION || value.signature !== this.signature) await this.deletePersisted(value.id);
+          if (value.schemaVersion !== DISTANT_CACHE_VERSION || value.signature !== this.signature
+            || value.minY !== this.minY || value.height !== this.height) await this.deletePersisted(value.id);
           else this.catalog.set(value.key, value);
         }
         await this.trimDisk();
@@ -141,13 +191,22 @@ export class DistantTerrain {
     }
     await tick();
     if (type === 'materials') return { ready: true };
-    if (type === 'reduce') return reduceColumn(data.column, this.materials);
-    if (type === 'mesh') return meshColumn(data.record, data.cellSize, this.materials);
-    if (type === 'region-mesh') return meshRegion(data.records, data.regionX, data.regionZ, data.regionBatchSize, this.materials);
+    if (type === 'reduce') return reduceColumn(data.column, this.materials, this);
+    if (type === 'mesh') return meshColumn(data.record, data.cellSize, this.materials, this.tintSampler([data.record]));
+    if (type === 'region-mesh') return meshRegion(data.records, data.regionX, data.regionZ, data.regionBatchSize, this.materials, this.tintSampler(data.records.map(value => value.record)), this);
     if (type === 'update') return updateReducedBlock(data.record, data.x, data.y, data.z, data.stateId, this.materials);
     throw new Error('Unknown distant terrain task');
   }
 
+  tintSampler(columns) {
+    return this.biomeConfiguration ? createBiomeSampler(this.biomeConfiguration, { seed: this.biomeSeed, blendRadius: this.biomeBlendRadius, columns }) : null;
+  }
+  async setBiomeSeed(seed) {
+    this.biomeSeed = BigInt(seed);
+    if (this.worker) await this.run('biome-seed', { seed: this.biomeSeed });
+    for (const key of [...this.visible.keys()]) this.removeVisible(key);
+    this.scheduleRefresh();
+  }
   enqueue(key, operation) {
     const next = (this.operations.get(key) ?? Promise.resolve()).catch(() => {}).then(operation);
     this.operations.set(key, next);
@@ -198,16 +257,20 @@ export class DistantTerrain {
     record.schemaVersion = DISTANT_CACHE_VERSION; record.signature = this.signature; record.revision = ++this.clock;
     const id = `${this.worldKey}\0${key}`, bytes = recordBytes(record), accessedAt = Date.now();
     this.metadataByteBound = Math.max(this.metadataByteBound, bytes);
-    const metadata = { id, key, worldKey: this.worldKey, x: record.x, z: record.z, schemaVersion: DISTANT_CACHE_VERSION, signature: this.signature, bytes, accessedAt, revision: record.revision };
+    const metadata = { id, key, worldKey: this.worldKey, x: record.x, z: record.z, minY: this.minY, height: this.height,
+      schemaVersion: DISTANT_CACHE_VERSION, signature: this.signature, bytes, accessedAt, revision: record.revision };
     const previous = this.columns.get(key);
     if (previous) this.memoryBytes -= recordBytes(previous);
     this.columns.set(key, record); this.memoryBytes += bytes; this.catalog.set(key, metadata);
     if (this.database) {
       try {
-        const transaction = this.database.transaction(['columns', 'metadata'], 'readwrite');
+        const transaction = this.database.transaction(['columns', 'metadata', 'budget'], 'readwrite'), done = transactionDone(transaction);
+        let [old, budget] = await Promise.all([requestResult(transaction.objectStore('metadata').get(id)), requestResult(transaction.objectStore('budget').get(BUDGET_ID))]);
+        if (!validBudget(budget)) { budget = (await scanBudget(transaction)).budget; old = normalizedMetadata(old); }
         transaction.objectStore('columns').put({ ...record, id });
         transaction.objectStore('metadata').put(metadata);
-        await transactionDone(transaction);
+        transaction.objectStore('budget').put({ id: BUDGET_ID, count: budget.count + (old ? 0 : 1), bytes: Math.max(0, budget.bytes - (normalizedMetadata(old)?.bytes ?? 0)) + bytes });
+        await done;
         await this.trimDisk();
       } catch (error) { this.onStatus(`Distant cache write failed: ${error.message}`); }
     }
@@ -219,7 +282,7 @@ export class DistantTerrain {
     if (!metadata || !this.database) return null;
     const request = this.database.transaction('columns', 'readonly').objectStore('columns').get(metadata.id);
     const record = await requestResult(request);
-    if (!validCachedColumn(record, this.signature)) {
+    if (!validCachedColumn(record, this.signature, this) || record.x !== metadata.x || record.z !== metadata.z) {
       this.catalog.delete(key); await this.deletePersisted(metadata.id); return null;
     }
     this.clock = Math.max(this.clock, record.revision ?? 0);
@@ -227,32 +290,39 @@ export class DistantTerrain {
     this.trimMemory(new Set([key]));
     return record;
   }
-  async readMetadata() {
-    const values = await requestResult(this.database.transaction('metadata', 'readonly').objectStore('metadata').getAll());
+  async readMetadata({ trimBytes = null } = {}) {
+    const transaction = this.database.transaction(['columns', 'metadata', 'budget'], 'readwrite'), done = transactionDone(transaction);
+    const { values, budget } = await scanBudget(transaction), removed = new Set();
+    if (trimBytes !== null) for (const value of [...values].sort((a, b) => a.accessedAt - b.accessedAt || a.id.localeCompare(b.id))) {
+      if (budget.bytes <= trimBytes) break;
+      transaction.objectStore('columns').delete(value.id); transaction.objectStore('metadata').delete(value.id);
+      budget.bytes -= value.bytes; budget.count--; removed.add(value.id);
+      if (value.worldKey === this.worldKey && !this.columns.has(value.key)) { this.catalog.delete(value.key); this.removeVisible(this.regionKey(value.key)); }
+    }
+    if (removed.size) transaction.objectStore('budget').put(budget);
+    await done;
     for (const value of values) this.metadataByteBound = Math.max(this.metadataByteBound, value.bytes);
-    return values;
+    return values.filter(value => !removed.has(value.id));
   }
   async countMetadata() {
     return requestResult(this.database.transaction('metadata', 'readonly').objectStore('metadata').count());
   }
   async deletePersisted(id) {
-    const transaction = this.database.transaction(['columns', 'metadata'], 'readwrite');
+    const transaction = this.database.transaction(['columns', 'metadata', 'budget'], 'readwrite'), done = transactionDone(transaction);
+    let [old, budget] = await Promise.all([requestResult(transaction.objectStore('metadata').get(id)), requestResult(transaction.objectStore('budget').get(BUDGET_ID))]);
+    if (!validBudget(budget)) { budget = (await scanBudget(transaction)).budget; old = normalizedMetadata(old); }
     transaction.objectStore('columns').delete(id); transaction.objectStore('metadata').delete(id);
-    await transactionDone(transaction);
+    if (old) transaction.objectStore('budget').put({ id: BUDGET_ID, count: Math.max(0, budget.count - 1), bytes: Math.max(0, budget.bytes - (normalizedMetadata(old)?.bytes ?? 0)) });
+    await done;
   }
   async trimDisk() {
     if (!this.database) return;
-    // Native count avoids cloning/sorting the growing global metadata catalog
-    // after every imported column. All current writers use fixed-size records;
-    // count also sees committed writes from concurrent instances/other worlds.
-    if ((await this.countMetadata()) * this.metadataByteBound <= this.maxDiskBytes) return;
-    const values = await this.readMetadata();
-    let bytes = values.reduce((sum, value) => sum + value.bytes, 0);
-    for (const value of values.sort((a, b) => a.accessedAt - b.accessedAt)) {
-      if (bytes <= this.maxDiskBytes) break;
-      await this.deletePersisted(value.id); bytes -= value.bytes;
-      if (value.worldKey === this.worldKey && !this.columns.has(value.key)) { this.catalog.delete(value.key); this.removeVisible(this.regionKey(value.key)); }
-    }
+    // Both stores are committed with each column write/delete. The aggregate
+    // accounts for concurrent worlds of different heights without copying the
+    // growing catalog on every import; a native count detects stale accounting.
+    const count = await this.countMetadata(), budget = await requestResult(this.database.transaction('budget', 'readonly').objectStore('budget').get(BUDGET_ID));
+    if (validBudget(budget) && budget.count === count && budget.bytes <= this.maxDiskBytes) return;
+    await this.readMetadata({ trimBytes: this.maxDiskBytes });
   }
   distance(metadata) { return Math.hypot(metadata.x * 16 + 8 - this.eye[0], metadata.z * 16 + 8 - this.eye[2]); }
   regionKey(key) {
@@ -333,6 +403,7 @@ export class DistantTerrain {
   }
   stats() { return { rememberedColumns: this.catalog.size, residentColumns: this.columns.size,
     visibleColumns: [...this.visible.values()].reduce((sum, region) => sum + region.members.length, 0), visibleRegions: this.visible.size,
+    minY: this.minY, height: this.height, biomeSampler: this.biomeSampler,
     regionBatchSize: this.regionBatchSize, memoryBytes: this.memoryBytes, meshBytes: this.meshBytes, persistent: !!this.database }; }
   async close() {
     if (this.closed) return;

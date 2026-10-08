@@ -29,6 +29,10 @@ jobs:
         working-directory: pomme-web/core
       - run: cargo clippy --all-targets -- -D warnings
         working-directory: pomme-web/core
+      - run: cargo fmt --check
+        working-directory: pomme-web/authority
+      - run: cargo clippy --all-targets -- -D warnings
+        working-directory: pomme-web/authority
       - run: npm test
       - run: npx playwright install --with-deps chromium
       - name: Browser integration
@@ -46,6 +50,29 @@ jobs:
           npm run test:renderer
           npm run test:lighting
           npm run test:minecraft
+          npm run test:gameplay
+          npm run test:effects
+          npm run test:entities
+          npm run test:server-packs
+          npm run test:maps
+          npm run test:first-person
+          npm run test:integration
+          npm run test:biomes
+          npm run test:dynamic-collision
+          npm run test:portals
+          npm run test:text
+          npm run test:bundles
+          npm run test:irradiance
+          npm run test:authority
+          npm run test:authority-inventory
+          npm run test:recipes
+          npm run test:text-ui
+          npm run test:inventory
+          npm run test:local-inventory
+          npm run test:import-authority
+          npm run test:fullbright
+          npm run test:actor-layers
+          npm run test:gpu-profile
       - uses: actions/upload-artifact@v4
         if: always()
         with:

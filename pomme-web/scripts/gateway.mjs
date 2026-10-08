@@ -3,11 +3,16 @@ import { connect as connectTcp, isIP } from 'node:net';
 import { homedir } from 'node:os';
 import { resolve } from 'node:path';
 import { pathToFileURL, domainToASCII } from 'node:url';
-import { timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual, randomUUID } from 'node:crypto';
 import { mkdirSync, chmodSync } from 'node:fs';
 import minecraftProtocol from 'minecraft-protocol';
 import minecraftData from 'minecraft-data';
 import { WebSocket, WebSocketServer } from 'ws';
+import { BROWSER_PROTOCOL_VERSIONS } from '../src/protocol-compat.js';
+import { createResourcePackProxy } from './resource-pack-proxy.mjs';
+import { installNativeCodecs } from './native-codec.mjs';
+
+for (const version of BROWSER_PROTOCOL_VERSIONS) installNativeCodecs(version);
 
 export const SUPPORTED_VERSION = '1.20.4';
 export const DEFAULT_ORIGINS = ['http://127.0.0.1:5173', 'http://localhost:5173'];
@@ -19,12 +24,14 @@ const SAFE_PACKETS = new Set([
   'use_item', 'use_entity', 'held_item_slot', 'entity_action', 'arm_animation',
   'window_click', 'close_window', 'set_creative_slot', 'enchant_item',
   'pick_item', 'craft_recipe_request', 'recipe_book', 'displayed_recipe',
-  'name_item', 'select_trade', 'set_beacon_effect', 'update_sign',
+  'name_item', 'select_trade', 'set_beacon_effect', 'update_sign', 'set_slot_state', 'edit_book', 'select_bundle_item',
   'resource_pack_receive', 'abilities', 'vehicle_move', 'steer_boat',
-  'steer_vehicle', 'pong', 'ping_request', 'tab_complete', 'advancement_tab',
+  'steer_vehicle', 'pong', 'ping_request', 'tab_complete', 'advancement_tab', 'player_loaded', 'player_input',
 ]);
-const packetMapping = minecraftData(SUPPORTED_VERSION).protocol.play.toServer.types.packet[1][0].type[1].mappings;
-const allowedPackets = new Set(Object.values(packetMapping).filter(name => SAFE_PACKETS.has(name)));
+function allowedPacketNames(version, state = 'play') {
+  const packetMapping = minecraftData(version)?.protocol[state]?.toServer?.types.packet[1][0].type[1].mappings || {};
+  return new Set(Object.values(packetMapping).filter(name => SAFE_PACKETS.has(name)));
+}
 
 /** Preserve protocol bytes and 64-bit integers across the JSON transport. */
 export function encodeValue(value, depth = 0) {
@@ -73,8 +80,9 @@ function normalizeDestination(message) {
   }
   const port = message.port ?? 25565;
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Server port must be between 1 and 65535.');
-  if (message.version != null && message.version !== SUPPORTED_VERSION) throw new Error(`This gateway currently supports Java ${SUPPORTED_VERSION}.`);
-  return { host, port, version: SUPPORTED_VERSION };
+  const version = message.version || SUPPORTED_VERSION;
+  if (!BROWSER_PROTOCOL_VERSIONS.includes(version) || !minecraftData(version)?.protocol) throw new Error(`This gateway supports Java ${BROWSER_PROTOCOL_VERSIONS.join(', ')}.`);
+  return { host, port, version };
 }
 
 function endpointKey({ host, port }) { return `${host}:${port}`; }
@@ -109,6 +117,7 @@ function disconnectText(reason) {
 export async function createGateway({
   host = '127.0.0.1', port = 5174, allowedOrigins = DEFAULT_ORIGINS,
   allowDestinations = [], token = '', maxConnections = 8,
+  allowPackPrivateHosts = ['127.0.0.1', 'localhost', '::1'],
   profilesFolder = resolve(homedir(), '.cache', 'pomme-web', 'minecraft-profiles'),
 } = {}) {
   const destinations = destinationSet(allowDestinations);
@@ -116,9 +125,11 @@ export async function createGateway({
   if (!loopback && (!token || destinations.size === 0)) throw new Error('A remotely bound gateway requires GATEWAY_TOKEN and GATEWAY_DESTINATIONS.');
   if (!Array.isArray(allowedOrigins) || allowedOrigins.length === 0) throw new Error('An explicit browser origin allowlist is required.');
   const origins = new Set(allowedOrigins);
-  const server = createServer((req, res) => {
+  const packProxy = createResourcePackProxy({ token, allowedOrigins, allowPrivateHosts: allowPackPrivateHosts });
+  const server = createServer(async (req, res) => {
+    if (await packProxy.handleRequest(req, res, origins)) return;
     res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
-    res.end(JSON.stringify({ service: 'pomme-minecraft-gateway', version: SUPPORTED_VERSION, transport: 'named-json', authentication: ['offline', 'microsoft'] }));
+    res.end(JSON.stringify({ service: 'pomme-minecraft-gateway', version: SUPPORTED_VERSION, versions: BROWSER_PROTOCOL_VERSIONS, transport: 'named-json', authentication: ['offline', 'microsoft'] }));
   });
   const wss = new WebSocketServer({ noServer: true, maxPayload: MAX_BROWSER_MESSAGE, perMessageDeflate: false });
   server.on('upgrade', (request, socket, head) => {
@@ -134,6 +145,7 @@ export async function createGateway({
   });
 
   wss.on('connection', ws => {
+    const connectionId = randomUUID();
     let client = null, connectTimer, ended = false, pinging = false, closingClient = false, disconnectReason = null;
     let messages = 0, rateWindow = Date.now();
     const stopClient = reason => {
@@ -208,19 +220,24 @@ export async function createGateway({
             reportError(new Error(auth === 'microsoft' ? 'Microsoft sign-in timed out.' : 'Minecraft login timed out.'));
             stopClient('Login timed out'); finish('Login timed out');
           }, auth === 'microsoft' ? 15 * 60 * 1000 : 30000);
-          client.on('packet', (data, meta) => {
+          client.on('packet', (data, meta, raw) => {
+            // The 1.20.4 codec labels the final respawn data-to-keep byte as a
+            // boolean. Restore its two native bits before the browser sees it.
+            if (target.version === '1.20.4' && meta.name === 'respawn' && meta.state === 'play' && raw?.length) data.copyMetadata = raw.at(-1);
             if (meta.name === 'disconnect' || meta.name === 'kick_disconnect') disconnectReason = disconnectText(data.reason);
+            if (meta.name === 'add_resource_pack' || meta.name === 'resource_pack_send') data = packProxy.registerAdvertisedPack(data, connectionId);
+            if (meta.name === 'remove_resource_pack') packProxy.removeAdvertisedPack(data.uuid, connectionId);
             if (meta.state === 'play' || meta.state === 'configuration' || meta.name === 'disconnect') send({ type: 'packet', name: meta.name, state: meta.state, data });
           });
           client.once('playerJoin', () => {
             clearTimeout(connectTimer);
-            send({ type: 'connected', version: SUPPORTED_VERSION, username: client.username, uuid: client.uuid, keepAliveManaged: true });
+            send({ type: 'connected', version: target.version, username: client.username, uuid: client.uuid, keepAliveManaged: true });
           });
           client.on('error', error => { reportError(error); stopClient('Minecraft connection error'); finish(error.message); });
           client.on('end', finish);
         } else if (message.type === 'packet') {
-          if (!client || client.state !== 'play' || ended) throw new Error('Minecraft is not connected in the play state.');
-          if (!allowedPackets.has(message.name)) throw new Error('This serverbound packet is not supported by the browser gateway.');
+          if (!client || !['play', 'configuration'].includes(client.state) || ended) throw new Error('Minecraft is not connected.');
+          if (!allowedPacketNames(client.version, client.state).has(message.name)) throw new Error('This serverbound packet is not supported by the browser gateway.');
           if (!message.data || typeof message.data !== 'object' || Array.isArray(message.data)) throw new Error('Packet data must be an object.');
           client.write(message.name, decodeValue(message.data));
         } else if (message.type === 'chat') {
@@ -241,13 +258,14 @@ export async function createGateway({
       } catch (error) { reportError(error); }
     });
     ws.on('error', () => { clearTimeout(connectTimer); stopClient('Browser transport error'); });
-    ws.on('close', () => { clearTimeout(connectTimer); ended = true; stopClient('Browser disconnected'); });
+    ws.on('close', () => { packProxy.cleanup(connectionId); clearTimeout(connectTimer); ended = true; stopClient('Browser disconnected'); });
     send({ type: 'gateway-ready', version: SUPPORTED_VERSION, keepAliveManaged: true });
   });
   await new Promise((resolveReady, reject) => { server.once('error', reject); server.listen(port, host, resolveReady); });
   return {
-    server, wss, address: server.address(),
+    server, wss, packProxy, address: server.address(),
     async close() {
+      packProxy.close();
       for (const socket of wss.clients) socket.terminate();
       await new Promise(resolveClosed => wss.close(resolveClosed));
       await new Promise(resolveClosed => server.close(resolveClosed));
@@ -262,6 +280,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       allowedOrigins: process.env.GATEWAY_ORIGINS ? process.env.GATEWAY_ORIGINS.split(',').map(s => s.trim()).filter(Boolean) : DEFAULT_ORIGINS,
       allowDestinations: process.env.GATEWAY_DESTINATIONS?.split(',').map(s => s.trim()).filter(Boolean) ?? [],
       token: process.env.GATEWAY_TOKEN ?? '',
+      allowPackPrivateHosts: process.env.GATEWAY_PACK_HOSTS?.split(',').map(s => s.trim()).filter(Boolean) ?? ['127.0.0.1', 'localhost', '::1'],
       profilesFolder: process.env.GATEWAY_PROFILES ?? resolve(homedir(), '.cache', 'pomme-web', 'minecraft-profiles'),
     });
     const address = gateway.address;

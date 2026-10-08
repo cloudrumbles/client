@@ -4,6 +4,35 @@ export const CHUNK_STORE_DATABASE = 'pomme-full-columns';
 export const CHUNK_STORE_VERSION = 1;
 const LIGHT_KEYS = ['skyLight', 'blockLight', 'SkyLight', 'BlockLight'];
 const columnKey = (x, z) => `${x},${z}`;
+const MAX_BLOCK_ENTITY_BYTES = 1024 * 1024;
+const MAX_ENCODED_COLUMN_BYTES = 16 * 1024 * 1024;
+const BUDGET_ID = 'global';
+
+function blockEntityMetadata(entities, clone = true) {
+  if (!Array.isArray(entities) || entities.length > 4096) throw new Error('Cached block entity metadata requires at most 4096 entries.');
+  let bytes = 0, nodes = 0; const visited = new WeakSet();
+  const read = (value, depth = 0) => {
+    if (++nodes > 131072 || depth > 32) throw new Error('Cached block entity NBT exceeds its nesting limit.');
+    const add = size => { bytes += size; if (bytes > MAX_BLOCK_ENTITY_BYTES) throw new Error('Cached block entity NBT exceeds its byte limit.'); };
+    if (value === null || value === undefined || typeof value === 'boolean') { add(4); return value; }
+    if (typeof value === 'string') { add(value.length * 2 + 8); return value; }
+    if (typeof value === 'bigint') { add(8); return value; }
+    if (typeof value === 'number') { if (!Number.isFinite(value)) throw new Error('Invalid number in cached block entity NBT.'); add(8); return value; }
+    if (ArrayBuffer.isView(value) && !(value instanceof DataView)) { add(value.byteLength + 32); return clone ? value.slice() : value; }
+    if (!value || typeof value !== 'object' || visited.has(value)) throw new Error('Invalid or cyclic cached block entity NBT.');
+    visited.add(value); add(32);
+    if (Array.isArray(value)) {
+      if (value.length > 65536) throw new Error('Cached block entity NBT array exceeds its entry limit.');
+      const result = clone ? [] : value; for (let i = 0; i < value.length; i++) { const child = read(value[i], depth + 1); if (clone) result.push(child); } visited.delete(value); return result;
+    }
+    if (![null, Object.prototype].includes(Object.getPrototypeOf(value))) throw new Error('Invalid cached block entity NBT object.');
+    const entries = Object.entries(value); if (entries.length > 4096) throw new Error('Cached block entity NBT compound exceeds its entry limit.');
+    const result = clone ? Object.create(null) : value;
+    for (const [key, child] of entries) { add(key.length * 2 + 8); const decoded = read(child, depth + 1); if (clone) result[key] = decoded; }
+    visited.delete(value); return result;
+  };
+  return { value: read(entities), bytes };
+}
 
 function requireCoordinates(column) {
   if (!column || !Number.isSafeInteger(column.x) || !Number.isSafeInteger(column.z)) throw new Error('Chunk cache columns require integer x/z coordinates.');
@@ -57,6 +86,7 @@ export function encodeColumn(column) {
     return result;
   });
   const result = { schemaVersion: CHUNK_STORE_VERSION, x: column.x, z: column.z, sections };
+  if (column.blockEntities !== undefined) { const metadata = blockEntityMetadata(column.blockEntities); result.blockEntities = metadata.value; result.blockEntityBytes = metadata.bytes; }
   if (column.light) {
     result.light = {};
     for (const kind of ['sky', 'block']) {
@@ -98,6 +128,7 @@ export function decodeColumn(record) {
     return result;
   });
   const column = { x: record.x, z: record.z, sections };
+  if (record.blockEntities !== undefined) column.blockEntities = blockEntityMetadata(record.blockEntities).value;
   if (record.light) {
     column.light = {};
     for (const kind of ['sky', 'block']) {
@@ -113,6 +144,7 @@ export function decodeColumn(record) {
 
 export function encodedColumnBytes(record) {
   let bytes = 256 + record.sections.length * 64;
+  if (record.blockEntities !== undefined) bytes += blockEntityMetadata(record.blockEntities, false).bytes;
   for (const section of record.sections) {
     bytes += section.states.bytes?.byteLength ?? 2;
     bytes += section.biomes?.bytes.byteLength ?? 0;
@@ -123,6 +155,7 @@ export function encodedColumnBytes(record) {
 }
 export function decodedColumnBytes(column) {
   let bytes = 256 + column.sections.length * 64;
+  if (column.blockEntities !== undefined) bytes += blockEntityMetadata(column.blockEntities, false).bytes;
   for (const section of column.sections) {
     bytes += section.blocks.byteLength + (section.biomes?.byteLength ?? 0);
     for (const key of LIGHT_KEYS) bytes += section[key]?.byteLength ?? 0;
@@ -140,14 +173,61 @@ function transactionDone(transaction) {
   });
 }
 function openDatabase(factory) {
-  const request = factory.open(CHUNK_STORE_DATABASE, 1);
+  const request = factory.open(CHUNK_STORE_DATABASE, 2);
   request.onupgradeneeded = () => {
     const database = request.result;
-    database.createObjectStore('columns', { keyPath: 'id' });
-    const metadata = database.createObjectStore('metadata', { keyPath: 'id' });
-    metadata.createIndex('worldKey', 'worldKey');
+    if (!database.objectStoreNames.contains('columns')) database.createObjectStore('columns', { keyPath: 'id' });
+    const metadata = database.objectStoreNames.contains('metadata') ? request.transaction.objectStore('metadata') : database.createObjectStore('metadata', { keyPath: 'id' });
+    if (!metadata.indexNames.contains('worldKey')) metadata.createIndex('worldKey', 'worldKey');
+    if (!metadata.indexNames.contains('accessedAt')) metadata.createIndex('accessedAt', 'accessedAt');
+    if (!database.objectStoreNames.contains('budget')) database.createObjectStore('budget', { keyPath: 'id' });
   };
   return requestResult(request);
+}
+
+function normalizedMetadata(value) {
+  if (!value || typeof value.worldKey !== 'string' || !value.worldKey || value.worldKey.length > 4096
+    || !Number.isSafeInteger(value.x) || !Number.isSafeInteger(value.z)
+    || value.key !== columnKey(value.x, value.z) || value.id !== `${value.worldKey}\0${value.key}`
+    || !Number.isInteger(value.schemaVersion) || value.schemaVersion < 1
+    || typeof value.registryVersion !== 'string' || value.registryVersion.length > 128
+    || !Number.isSafeInteger(value.bytes) || value.bytes < 1 || value.bytes > MAX_ENCODED_COLUMN_BYTES
+    || !Number.isSafeInteger(value.accessedAt) || value.accessedAt < 0) return null;
+  return value;
+}
+function validBudget(value) {
+  return value?.id === BUDGET_ID && Number.isSafeInteger(value.count) && value.count >= 0
+    && Number.isSafeInteger(value.bytes) && value.bytes >= value.count && value.bytes <= value.count * MAX_ENCODED_COLUMN_BYTES
+    && Number.isSafeInteger(value.clock) && value.clock >= 0;
+}
+async function repairBudget(transaction) {
+  const metadata = transaction.objectStore('metadata'), columns = transaction.objectStore('columns');
+  const values = await requestResult(metadata.getAll()), budget = { id: BUDGET_ID, count: 0, bytes: 0, clock: 0 };
+  for (const value of values) {
+    if (!normalizedMetadata(value)) { metadata.delete(value.id); columns.delete(value.id); continue; }
+    budget.count++; budget.bytes += value.bytes; budget.clock = Math.max(budget.clock, value.accessedAt);
+  }
+  transaction.objectStore('budget').put(budget);
+  return budget;
+}
+async function readBudget(transaction, verifyCount = false) {
+  const budget = await requestResult(transaction.objectStore('budget').get(BUDGET_ID));
+  if (validBudget(budget) && (!verifyCount || budget.count === await requestResult(transaction.objectStore('metadata').count()))) return budget;
+  return repairBudget(transaction);
+}
+function trimTransaction(transaction, budget, maxBytes) {
+  if (budget.bytes <= maxBytes) return Promise.resolve([]);
+  return new Promise((resolve, reject) => {
+    const removed = [], request = transaction.objectStore('metadata').index('accessedAt').openCursor();
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const cursor = request.result;
+      if (!cursor || budget.bytes <= maxBytes) { resolve(removed); return; }
+      const metadata = cursor.value;
+      cursor.delete(); transaction.objectStore('columns').delete(metadata.id);
+      budget.count--; budget.bytes -= metadata.bytes; removed.push(metadata); cursor.continue();
+    };
+  });
 }
 
 /** Bounded full-column persistence for imported worlds; coarse LOD is separate.
@@ -172,15 +252,13 @@ export class ChunkStore {
       try {
         this.database = await openDatabase(this.factory);
         this.database.onversionchange = () => this.database.close();
-        const metadata = await this.allMetadata();
+        await this.trimDisk();
+        const metadata = await requestResult(this.database.transaction('metadata', 'readonly').objectStore('metadata').index('worldKey').getAll(this.worldKey));
         for (const entry of metadata) {
           this.accessClock = Math.max(this.accessClock, entry.accessedAt ?? 0);
-          if (entry.worldKey === this.worldKey) {
-            if (entry.schemaVersion !== CHUNK_STORE_VERSION || entry.registryVersion !== this.registryVersion) await this.removePersisted(entry.id);
-            else this.catalog.set(entry.key, entry);
-          }
+          if (!normalizedMetadata(entry) || entry.schemaVersion !== CHUNK_STORE_VERSION || entry.registryVersion !== this.registryVersion) await this.removePersisted(entry.id);
+          else this.catalog.set(entry.key, entry);
         }
-        await this.trimDisk();
       } catch (error) { this.database?.close(); this.database = null; this.onStatus(`Full chunk cache is memory-only: ${error.message}`); }
     } else this.onStatus('Full chunk cache is memory-only; IndexedDB is unavailable.');
     return this;
@@ -204,10 +282,18 @@ export class ChunkStore {
       this.remember(key, decodeColumn(encoded));
       if (this.database && metadata.bytes <= this.maxDiskBytes) {
         try {
-          const transaction = this.database.transaction(['columns', 'metadata'], 'readwrite');
+          const transaction = this.database.transaction(['columns', 'metadata', 'budget'], 'readwrite'), done = transactionDone(transaction);
+          let budget = await readBudget(transaction);
+          const store = transaction.objectStore('metadata'), rawOld = await requestResult(store.get(id)), old = normalizedMetadata(rawOld);
+          if (rawOld && !old) budget = await repairBudget(transaction);
+          metadata.accessedAt = ++budget.clock; this.accessClock = Math.max(this.accessClock, budget.clock);
           transaction.objectStore('columns').put({ ...encoded, id, registryVersion: this.registryVersion });
-          transaction.objectStore('metadata').put(metadata);
-          await transactionDone(transaction); this.catalog.set(key, metadata); await this.trimDisk();
+          store.put(metadata);
+          budget.count += old ? 0 : 1; budget.bytes += metadata.bytes - (old?.bytes ?? 0);
+          const removed = await trimTransaction(transaction, budget, this.maxDiskBytes);
+          transaction.objectStore('budget').put(budget);
+          await done;
+          this.catalog.set(key, metadata); this.forgetRemoved(removed);
           return { key, persisted: this.catalog.has(key), bytes: metadata.bytes };
         } catch (error) { this.onStatus(`Full chunk cache write failed: ${error.message}`); }
       } else if (this.database && this.catalog.has(key)) {
@@ -253,28 +339,36 @@ export class ChunkStore {
     }
   }
   async touch(key) {
-    const metadata = this.catalog.get(key);
-    if (!metadata || !this.database) return;
-    metadata.accessedAt = ++this.accessClock;
-    const transaction = this.database.transaction('metadata', 'readwrite');
-    transaction.objectStore('metadata').put(metadata);
-    await transactionDone(transaction);
+    const known = this.catalog.get(key);
+    if (!known || !this.database) return;
+    const transaction = this.database.transaction(['columns', 'metadata', 'budget'], 'readwrite'), done = transactionDone(transaction);
+    const budget = await readBudget(transaction), store = transaction.objectStore('metadata');
+    const metadata = normalizedMetadata(await requestResult(store.get(known.id)));
+    if (metadata) {
+      metadata.accessedAt = ++budget.clock; this.accessClock = Math.max(this.accessClock, budget.clock);
+      store.put(metadata); transaction.objectStore('budget').put(budget);
+    }
+    await done;
+    if (metadata) this.catalog.set(key, metadata); else this.catalog.delete(key);
   }
-  async allMetadata() { return requestResult(this.database.transaction('metadata', 'readonly').objectStore('metadata').getAll()); }
   async removePersisted(id) {
-    const transaction = this.database.transaction(['columns', 'metadata'], 'readwrite');
+    const transaction = this.database.transaction(['columns', 'metadata', 'budget'], 'readwrite'), done = transactionDone(transaction);
+    let budget = await readBudget(transaction);
+    const rawOld = await requestResult(transaction.objectStore('metadata').get(id)), old = normalizedMetadata(rawOld);
+    if (rawOld && !old) budget = await repairBudget(transaction);
     transaction.objectStore('columns').delete(id); transaction.objectStore('metadata').delete(id);
-    await transactionDone(transaction);
+    if (old) { budget.count--; budget.bytes -= old.bytes; transaction.objectStore('budget').put(budget); }
+    await done;
+  }
+  forgetRemoved(removed) {
+    for (const metadata of removed) if (metadata.worldKey === this.worldKey) this.catalog.delete(metadata.key);
   }
   async trimDisk() {
     if (!this.database) return;
-    const metadata = await this.allMetadata();
-    let bytes = metadata.reduce((sum, entry) => sum + entry.bytes, 0);
-    for (const entry of metadata.sort((a, b) => a.accessedAt - b.accessedAt)) {
-      if (bytes <= this.maxDiskBytes) break;
-      await this.removePersisted(entry.id); bytes -= entry.bytes;
-      if (entry.worldKey === this.worldKey) this.catalog.delete(entry.key);
-    }
+    const transaction = this.database.transaction(['columns', 'metadata', 'budget'], 'readwrite'), done = transactionDone(transaction);
+    const budget = await readBudget(transaction, true), removed = await trimTransaction(transaction, budget, this.maxDiskBytes);
+    transaction.objectStore('budget').put(budget); await done;
+    this.accessClock = Math.max(this.accessClock, budget.clock); this.forgetRemoved(removed);
   }
   stats() { return { memoryBytes: this.memoryBytes, residentColumns: this.cache.size, persistedColumns: this.catalog.size,
     diskBytes: [...this.catalog.values()].reduce((sum, entry) => sum + entry.bytes, 0), persistent: !!this.database }; }

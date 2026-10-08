@@ -107,6 +107,7 @@ test('real teleport packets apply relative flags, acknowledge and send correct c
   assert.equal(positions[1].x, -31.5); assert.equal(positions[1].y, -21); assert.equal(positions[1].z, 77.5);
   assert.ok(Math.abs(positions[1].yaw - Math.PI / 2) < 1e-6);
   assert.ok(Math.abs(positions[1].pitch - 10 * Math.PI / 180) < 1e-6);
+  client.acknowledgePosition(positions[1].teleportId);
   const before = sent.length;
   const player = { position: [-30, -21, 78], yaw: Math.PI / 2, pitch: -0.2, grounded: true };
   client.tick(player, 0.025); assert.equal(sent.length, before);
@@ -174,7 +175,13 @@ test('server inventory, health, time and NBT chat update independently of gamepl
   client.clickWindow(36); assert.equal(sent.at(-1).params.stateId, 4); assert.equal(sent.at(-1).params.slot, 36);
   assert.equal(sent.at(-1).params.changedSlots[0].item.present, false);
   assert.equal(sent.at(-1).params.cursorItem.itemCount, 32);
-  assert.equal(client.windows.get(0).slots[36].itemCount, 32, 'inventory click does not invent server state');
+  assert.equal(client.windows.get(0).slots[36].present, false, 'accepted predictions need no server echo');
+  assert.equal(client.windows.get(0).cursor.itemCount, 32);
+  assert.equal(client.windows.get(0).stateId, 4, 'client prediction preserves the server transaction revision');
+  receive(client, 'set_slot', { windowId: 0, stateId: 5, slot: 36, item: { present: true, itemId: data.itemsByName.stone.id, itemCount: 32, nbtData: undefined } });
+  receive(client, 'set_slot', { windowId: -1, stateId: 5, slot: -1, item: { present: false } });
+  assert.equal(client.windows.get(0).slots[36].itemCount, 32, 'server rejection restores the authoritative stack');
+  assert.equal(client.windows.get(0).cursor.present, false);
   receive(client, 'set_slot', { windowId: 0, stateId: 5, slot: 36, item: { present: false } }); assert.equal(inventories.at(-1).slots[36].present, false);
   receive(client, 'update_health', { health: 8, food: 13, foodSaturation: 2 }); assert.equal(client.state.health, 8); assert.equal(client.state.food, 13);
   receive(client, 'update_time', { age: 1234567890123n, time: -6000n }); assert.equal(times[0].timeOfDay, 6000); assert.equal(times[0].daylightCycle, false);
@@ -185,19 +192,19 @@ test('server inventory, health, time and NBT chat update independently of gamepl
   assert.deepEqual(simplifyNbt({ type: 'list', value: { type: 'int', value: [1, 2] } }), [1, 2]);
 });
 
-test('inventory right-click predicts half-stack packets without changing confirmed stacks', () => {
+test('inventory right-click applies accepted half-stack prediction and chains without an echo', () => {
   const { client, sent } = session();
   const itemId = data.itemsByName.stone.id;
   receive(client, 'window_items', { windowId: 0, stateId: 10, items: Array.from({ length: 46 }, (_, slot) => slot === 36 ? { present: true, itemId, itemCount: 31, nbtData: undefined } : { present: false }), carriedItem: { present: false } });
   client.clickWindow(36, { button: 1 });
   assert.equal(sent.at(-1).params.cursorItem.itemCount, 16);
   assert.equal(sent.at(-1).params.changedSlots[0].item.itemCount, 15);
-  assert.equal(client.windows.get(0).slots[36].itemCount, 31);
-  receive(client, 'set_slot', { windowId: -1, stateId: 11, slot: -1, item: { present: true, itemId, itemCount: 16, nbtData: undefined } });
+  assert.equal(client.windows.get(0).slots[36].itemCount, 15);
   client.clickWindow(37, { button: 1 });
   assert.equal(sent.at(-1).params.cursorItem.itemCount, 15);
   assert.equal(sent.at(-1).params.changedSlots[0].item.itemCount, 1);
-  assert.equal(client.windows.get(0).slots[37].present, false);
+  assert.equal(client.windows.get(0).slots[37].itemCount, 1);
+  assert.equal(client.windows.get(0).cursor.itemCount, 15);
 });
 
 test('real entity packets maintain relative movement and removals', () => {
@@ -218,7 +225,7 @@ test('entity interaction and knockback serialize and preserve the server authori
   client.interactEntity(44); assert.equal(sent.at(-1).params.mouse, 0); assert.equal(sent.at(-1).params.hand, 0);
   client.interactEntity(44, { point: [0.2, 0.8, 0.1] }); assert.equal(sent.at(-1).params.mouse, 2); assert.ok(Math.abs(sent.at(-1).params.y - 0.8) < 1e-6);
   receive(client, 'entity_velocity', { entityId: 9, velocity: { x: 4000, y: 2400, z: -800 } });
-  assert.deepEqual(entities.at(-1), { type: 'player-velocity', id: 9, velocity: { x: 0.5, y: 0.3, z: -0.1 } });
+  assert.deepEqual(entities.at(-1), { type: 'player-velocity', id: 9, velocity: { x: 0.5, y: 0.3, z: -0.1 }, additive: false, motionRevision: 1 });
   const before = sent.length;
   receive(client, 'keep_alive', { keepAliveId: 123456789n }); assert.equal(sent.length, before, 'gateway handles keepalives');
   client.keepAliveManaged = false; receive(client, 'keep_alive', { keepAliveId: 123456789n }); assert.equal(sent.at(-1).name, 'keep_alive');
@@ -254,8 +261,8 @@ test('transport sends exactly one supported-version connection request and isola
   }
   const sockets = [], messages = [];
   const transport = new GatewayTransport({ socketFactory: () => { const socket = new Socket(); sockets.push(socket); return socket; }, onMessage: (m) => messages.push(m) });
-  const pending = transport.connect('ws://localhost:5174', { host: 'example.org', username: 'Alex', auth: 'offline', version: '1.21' });
+  const pending = transport.connect('ws://localhost:5174', { host: 'example.org', username: 'Alex', auth: 'offline', version: '1.21.11' });
   sockets[0].open(); await pending;
-  assert.equal(sockets[0].sent.length, 1); assert.equal(sockets[0].sent[0].version, '1.20.4');
+  assert.equal(sockets[0].sent.length, 1); assert.equal(sockets[0].sent[0].version, '1.21.11');
   transport.close(); const retired = new MessageEvent('message', { data: JSON.stringify({ type: 'connected' }) }); sockets[0].dispatchEvent(retired); assert.equal(messages.length, 0);
 });

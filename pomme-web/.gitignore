@@ -5,3 +5,7 @@
 /data/
 /vendor/
 /dist/
+/authority/target/
+/authority/authority.wasm
+/authority/test-results/
+/logs/

@@ -27,8 +27,8 @@ function slot(core, cx, cz) {
 }
 
 function nativeMesh(core, cx, cz, water = 0) {
-  const originX = core.mesh_origin_x(), originZ = core.mesh_origin_z();
-  return Array.from(mesh(core, slot(core, cx, cz), water), (value, index) => value + (index % 14 === 0 ? originX : index % 14 === 2 ? originZ : 0));
+  const origin = [core.mesh_origin_x(), core.mesh_origin_y(), core.mesh_origin_z()];
+  return Array.from(mesh(core, slot(core, cx, cz), water), (value, index) => value + (index % 14 < 3 ? origin[index % 14] : 0));
 }
 
 function cleanAll(core) {
@@ -61,7 +61,7 @@ test('import ABI preserves full state IDs, signed height and sparse native coord
   assert.equal(geometry.length,36*14);
   for(let i=0;i<geometry.length;i+=14) {
     assert.ok(geometry[i]>=18 && geometry[i]<=19,'X rebased before float conversion');
-    assert.ok(geometry[i+1]>=-49 && geometry[i+1]<=-48,'Y remains native');
+    assert.ok(geometry[i+1]>=15 && geometry[i+1]<=16,'Y rebased before float conversion');
     assert.ok(geometry[i+2]>=17 && geometry[i+2]<=18,'Z rebased before float conversion');
   }
   assert.equal(section(core,-1,-4,-2,values),1,'duplicate accepted');
@@ -205,7 +205,7 @@ test('real model/collision staging shares templates and preserves nonfull geomet
   assert.equal(core.block_set(-14,-60,-31,600),1);
   const geometry = mesh(core,5);
   assert.equal(geometry.length,6*14);
-  for(let i=0;i<geometry.length;i+=14) assert.equal(geometry[i+1],-59.5);
+  for(let i=0;i<geometry.length;i+=14) assert.equal(geometry[i+1],4.5);
   assert.equal(core.collides_aabb(-13.9,-59.9,-30.9,-13.1,-59.6,-30.1),1);
   assert.equal(core.collides_aabb(-13.9,-59.4,-30.9,-13.1,-58,-30.1),0);
   assert.equal(core.ray_cast(-13.5,-58,-30.5,0,-1,0,6),1);
@@ -244,10 +244,55 @@ test('window-relative F32 meshes preserve voxel size near the Minecraft world bo
   for(let i=0;i<geometry.length;i+=14) { xs.push(geometry[i]); zs.push(geometry[i+2]); }
   assert.equal(Math.min(...xs),1); assert.equal(Math.max(...xs),2);
   assert.equal(Math.min(...zs),1); assert.equal(Math.max(...zs),2);
-  assert.deepEqual([core.mesh_origin_x(),core.mesh_origin_z()],[x-1,z-1]);
+  assert.deepEqual([core.mesh_origin_x(),core.mesh_origin_y(),core.mesh_origin_z()],[x-1,-64,z-1]);
   assert.equal(core.collides_aabb(x+0.1,-59.9,z+0.1,x+0.9,-59.1,z+0.9),1,'f64 query preserves subblock body at world border');
   assert.equal(core.collides_aabb(x-0.9,-59.9,z+0.1,x-0.1,-59.1,z+0.9),0);
   assert.equal(core.ray_cast(x-1.5,-59.5,z+0.5,1,0,0,6),1);
+});
+
+test('near mesh ABI preserves unit cubes and fractional templates at both safe i32 Y extremes', async () => {
+  const core = await importedWorld();
+  for (const minY of [-2147483632, 2147482608]) {
+    assert.equal(core.world_reset(minY, 1024, -1, -1, 2, 2), 1);
+    assert.deepEqual([core.mesh_origin_x(), core.mesh_origin_y(), core.mesh_origin_z()], [-16, minY, -16]);
+    assert.equal(core.block_register(650, .5, .6, .7, 3), 1);
+    assert.equal(core.block_register(651, .5, .6, .7, 17), 1);
+    const template = new Float32Array([[.25,.25,.25],[.25,.75,.25],[.75,.75,.25],[.25,.25,.25],[.75,.75,.25],[.75,.25,.25]]
+      .flatMap(p => [...p,0,0,-1,.5,.6,.7,1,0,0,-1,17]));
+    const pointer = core.world_float_stage_ptr(); new Float32Array(core.memory.buffer, pointer, template.length).set(template);
+    assert.equal(core.block_model_register(651, pointer, template.length), 1);
+    new Float32Array(core.memory.buffer, pointer, 6).set([.25,.25,.25,.75,.75,.75]);
+    assert.equal(core.block_collision_register(651, pointer, 1), 1);
+    assert.equal(core.block_set(1, minY, 1, 650), 1);
+    assert.equal(core.block_set(2, minY + 1023, 2, 650), 1);
+    assert.equal(core.block_set(5, minY + 8, 5, 651), 1);
+    const geometry = mesh(core, slot(core, 0, 0)), cubeYs = [], templateYs = [];
+    for (let i = 0; i < geometry.length; i += 14) (geometry[i + 13] & 16 ? templateYs : cubeYs).push(geometry[i + 1]);
+    assert.equal(cubeYs.length, 72); assert.equal(templateYs.length, 6);
+    assert.deepEqual([...new Set(cubeYs)].sort((a,b) => a-b), [0,1,1023,1024]);
+    assert.deepEqual([...new Set(templateYs)].sort((a,b) => a-b), [8.25,8.75]);
+    const native = nativeMesh(core, 0, 0), ys = native.filter((_value, index) => index % 14 === 1);
+    assert.ok(ys.includes(minY + 1) && ys.includes(minY + 8.25) && ys.includes(minY + 1024));
+    assert.equal(core.collides_aabb(5.3,minY+8.3,5.3,5.7,minY+8.7,5.7), 1);
+    assert.equal(core.collides_aabb(5.3,minY+8.8,5.3,5.7,minY+8.9,5.7), 0);
+    assert.equal(core.ray_cast(.5,minY+.5,1.5,1,0,0,6), 1, 'native picking keeps unit cubes near either Y boundary');
+    assert.equal(core.ray_cast(5.5,minY+9,6.5,0,0,-1,3), 0, 'model picking rejects a ray above the actual template');
+    assert.equal(core.ray_cast(5.5,minY+8.5,6.5,0,0,-1,3), 1, 'native picking retains fractional model geometry at either Y extreme');
+  }
+});
+
+test('ray traversal terminates at integer coordinate boundaries without overflow', async () => {
+  const core = await importedWorld();
+  for (const axis of [0,1,2]) {
+    const origin = [0.5, 64.5, 0.5], direction = [0,0,0];
+    origin[axis] = 2147483647.5; direction[axis] = 1;
+    assert.equal(core.ray_cast(...origin,...direction,100), 0);
+    origin[axis] = -2147483648; direction[axis] = -1;
+    assert.equal(core.ray_cast(...origin,...direction,100), 0);
+    origin[axis] = 2147483648;
+    assert.equal(core.ray_cast(...origin,...direction,100), 0);
+  }
+  assert.equal(core.ray_cast(0,0,0,Number.MAX_VALUE,Number.MAX_VALUE,0,10), 0);
 });
 
 test('native packed light arrays produce darkness and preserve independently updated channels', async () => {

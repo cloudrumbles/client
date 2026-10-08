@@ -169,7 +169,7 @@ fn water_screen_reflection(world_position: vec3<f32>, normal: vec3<f32>, directi
     let half_direction = normalize(view + frame.light_direction_daylight.xyz);
     let glint = pow(max(dot(normal, half_direction), 0.0), 420.0);
     let shadow = terrain_shadow(input.world_position + vec3<f32>(0.0, 0.015, 0.0), normal);
-    let sunlight = frame.light_color_day_phase.rgb * glint * mix(0.6, 8.0, frame.light_direction_daylight.w) * shadow;
+    let sunlight = frame.light_color_day_phase.rgb * glint * mix(0.6, 8.0, frame.light_direction_daylight.w) * shadow * frame.weather_info.w;
     let uv = input.clip_position.xy / frame.screen_quality.xy;
     let bend = vec2<f32>(wave_x, -wave_z) * 0.014;
     let behind_water = textureSampleLevel(opaque_scene, scene_sampler, clamp(uv + bend, vec2<f32>(0.001), vec2<f32>(0.999)), 0.0).rgb;

@@ -47,7 +47,7 @@ export class GatewayTransport {
       socket.addEventListener('open', () => {
         if (this.socket !== socket) return;
         this.pendingReject = null;
-        this.send({ type: 'connect', ...options, version: '1.20.4' });
+        this.send({ type: 'connect', ...options, version: options.version || '1.20.4' });
         resolve();
       }, { once: true });
       socket.addEventListener('message', (event) => {

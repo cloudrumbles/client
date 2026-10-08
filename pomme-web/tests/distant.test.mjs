@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { IDBFactory } from 'fake-indexeddb';
-import { DistantTerrain, DISTANT_DATABASE, materialSignature, validCachedColumn, recordBytes, chooseCellSize } from '../src/distant.js';
-import { reduceColumn, meshColumn, updateReducedBlock } from '../src/distant.worker.js';
+import { DistantTerrain, DISTANT_DATABASE, DISTANT_CACHE_VERSION, dimensionRecordBytes, materialSignature, validCachedColumn, recordBytes, chooseCellSize } from '../src/distant.js';
+import { reduceColumn, meshColumn, meshRegion, updateReducedBlock } from '../src/distant.worker.js';
 
 const materials = new Map([
   [0, { name: 'minecraft:air', flags: 128 }],
@@ -29,9 +29,9 @@ async function settle(terrain) {
   throw new Error('Distant terrain did not settle');
 }
 class CountedTerrain extends DistantTerrain {
-  async readMetadata() {
+  async readMetadata(...args) {
     this.metadataReads = (this.metadataReads ?? 0) + 1;
-    return super.readMetadata();
+    return super.readMetadata(...args);
   }
   async countMetadata() {
     this.metadataCounts = (this.metadataCounts ?? 0) + 1;
@@ -160,7 +160,7 @@ test('disk and GPU residency budgets are bounded', async () => {
 
 test('repeated column imports use native counts without cloning the growing metadata catalog', async () => {
   const indexedDB = new IDBFactory(), bytes = recordBytes(reduceColumn(column(), materials));
-  assert.equal(bytes, 19552);
+  assert.equal(bytes, 29200);
   const terrain = new CountedTerrain({ worldKey: 'large-import', materials, indexedDB,
     maxDiskBytes: bytes * 128, maxMemoryBytes: bytes * 4, maxGpuColumns: 0 });
   await terrain.init();
@@ -197,7 +197,7 @@ test('native-count disk checks include other worlds and concurrent writers befor
   await Promise.all([first.close(), second.close()]);
 });
 
-test('oversized metadata from another cached world raises the conservative count bound', async () => {
+test('malformed metadata from another cached world is discarded before disk accounting', async () => {
   const indexedDB = new IDBFactory(), bytes = recordBytes(reduceColumn(column(), materials));
   const legacy = new DistantTerrain({ worldKey: 'legacy-world', materials, indexedDB, maxGpuColumns: 0 });
   await legacy.init(); await legacy.ingest(column());
@@ -209,13 +209,13 @@ test('oversized metadata from another cached world raises the conservative count
   const current = new CountedTerrain({ worldKey: 'current-world', materials, indexedDB,
     maxDiskBytes: bytes * 9, maxGpuColumns: 0 });
   await current.init();
-  assert.equal(current.metadataByteBound, bytes * 8, 'all worlds contribute to the byte bound');
+  assert.equal(current.metadataByteBound, bytes, 'invalid claimed byte counts do not poison the global budget');
   await current.ingest(column(1, 0));
-  assert.equal(current.metadataReads, 2, 'a count proof cannot ignore the oversized other-world record');
+  assert.equal(current.metadataReads, 1, 'the repaired global total does not require repeated catalog scans');
   await current.ingest(column(2, 0));
   const values = await current.readMetadata();
   assert.ok(values.reduce((sum, record) => sum + record.bytes, 0) <= bytes * 9);
-  assert.ok(values.every(record => record.worldKey !== 'legacy-world'), 'global LRU eviction removes the older record');
+  assert.ok(values.every(record => record.worldKey !== 'legacy-world'), 'malformed records are deleted along with their metadata');
   await settle(current); await current.close();
 });
 
@@ -270,4 +270,130 @@ test('regional batching reduces uploads, keeps unknown gaps empty and releases v
   assert.ok(removes.includes('lod:0,0'));
   assert.equal(meshes.at(-1).opaque.length, 2 * 36 * 14);
   await terrain.close();
+});
+
+test('native dimension bounds preserve bottom/top occupancy, biome slots and exact signed mesh origins', () => {
+  for (const bounds of [
+    { minY: 0, height: 256 }, { minY: -320, height: 512 },
+    { minY: 40000, height: 32 }, { minY: -40000, height: 32 },
+    { minY: -2147483632, height: 1024 }, { minY: 2147482608, height: 1024 },
+  ]) {
+    const { minY, height } = bounds, maxY = minY + height;
+    const source = column(-3, -2, [[0, minY, 0, 1], [15, maxY - 1, 15, 2], [8, minY - 1, 8, 3], [8, maxY, 8, 3]]);
+    for (const section of source.sections) section.biomes = new Uint32Array(64).fill(section.sectionY - minY / 16 + 100);
+    const record = reduceColumn(source, materials, bounds);
+    assert.equal(recordBytes(record), dimensionRecordBytes(height));
+    assert.equal(record.occupancy.length, height * 8);
+    assert.equal(record.biomes.length, height * 4);
+    assert.equal(record.biomes[0], 100); assert.equal(record.biomes.at(-1), height / 16 + 99);
+    assert.deepEqual([record.minY, record.height], [minY, height]);
+    record.schemaVersion = DISTANT_CACHE_VERSION; record.signature = materialSignature(materials);
+    assert.ok(validCachedColumn(record, record.signature, bounds));
+    for (const size of [4, 8, 16]) {
+      const n = 16 / size, last = index(n - 1, height / size - 1, n - 1, n);
+      assert.ok(record.topHeights[size] instanceof Int32Array);
+      assert.equal(record.topHeights[size][0], minY); assert.equal(record.topHeights[size][last], maxY - 1);
+      assert.equal(record.levels[size].filter(Boolean).length, 2, 'outside-dimension source sections cannot create geometry');
+      const mesh = meshColumn(record, size, materials);
+      assert.deepEqual(mesh.origin, [-48, minY, -32]);
+      assert.deepEqual(mesh.bounds, { min: [-48, minY, -32], max: [-32, maxY, -16] });
+      const ys = [...mesh.opaque].filter((_value, i) => i % 14 === 1);
+      assert.equal(Math.min(...ys), 0); assert.equal(Math.max(...ys), height);
+      assert.ok(ys.includes(size) && ys.includes(height - size), 'local Float32 preserves small cells even near i32 extremes');
+    }
+    assert.equal(updateReducedBlock(record, -48, minY - 1, -32, 1, materials), null);
+    assert.equal(updateReducedBlock(record, -48, maxY, -32, 1, materials), null);
+    updateReducedBlock(record, -48, minY, -32, 0, materials);
+    updateReducedBlock(record, -33, maxY - 1, -17, 0, materials);
+    assert.ok(record.occupancy.every(value => value === 0));
+    for (const size of [4, 8, 16]) assert.ok(record.topHeights[size].every(value => value === minY - 1));
+    updateReducedBlock(record, -47, maxY - 1, -31, 3, materials);
+    assert.equal(meshColumn(record, 4, materials).water.length, 36 * 14, 'boundary edits restore real fluid geometry');
+  }
+  for (const bounds of [{ minY: -65, height: 384 }, { minY: 0, height: 0 }, { minY: 0, height: 1025 }, { minY: 2147483632, height: 16 }, { minY: -2147483648, height: 16 }]) {
+    assert.throws(() => reduceColumn(column(), materials, bounds), /dimension bounds/);
+    assert.throws(() => new DistantTerrain({ worldKey: 'bad', materials, indexedDB: null, ...bounds }), /dimension bounds/);
+  }
+});
+
+test('negative-coordinate regional meshes retain dimension bounds, source offsets and unknown gaps', () => {
+  const bounds = { minY: -40000, height: 256 };
+  const records = [-4, -1].map(x => ({ record: reduceColumn(column(x, -2, [[0, bounds.minY, 0, 1]]), materials, bounds), cellSize: 4 }));
+  const mesh = meshRegion(records, -1, -1, 4, materials);
+  assert.deepEqual(mesh.origin, [-64, -40000, -64]);
+  assert.deepEqual(mesh.bounds, { min: [-64, -40000, -64], max: [0, -39744, 0] });
+  for (let vertex = 0; vertex < mesh.opaque.length; vertex += 14) {
+    const x = mesh.opaque[vertex], z = mesh.opaque[vertex + 2];
+    assert.ok(x <= 4 || x >= 48, 'unknown columns inside a known region have no vertices');
+    assert.ok(z >= 32 && z <= 36);
+  }
+  assert.equal(meshRegion([], -1, -1, 4, materials, null, bounds).opaque.length, 0);
+  const mismatched = { record: reduceColumn(column(-3, -2), materials), cellSize: 4 };
+  assert.throws(() => meshRegion([...records, mismatched], -1, -1, 4, materials), /incompatible dimension/);
+});
+
+test('dimension-aware caches reject changed bounds and truncated or old-width typed arrays', async () => {
+  const indexedDB = new IDBFactory(), bounds = { minY: -40000, height: 32 }, options = { worldKey: 'custom-dimension', materials, indexedDB, ...bounds };
+  const first = new DistantTerrain(options);
+  await first.init(); await first.ingest(column(-1, 2, [[0, -40000, 0, 1], [15, -39969, 15, 2]])); await settle(first);
+  const record = first.columns.get('-1,2'), signature = materialSignature(materials);
+  assert.ok(validCachedColumn(structuredClone(record), signature, bounds));
+  assert.equal(validCachedColumn(record, signature), false, 'default Overworld validation cannot accept a custom dimension');
+  assert.equal(validCachedColumn({ ...record, biomes: new Uint32Array(64) }, signature, bounds), false);
+  assert.equal(validCachedColumn({ ...record, occupancy: new Uint32Array(2) }, signature, bounds), false);
+  assert.equal(validCachedColumn({ ...record, topHeights: { ...record.topHeights, 4: new Int16Array(record.topHeights[4]) } }, signature, bounds), false);
+  const badTop = structuredClone(record); badTop.topHeights[4][0] = 0;
+  assert.equal(validCachedColumn(badTop, signature, bounds), false, 'corrupt representative heights cannot enter biome sampling');
+  await first.close();
+  const restored = new DistantTerrain(options); await restored.init(); await settle(restored);
+  assert.equal(restored.catalog.size, 1); assert.equal(restored.stats().minY, -40000); assert.equal(restored.stats().height, 32);
+  const metadata = (await restored.readMetadata())[0]; assert.equal(metadata.minY, -40000); assert.equal(metadata.height, 32);
+  assert.equal(metadata.bytes, dimensionRecordBytes(32)); await restored.close();
+  const changed = new DistantTerrain({ ...options, minY: -40016 }); await changed.init(); await settle(changed);
+  assert.equal(changed.catalog.size, 0, 'changing bounds for the same world identity cannot reuse old source cells');
+  assert.equal((await changed.readMetadata()).length, 0); await changed.close();
+});
+
+test('concurrent dimensions account for exact persistent bytes without per-import catalog scans', async () => {
+  const indexedDB = new IDBFactory(), smallBytes = dimensionRecordBytes(256), tallBytes = dimensionRecordBytes(1024);
+  const options = { materials, indexedDB, maxDiskBytes: smallBytes + tallBytes, maxGpuColumns: 0, maxMemoryBytes: tallBytes };
+  const small = new CountedTerrain({ ...options, worldKey: 'nether', minY: 0, height: 256 });
+  const tall = new CountedTerrain({ ...options, worldKey: 'tall-custom', minY: -512, height: 1024 });
+  await Promise.all([small.init(), tall.init()]);
+  await small.ingest(column(0, 0)); await tall.ingest(column(0, 0));
+  assert.equal(small.metadataReads, 1); assert.equal(tall.metadataReads, 1, 'mixed heights at the exact limit use the atomic total');
+  await Promise.all([small.ingest(column(1, 0)), tall.ingest(column(1, 0)), small.ingest(column(2, 0)), tall.ingest(column(2, 0))]);
+  const values = await small.readMetadata(), total = values.reduce((sum, value) => sum + value.bytes, 0);
+  assert.ok(total <= options.maxDiskBytes);
+  const budget = await new Promise((resolve, reject) => {
+    const request = small.database.transaction('budget', 'readonly').objectStore('budget').get('global');
+    request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
+  });
+  assert.equal(budget.bytes, total); assert.equal(budget.count, values.length);
+  assert.ok(values.every(value => value.bytes === dimensionRecordBytes(value.height)));
+  await Promise.all([settle(small), settle(tall)]);
+  assert.ok(small.memoryBytes <= options.maxMemoryBytes); assert.ok(tall.memoryBytes <= options.maxMemoryBytes);
+  await Promise.all([small.close(), tall.close()]);
+});
+
+test('IndexedDB v1 migration rebuilds totals and rejects malformed metadata safely', async () => {
+  const indexedDB = new IDBFactory();
+  const old = await new Promise((resolve, reject) => {
+    const request = indexedDB.open(DISTANT_DATABASE, 1);
+    request.onupgradeneeded = () => { request.result.createObjectStore('columns', { keyPath: 'id' }); request.result.createObjectStore('metadata', { keyPath: 'id' }).createIndex('worldKey', 'worldKey'); };
+    request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error);
+  });
+  const oldRecord = { ...reduceColumn(column(), materials), id: 'migrate\0' + '0,0', schemaVersion: 2, signature: materialSignature(materials) };
+  const transaction = old.transaction(['metadata', 'columns'], 'readwrite');
+  transaction.objectStore('columns').put(oldRecord);
+  transaction.objectStore('metadata').put({ id: oldRecord.id, worldKey: 'migrate', key: '0,0', x: 0, z: 0, schemaVersion: 2, signature: oldRecord.signature, bytes: 25696, accessedAt: 1 });
+  for (const [suffix, bytes] of [['nan', NaN], ['negative', -1], ['infinite', Infinity], ['huge', Number.MAX_SAFE_INTEGER]]) {
+    transaction.objectStore('metadata').put({ id: `bad\0${suffix}`, worldKey: 'bad', key: suffix, x: 0, z: 0, schemaVersion: 3, signature: oldRecord.signature, bytes, accessedAt: NaN });
+  }
+  await new Promise((resolve, reject) => { transaction.oncomplete = resolve; transaction.onerror = () => reject(transaction.error); }); old.close();
+  const terrain = new CountedTerrain({ worldKey: 'migrate', materials, indexedDB }); await terrain.init(); await settle(terrain);
+  assert.equal(terrain.database.version, 2); assert.equal(terrain.catalog.size, 0);
+  assert.equal((await terrain.readMetadata()).length, 0, 'old format and corrupt metadata are removed during migration');
+  await terrain.ingest(column(1, -1)); await settle(terrain);
+  assert.equal((await terrain.readMetadata())[0].bytes, dimensionRecordBytes(384)); await terrain.close();
 });

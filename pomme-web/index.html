@@ -24,12 +24,26 @@
       <label class="file-label">Java world files<input id="world-files" type="file" accept=".mca,.dat" multiple /></label>
       <p class="muted">Select region files and optionally level.dat. Imported worlds allow local building.</p>
       <button id="resume-import" class="button button-secondary" type="button" hidden>Resume saved Java world</button>
+      <form id="singleplayer-form">
+        <h3>Singleplayer</h3>
+        <label>Local world service<input id="singleplayer-service" value="http://127.0.0.1:5175" type="url" required /></label>
+        <div class="server-row"><label>World name<input id="singleplayer-name" value="My world" maxlength="64" /></label><label>Seed<input id="singleplayer-seed" value="1650" /></label></div>
+        <label>Game mode<select id="singleplayer-mode"><option value="survival">Survival</option><option value="creative">Creative</option></select></label>
+        <button id="singleplayer-create" class="button button-secondary" type="button">Create world</button>
+        <button id="singleplayer-refresh" class="button button-quiet" type="button">Refresh worlds</button>
+        <label>Saved worlds<select id="singleplayer-world"><option value="">Refresh to list local worlds</option></select></label>
+        <button class="button button-primary" type="submit">Play selected world</button>
+        <button id="singleplayer-stop" class="button button-secondary" type="button" hidden>Save &amp; quit</button>
+        <p id="singleplayer-status" class="muted" role="status">Start the local world service with npm run singleplayer.</p>
+      </form>
       <form id="server-form">
         <label>Server address<input id="server-host" value="localhost" autocomplete="off" required /></label>
         <div class="server-row"><label>Port<input id="server-port" type="number" min="1" max="65535" value="25565" required /></label><label>Username<input id="server-username" value="Player" maxlength="16" required /></label></div>
         <label>Account<select id="server-auth"><option value="microsoft">Microsoft account</option><option value="offline">Offline / local server</option></select></label>
+        <label>Java version<select id="server-version"><option value="1.20.4">1.20.4</option><option value="1.21.11">1.21.11</option><option value="26.1">26.1</option></select></label>
+        <label>Server resource packs<select id="server-packs"><option value="prompt">Ask when requested</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select></label>
         <label>Gateway URL<input id="server-gateway" value="ws://127.0.0.1:5174" required /></label>
-        <p class="muted">Start the local gateway with <code>npm run gateway</code>. Java edition 1.20.4.</p>
+        <p class="muted">Start the local gateway with <code>npm run gateway</code>.</p>
         <button id="connect" class="button button-primary" type="submit">Connect to server</button>
         <button id="disconnect" class="button button-secondary" type="button" hidden>Disconnect</button>
       </form>

@@ -22,6 +22,9 @@ struct ShadowVarying {
 
 @fragment fn fs_shadow(input: ShadowVarying) {
     let flags = u32(input.flags);
+    if ((flags & 16777216u) != 0u) { discard; }
+    let tile = min(u32(input.tile_id), arrayLength(&tile_rectangles) - 1u);
+    if (tile_rectangles[tile].animation.y >= 15.0) { discard; }
     if ((flags & 64u) != 0u) { discard; }
     if ((flags & 8u) != 0u && (flags & 1u) == 0u) { discard; }
     if (block_texel(input.tile_id, input.face_uv).a < 0.1) { discard; }

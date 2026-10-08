@@ -1,0 +1,64 @@
+{
+  "version": "26.1",
+  "source": {
+    "producer": "BundleNativeProof.java invoking official BundleContents.CODEC with HashOps.CRC32C_INSTANCE and BundleContents.STREAM_CODEC",
+    "officialClientJarSha1": "191771837687b766537a8c4607cb6fad79c533a1",
+    "classes": [
+      "net.minecraft.world.item.component.BundleContents",
+      "net.minecraft.world.item.ItemStackTemplate",
+      "net.minecraft.util.HashOps"
+    ]
+  },
+  "cases": {
+    "empty": {
+      "hash": -1978007022,
+      "wire": "00"
+    },
+    "stone1": {
+      "hash": -529362325,
+      "wire": "0101010000"
+    },
+    "stone12": {
+      "hash": 1258123371,
+      "wire": "01010c0000"
+    },
+    "varint_boundary": {
+      "hash": 1388069540,
+      "wire": "027f0100008001630000"
+    },
+    "stone64": {
+      "hash": -1777817905,
+      "wire": "0101400000"
+    },
+    "stone12dirt3": {
+      "hash": -1247583737,
+      "wire": "02010c00001c030000"
+    },
+    "stone98max99": {
+      "hash": 942261629,
+      "wire": "01016201000163"
+    },
+    "nested": {
+      "hash": 32127831,
+      "wire": "028d080101003201010800001c340000"
+    },
+    "removed_damage": {
+      "hash": 2137541848,
+      "wire": "01ab0701000103"
+    }
+  },
+  "invalid": [
+    {
+      "wire": "0100010000",
+      "consumed": 5,
+      "sentinel": 85,
+      "rejection": "Item must be non-empty"
+    },
+    {
+      "wire": "0101000000",
+      "consumed": 5,
+      "sentinel": 85,
+      "rejection": "Item must be non-empty"
+    }
+  ]
+}

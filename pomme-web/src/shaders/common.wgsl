@@ -14,6 +14,10 @@ struct Frame {
     screen_quality: vec4<f32>,
     inverse_view_projection: mat4x4<f32>,
     jitter_info: vec4<f32>,
+    weather_info: vec4<f32>,
+    world_time: vec4<f32>,
+    irradiance_origin: vec4<f32>,
+    irradiance_extent: vec4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> frame: Frame;
@@ -21,6 +25,26 @@ struct Frame {
 @group(0) @binding(2) var shadow_sampler: sampler_comparison;
 @group(0) @binding(3) var sky_environment: texture_2d<f32>;
 @group(0) @binding(4) var environment_sampler: sampler;
+@group(0) @binding(5) var local_irradiance: texture_3d<f32>;
+@group(0) @binding(6) var bounce_irradiance: texture_3d<f32>;
+
+struct CachedIrradiance {
+    local: vec4<f32>,
+    bounce: vec4<f32>,
+};
+
+fn cached_irradiance(position: vec3<f32>, normal: vec3<f32>) -> CachedIrradiance {
+    var output: CachedIrradiance;
+    output.local = vec4<f32>(0.0);
+    output.bounce = vec4<f32>(0.0);
+    if (frame.irradiance_extent.w < 0.5) { return output; }
+    let coordinate = vec3<i32>(floor((position + normal * 0.05 - frame.irradiance_origin.xyz) / frame.irradiance_origin.w));
+    if (any(coordinate < vec3<i32>(0)) || any(coordinate >= vec3<i32>(frame.irradiance_extent.xyz))) { return output; }
+    // A single known air cell prevents interpolation through voxel walls.
+    output.local = textureLoad(local_irradiance, coordinate, 0);
+    output.bounce = textureLoad(bounce_irradiance, coordinate, 0);
+    return output;
+}
 
 const PI: f32 = 3.14159265359;
 
@@ -64,13 +88,14 @@ fn atmosphere(ray: vec3<f32>) -> vec3<f32> {
     let sunset = (1.0 - smoothstep(0.06, 0.38, abs(sun.y))) * smoothstep(-0.22, 0.05, sun.y);
     sky += vec3<f32>(1.4, 0.38, 0.09) * horizon * sunset * pow(max(dot(ray, sun), 0.0), 3.0);
     sky += vec3<f32>(1.0, 0.76, 0.42) * pow(max(dot(ray, sun), 0.0), 48.0) * day * 0.38;
-    return sky;
+    let overcast = mix(vec3<f32>(0.012, 0.018, 0.03), vec3<f32>(0.21, 0.25, 0.29), day);
+    return mix(sky, overcast, clamp(frame.weather_info.x * 0.65 + frame.weather_info.y * 0.3, 0.0, 0.95));
 }
 
 fn environment_color(ray: vec3<f32>) -> vec3<f32> {
     let uv = vec2<f32>(atan2(ray.z, ray.x) / (2.0 * PI) + 0.5,
         acos(clamp(ray.y, -1.0, 1.0)) / PI);
-    return textureSampleLevel(sky_environment, environment_sampler, uv, 0.0).rgb;
+    return textureSampleLevel(sky_environment, environment_sampler, uv, 0.0).rgb + vec3<f32>(0.65, 0.71, 0.85) * frame.weather_info.z;
 }
 
 // Called only when the environment cache is invalidated. Camera rendering and

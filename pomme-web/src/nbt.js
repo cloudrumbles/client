@@ -70,6 +70,9 @@ export function decodeNBT(input, options = {}) {
         if (elementType > 12 || (elementType === 0 && n !== 0)) throw new Error('Invalid NBT list type');
         const result = new Array(n);
         for (let i = 0; i < n; i++) result[i] = value(elementType, depth + 1);
+        // Trusted readers can retain list tag types without changing the public
+        // decoded values or keeping the source file's bytes alive.
+        options.onList?.(result, elementType);
         return result;
       }
       case 10: {

@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { zipSync, zlibSync } from '../vendor/fflate.js';
-import { loadResourcePack, decodePNG, MATERIAL_FLAGS } from '../src/assets.js';
+import { loadResourcePack, decodePNG, MATERIAL_FLAGS, nativeBlockTint } from '../src/assets.js';
 import { registryStates } from '../src/anvil.js';
+import { copperStatueGeometry } from '../src/copper-statue.js';
 
 const enc = new TextEncoder();
 const join = arrays => { const out = new Uint8Array(arrays.reduce((n, a) => n + a.length, 0)); let at = 0; for (const a of arrays) { out.set(a, at); at += a.length; } return out; };
@@ -42,6 +43,177 @@ function resourceArchive(overrides = {}) {
   };
   return zipSync(Object.fromEntries(Object.entries(files).map(([name, data]) => [name, data instanceof Uint8Array ? data : enc.encode(JSON.stringify(data))])));
 }
+
+test('modern copper chest/statue native forms and pot height bake without placeholder geometry', async () => {
+  const shape = [[.125, 0, .125, .875, 1.5, .875]];
+  const native = { blocks: [registry.blocks[0],
+    { name: 'copper_chest', minStateId: 1, maxStateId: 3, boundingBox: 'block', states: [{ name: 'type', values: ['single', 'left', 'right'] }] },
+    { name: 'waxed_oxidized_copper_chest', minStateId: 4, maxStateId: 4, boundingBox: 'block' },
+    { name: 'copper_golem_statue', minStateId: 10, maxStateId: 13, boundingBox: 'block', states: [{ name: 'copper_golem_pose', values: ['standing', 'running', 'sitting', 'star'] }] },
+    { name: 'decorated_pot', minStateId: 14, maxStateId: 14, boundingBox: 'block' }],
+    collisionShapes: { blocks: { copper_golem_statue: 1 }, shapes: { 1: shape } } };
+  const texture = png(1, 1, new Uint8Array([140, 90, 50, 255])), files = {};
+  for (const name of ['copper', 'copper_left', 'copper_right', 'copper_oxidized']) files[`assets/minecraft/textures/entity/chest/${name}.png`] = texture;
+  for (const name of ['copper_golem/copper_golem', 'decorated_pot/decorated_pot_base', 'decorated_pot/decorated_pot_side']) files[`assets/minecraft/textures/entity/${name}.png`] = texture;
+  for (const block of native.blocks.slice(1)) {
+    files[`assets/minecraft/blockstates/${block.name}.json`] = { variants: { '': { model: `block/${block.name}` } } };
+    files[`assets/minecraft/models/block/${block.name}.json`] = { parent: 'builtin/entity' };
+  }
+  const { materials, atlas, diagnostics } = await loadResourcePack(resourceArchive(files), { registry: native });
+  assert.equal(diagnostics.unsupportedStates, 0);
+  for (const [id, name] of [[1, 'copper'], [2, 'copper_left'], [3, 'copper_right'], [4, 'copper_oxidized']]) {
+    const material = materials.get(id);
+    assert.equal(material.model.staticBlockEntity, 'chest');
+    assert.equal(material.templateVertices[12], atlas.tileByName.get(`minecraft:entity/chest/${name}`));
+    assert.equal(material.model.parts.length, 3);
+  }
+  const bounds = vertices => [0, 1, 2].map(axis => {
+    const values = Array.from({ length: vertices.length / 14 }, (_, i) => vertices[i * 14 + axis]);
+    return [Math.min(...values), Math.max(...values)];
+  });
+  for (const id of [10, 11, 12, 13]) {
+    const material = materials.get(id);
+    assert.equal(material.model.staticBlockEntity, 'copper statue');
+    assert.ok(material.flags & MATERIAL_FLAGS.CUSTOM_MODEL); assert.equal(material.flags & MATERIAL_FLAGS.FLUID, 0);
+    assert.deepEqual(material.collisionBoxes, shape, 'native state collision remains independent of model poses');
+    assert.ok(material.particleTile > 0);
+  }
+  assert.ok(Math.abs(bounds(materials.get(10).templateVertices)[1][1] - 23.985 / 16) < 1e-6);
+  assert.ok(Math.abs(bounds(materials.get(12).templateVertices)[1][1] - 19.985 / 16) < 1e-6);
+  assert.ok(bounds(materials.get(13).templateVertices)[0][0] < 0 && bounds(materials.get(13).templateVertices)[0][1] > 1, 'native star arms extend beyond their block');
+  const pot = materials.get(14);
+  assert.ok(Math.abs(bounds(pot.templateVertices)[1][1] - 19.9 / 16) < 1e-6);
+  assert.equal(pot.model.rotation[1], 180);
+  assert.ok(pot.model.quads.some(quad => quad.positions.every(position => position[1] === 1)), 'native body closes at16px below the neck');
+});
+
+test('all native copper statue pose triangles keep outward normals and exact cube UVs', () => {
+  assert.equal(copperStatueGeometry('unknown'), null);
+  for (const pose of ['standing', 'running', 'sitting', 'star']) {
+    const vertices = copperStatueGeometry(pose);
+    assert.equal(vertices.length / 14, pose === 'sitting' ? 396 : 324);
+    for (let i = 0; i < vertices.length; i += 42) {
+      const a = [0,1,2].map(axis => vertices[i + 14 + axis] - vertices[i + axis]);
+      const b = [0,1,2].map(axis => vertices[i + 28 + axis] - vertices[i + axis]);
+      const cross = [a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]];
+      assert.ok(cross.reduce((sum, value, axis) => sum + value * vertices[i + 3 + axis], 0) > 0);
+    }
+    for (let i = 0; i < vertices.length; i += 14) {
+      assert.ok(Math.abs(Math.hypot(...vertices.subarray(i + 3, i + 6)) - 1) < 1e-6);
+      assert.ok(vertices[i + 10] >= 0 && vertices[i + 10] <= 1 && vertices[i + 11] >= 0 && vertices[i + 11] <= 1);
+    }
+  }
+});
+
+test('native static forms preserve inherited particle aliases and state-specific pack overrides', async () => {
+  const native = { blocks: [
+    { name: 'copper_golem_statue', minStateId: 1, maxStateId: 2, boundingBox: 'block', states: [{ name: 'waterlogged', values: ['false', 'true'] }] },
+    { name: 'copper_chest', minStateId: 3, maxStateId: 3, boundingBox: 'block' },
+    { name: 'decorated_pot', minStateId: 4, maxStateId: 4, boundingBox: 'block' },
+  ] };
+  const files = {}, image = png(1, 1, new Uint8Array([140, 90, 50, 255]));
+  for (const name of ['block/copper_block', 'block/oxidized_copper', 'block/terracotta', 'entity/copper_golem/copper_golem', 'entity/chest/copper', 'entity/decorated_pot/decorated_pot_base', 'entity/decorated_pot/decorated_pot_side']) files[`assets/minecraft/textures/${name}.png`] = image;
+  files['assets/minecraft/models/block/native_entity.json'] = { parent: 'builtin/entity', textures: { particle: '#breakage', breakage: 'minecraft:block/copper_block' } };
+  for (const name of ['copper_golem_statue', 'copper_chest', 'decorated_pot']) {
+    files[`assets/minecraft/models/block/${name}.json`] = { parent: 'block/native_entity', ...(name === 'decorated_pot' ? { textures: { breakage: 'block/terracotta' } } : {}) };
+    files[`assets/minecraft/blockstates/${name}.json`] = { variants: { '': { model: `block/${name}` } } };
+  }
+  const base = resourceArchive(files), overlay = resourceArchive({
+    'assets/minecraft/models/block/statue_logged.json': { parent: 'block/copper_golem_statue', textures: { breakage: 'block/oxidized_copper' } },
+    'assets/minecraft/blockstates/copper_golem_statue.json': { variants: { 'waterlogged=false': { model: 'block/copper_golem_statue' }, 'waterlogged=true': { model: 'block/statue_logged' } } },
+  });
+  const pack = await loadResourcePack([base, overlay], { registry: native });
+  for (const [id, expected] of [[1, 'copper_block'], [2, 'oxidized_copper'], [3, 'copper_block'], [4, 'terracotta']]) {
+    const material = pack.materials.get(id);
+    assert.equal(pack.atlas.tiles[material.particleTile].name, `minecraft:block/${expected}`);
+    assert.ok(material.templateVertices.length > 0);
+    assert.ok(material.model.staticBlockEntity);
+  }
+  assert.equal(pack.diagnostics.unsupportedStates, 0);
+});
+
+test('native font references preserve first-provider space and bitmap glyph precedence', async () => {
+  const pixels = new Uint8Array(4 * 4 * 4).fill(255);
+  const pack = await loadResourcePack(resourceArchive({
+    'assets/minecraft/font/default.json': { providers: [
+      { type: 'reference', id: 'minecraft:include/space' },
+      { type: 'reference', id: 'minecraft:include/early' },
+      { type: 'space', advances: { A: 40, B: 99 } },
+      { type: 'reference', id: 'minecraft:include/late' },
+    ] },
+    'assets/minecraft/font/include/space.json': { providers: [{ type: 'space', advances: { A: 4 } }] },
+    'assets/minecraft/font/include/early.json': { providers: [{ type: 'bitmap', file: 'minecraft:font/early.png', height: 8, ascent: 7, chars: ['AB'] }] },
+    'assets/minecraft/font/include/late.json': { providers: [{ type: 'bitmap', file: 'minecraft:font/late.png', height: 16, ascent: 14, chars: ['BC'] }] },
+    'assets/minecraft/textures/font/early.png': png(4, 4, pixels),
+    'assets/minecraft/textures/font/late.png': png(4, 4, pixels),
+  }), { registry });
+  assert.deepEqual(pack.atlas.fontGlyphs.get('A'), { tile: -1, advance: 4, width: 0, height: 0, ascent: 0 });
+  const early = pack.atlas.fontGlyphs.get('B'), late = pack.atlas.fontGlyphs.get('C');
+  assert.equal(pack.atlas.tiles[early.tile].name, 'minecraft:font/early');
+  assert.equal(early.advance, 5); assert.equal(early.height, 8);
+  assert.equal(pack.atlas.tiles[late.tile].name, 'minecraft:font/late');
+  assert.equal(late.advance, 9); assert.equal(late.height, 16);
+});
+
+test('font resource stacks retain native glyph fallback beneath higher-pack providers and references', async () => {
+  const base = resourceArchive({
+    'assets/minecraft/font/default.json': { providers: [{ type: 'space', advances: { A: 4, B: 6 } }] },
+  });
+  const overlay = resourceArchive({
+    'assets/minecraft/font/default.json': { providers: [{ type: 'space', advances: { A: 20 } }] },
+  });
+  const spaces = await loadResourcePack([base, overlay], { registry });
+  assert.equal(spaces.atlas.fontGlyphs.get('A').advance, 20);
+  assert.equal(spaces.atlas.fontGlyphs.get('B').advance, 6);
+
+  const pixels = new Uint8Array(4 * 4 * 4).fill(255);
+  const referencedBase = resourceArchive({
+    'assets/minecraft/font/default.json': { providers: [
+      { type: 'space', advances: { A: 4, B: 6 } },
+      { type: 'reference', id: 'minecraft:include/shared' },
+    ] },
+    'assets/minecraft/font/include/shared.json': { providers: [{ type: 'space', advances: { C: 8, D: 9 } }] },
+  });
+  const referencedOverlay = resourceArchive({
+    'assets/minecraft/font/default.json': { providers: [
+      { type: 'bitmap', file: 'minecraft:font/overlay.png', height: 8, ascent: 7, chars: ['A'] },
+      { type: 'space', advances: { A: 99 } },
+      { type: 'reference', id: 'minecraft:include/shared' },
+    ] },
+    'assets/minecraft/font/include/shared.json': { providers: [{ type: 'space', advances: { C: 20 } }] },
+    'assets/minecraft/textures/font/overlay.png': png(4, 4, pixels),
+  });
+  const referenced = await loadResourcePack([referencedBase, referencedOverlay], { registry });
+  const glyphs = referenced.atlas.fontGlyphs;
+  assert.equal(referenced.atlas.tiles[glyphs.get('A').tile].name, 'minecraft:font/overlay');
+  assert.equal(glyphs.get('A').height, 8);
+  assert.equal(glyphs.get('B').advance, 6);
+  assert.equal(glyphs.get('C').advance, 20);
+  assert.equal(glyphs.get('D').advance, 9);
+});
+
+test('font traversal bounds repeated references with both populated and empty leaves', async () => {
+  for (const providers of [[{ type: 'space', advances: { A: 4 } }], []]) {
+    const files = {};
+    for (let depth = 0; depth <= 6; depth++) {
+      const name = depth === 0 ? 'default' : `include/layer${depth}`;
+      files[`assets/minecraft/font/${name}.json`] = { providers: depth === 6 ? providers : Array.from({ length: 10 }, () => ({ type: 'reference', id: `minecraft:include/layer${depth + 1}` })) };
+    }
+    await assert.rejects(loadResourcePack(resourceArchive(files), { registry }), /Font references exceed the provider traversal limit/);
+  }
+});
+
+test('font resource stack fallback still rejects cyclic and overly deep reference graphs', async () => {
+  const overlay = resourceArchive({ 'assets/minecraft/font/default.json': { providers: [{ type: 'space', advances: { A: 20 } }] } });
+  const cyclic = resourceArchive({ 'assets/minecraft/font/default.json': { providers: [{ type: 'reference', id: 'minecraft:default' }] } });
+  await assert.rejects(loadResourcePack([cyclic, overlay], { registry }), /Cyclic or overly deep font reference/);
+  const files = {};
+  for (let depth = 0; depth <= 34; depth++) {
+    const name = depth === 0 ? 'default' : `include/layer${depth}`;
+    files[`assets/minecraft/font/${name}.json`] = { providers: depth === 34 ? [] : [{ type: 'reference', id: `minecraft:include/layer${depth + 1}` }] };
+  }
+  await assert.rejects(loadResourcePack([resourceArchive(files), overlay], { registry }), /Cyclic or overly deep font reference/);
+});
 
 test('portable PNG decoder preserves texture pixels, rejects malformed formats, and bounds allocations', () => {
   const pixels = new Uint8Array([255, 0, 0, 255, 0, 255, 0, 12]);
@@ -89,11 +261,64 @@ test('resource inheritance and texture cycles fail visibly rather than hanging',
   await assert.rejects(loadResourcePack(pack, { registry, maxInflatedBytes: 100 }), /limits/);
 });
 
+test('ordered resource pack stacks retain base models and append/replace native sound events', async () => {
+  const base = resourceArchive({ 'assets/minecraft/sounds.json': { appended: { sounds: ['base/a'], subtitle: 'Base subtitle' }, replaced: { sounds: ['base/b'] }, untouched: { sounds: ['base/c'] } } });
+  const partial = zipSync({
+    'assets/minecraft/textures/block/red.png': png(1, 1, new Uint8Array([5, 240, 10, 255])),
+    'assets/minecraft/sounds.json': enc.encode(JSON.stringify({ appended: { sounds: [{ name: 'override/a', volume: .4 }] }, replaced: { replace: true, sounds: ['override/b'] } })),
+  });
+  const result = await loadResourcePack([base, new File([partial], 'server.zip')], { registry });
+  assert.equal(result.materials.get(1).unsupported, false, 'partial server packs inherit base model JSON');
+  const tile = result.atlas.tiles[result.materials.get(1).faces.up.tile], index = (tile.y * result.atlas.width + tile.x) * 4;
+  assert.deepEqual(result.atlas.pixelsRGBA.slice(index, index + 4), new Uint8Array([5, 240, 10, 255]));
+  assert.deepEqual(result.sounds.get('minecraft').appended.sounds, ['base/a', { name: 'override/a', volume: .4 }]); assert.equal(result.sounds.get('minecraft').appended.subtitle, 'Base subtitle');
+  assert.deepEqual(result.sounds.get('minecraft').replaced.sounds, ['override/b']); assert.deepEqual(result.sounds.get('minecraft').untouched.sounds, ['base/c']);
+  const raw = JSON.parse(new TextDecoder().decode(result.audioFiles.get('assets/minecraft/sounds.json'))); assert.deepEqual(raw, result.sounds.get('minecraft'));
+  await assert.rejects(loadResourcePack([base, partial], { registry, maxPackBytes: base.length }), /file size limit/);
+  await assert.rejects(loadResourcePack([], { registry }), /between one and 64/);
+});
+
 test('native blockstate mixed-radix mapping follows Minecraft boolean and enum order', () => {
   const states = registryStates({ blocks: [{ name: 'test', minStateId: 20, maxStateId: 25, states: [{ name: 'lit', type: 'bool', num_values: 2 }, { name: 'axis', values: ['x', 'y', 'z'] }] }] });
   assert.equal(states.lookup('minecraft:test', { axis: 'z', lit: 'true' }), 22);
   assert.equal(states.lookup('test', { axis: 'x', lit: 'false' }), 23);
   assert.equal(states.lookup('test', { axis: 'x', lit: 'unknown' }), undefined);
+});
+
+test('resource packs retain native glyph metrics, item/particle/weather sheets and supplied audio bytes', async () => {
+  const glyph = new Uint8Array(8 * 8 * 4);
+  for (let y = 0; y < 7; y++) for (let x = 0; x < 5; x++) glyph.set([255, 255, 255, 255], (y * 8 + x) * 4);
+  const audio = new Uint8Array([79, 103, 103, 83, 0, 1]);
+  const pack = await loadResourcePack(resourceArchive({
+    'assets/minecraft/font/default.json': { providers: [{ type: 'reference', id: 'minecraft:test' }, { type: 'space', advances: { ' ': 4 } }] },
+    'assets/minecraft/font/test.json': { providers: [{ type: 'bitmap', file: 'minecraft:font/glyph.png', ascent: 7, chars: ['A'] }] },
+    'assets/minecraft/textures/font/glyph.png': png(8, 8, glyph),
+    'assets/minecraft/textures/item/diamond_sword.png': png(8, 8, glyph),
+    'assets/minecraft/models/item/diamond_sword.json': { parent: 'item/handheld', textures: { layer0: 'item/diamond_sword' } },
+    'assets/minecraft/textures/particle/flame.png': png(8, 8, glyph),
+    'assets/minecraft/particles/flame.json': { textures: ['minecraft:particle/flame'] },
+    'assets/minecraft/textures/environment/rain.png': png(8, 8, glyph),
+    'assets/minecraft/textures/map/map_background.png': png(8, 16, new Uint8Array(8 * 16 * 4).fill(255)),
+    'assets/minecraft/textures/gui/sprites/map/decorations/player.png': png(8, 8, glyph),
+    'assets/minecraft/textures/gui/sprites/container/irrelevant.png': png(8, 8, glyph),
+    'assets/minecraft/sounds.json': { 'block.chest.open': { sounds: ['test/chest'] } },
+    'assets/minecraft/sounds/test/chest.ogg': audio,
+  }), { registry, tileSize: 16 });
+  const metrics = pack.atlas.fontGlyphs.get('A');
+  assert.equal(metrics.width, 5); assert.equal(metrics.height, 8); assert.equal(metrics.advance, 6); assert.equal(metrics.ascent, 7);
+  assert.deepEqual(metrics.uv, [0, 0, 5 / 8, 1]); assert.equal(pack.atlas.fontGlyphs.get(' ').advance, 4);
+  const item = pack.atlas.tiles[pack.atlas.itemTiles.get('minecraft:item/diamond_sword')];
+  assert.equal(item.width, 8, 'retain source item pixels instead of upscaling to the block tile size');
+  assert.ok(pack.atlas.itemModels.has('minecraft:diamond_sword'));
+  assert.deepEqual(pack.atlas.particleFrames.get('minecraft:flame'), [pack.atlas.particleTiles.get('minecraft:particle/flame')]);
+  assert.ok(pack.atlas.weatherTiles.has('minecraft:environment/rain'));
+  const map = pack.atlas.tiles[pack.atlas.tileByName.get('minecraft:map/map_background')]; assert.deepEqual([map.width, map.height], [8, 16], 'map art preserves actual dimensions');
+  assert.ok(pack.atlas.tileByName.has('minecraft:gui/sprites/map/decorations/player'));
+  assert.equal(pack.atlas.tileByName.has('minecraft:gui/sprites/container/irrelevant'), false, 'map sprites do not import the entire GUI atlas');
+  assert.deepEqual(pack.audioFiles.get('assets/minecraft/sounds/test/chest.ogg'), audio);
+  assert.ok(pack.audioFiles.get('assets/minecraft/sounds.json'));
+  assert.deepEqual(pack.sounds.get('minecraft')['block.chest.open'].sounds, ['test/chest']);
+  await assert.rejects(loadResourcePack(resourceArchive({ 'assets/minecraft/font/default.json': { providers: [{ type: 'reference', id: 'minecraft:default' }] } }), { registry }), /font reference/);
 });
 
 test('user entity sheets render native chest halves, beds, shulkers and rotated signs without checker placeholders', async () => {
@@ -154,4 +379,52 @@ test('native PNG animation metadata preserves frame order, per-frame ticks and b
   const tile = atlas.tiles[animation.tile], start = (tile.y * atlas.width + tile.x) * 4;
   assert.deepEqual(Array.from(atlas.pixelsRGBA.subarray(start, start + 4)), Array.from(blue), 'initial atlas uses the first declared frame rather than PNG frame zero');
   await assert.rejects(loadResourcePack(pack, { registry, tileSize: 8, maxAnimatedBytes: 256 }), /memory limit/);
+});
+
+test('native tint metadata preserves biome inputs and separates static block colors without model-cache collisions', async () => {
+  const names = ['grass_block', 'oak_leaves', 'spruce_leaves', 'birch_leaves', 'lily_pad', 'tall_grass', 'melon_stem', 'redstone_wire', 'pink_petals', 'unknown_leaves', 'water_cauldron', 'water', 'bubble_column'];
+  let id = 1; const blocks = [{ name: 'air', minStateId: 0, maxStateId: 0, boundingBox: 'empty' }], overrides = {};
+  for (const name of names) {
+    const states = name === 'tall_grass' ? [{ name: 'half', values: ['lower', 'upper'] }] : name === 'melon_stem' ? [{ name: 'age', values: ['0', '7'] }] : name === 'redstone_wire' ? [{ name: 'power', values: ['0', '15'] }] : [];
+    const count = states.length ? 2 : 1; blocks.push({ name, minStateId: id, maxStateId: id + count - 1, states, boundingBox: 'empty' }); id += count;
+    overrides[`assets/minecraft/blockstates/${name}.json`] = { variants: { '': { model: `block/${name}` } } };
+    overrides[`assets/minecraft/models/block/${name}.json`] = { textures: { all: 'block/red' }, elements: [{ from: [0, 0, 0], to: [16, 16, 16], faces: { up: { texture: '#all', tintindex: 0 }, down: { texture: '#all', tintindex: name === 'pink_petals' ? 1 : 0 } } }] };
+  }
+  const colormapPixels = new Uint8Array([20, 40, 60, 255, 80, 100, 120, 255]);
+  overrides['assets/minecraft/textures/colormap/grass.png'] = png(2, 1, colormapPixels);
+  overrides['assets/minecraft/textures/colormap/foliage.png'] = png(2, 1, colormapPixels);
+  overrides['data/minecraft/worldgen/biome/test.json'] = { temperature: .8, downfall: .4, effects: { water_color: 4159204 } };
+  const native = { blocks }, result = await loadResourcePack(resourceArchive(overrides), { registry: native }), states = registryStates(native);
+  const material = (name, properties = {}) => result.materials.get(states.lookup(name, properties));
+  assert.deepEqual(result.atlas.colormaps.grass.pixelsRGBA, colormapPixels); assert.deepEqual([result.atlas.colormaps.grass.width, result.atlas.colormaps.grass.height], [2, 1]);
+  assert.equal(result.atlas.biomeDefinitions.get('minecraft:test').effects.water_color, 4159204);
+  assert.equal(material('grass_block').faces.up.tintKind, 1); assert.equal(material('oak_leaves').faces.up.tintKind, 2);
+  assert.equal(material('tall_grass', { half: 'upper' }).faces.up.tintKind, 4); assert.equal(material('tall_grass', { half: 'lower' }).faces.up.tintKind, 1);
+  for (const name of ['water', 'bubble_column', 'water_cauldron']) assert.equal(material(name).faces.up.tintKind, 3);
+  assert.deepEqual(material('grass_block').faces.up.tint, [1, 1, 1], 'actual world biome colors are applied by the mesher rather than a default sample');
+  assert.deepEqual(material('grass_block').templateTintKinds, new Uint8Array(12).fill(1));
+  assert.deepEqual(material('spruce_leaves').faces.up.tint, [97, 153, 97].map(value => value / 255)); assert.equal(material('spruce_leaves').faces.up.tintKind, 0);
+  assert.deepEqual(material('birch_leaves').faces.up.tint, [128, 167, 85].map(value => value / 255));
+  assert.deepEqual(material('melon_stem', { age: '0' }).faces.up.tint, [0, 1, 0]); assert.deepEqual(material('melon_stem', { age: '7' }).faces.up.tint, [224, 199, 28].map(value => value / 255));
+  assert.deepEqual(material('redstone_wire', { power: '0' }).faces.up.tint, [76 / 255, 0, 0]); assert.deepEqual(material('redstone_wire', { power: '15' }).faces.up.tint, [1, 50 / 255, 0]);
+  assert.equal(material('pink_petals').faces.up.tintKind, 0); assert.equal(material('pink_petals').faces.down.tintKind, 1);
+  assert.deepEqual(material('unknown_leaves').faces.up.tint, [1, 1, 1]); assert.equal(material('unknown_leaves').faces.up.tintKind, 0, 'unregistered block tint is not guessed from its name');
+  assert.deepEqual(nativeBlockTint('pink_petals', {}, -1), { tintKind: 0, tint: [1, 1, 1] }, 'native negative tintindex makes the quad untinted');
+});
+
+test('resource pack languages merge individual translation keys across pack stacks and namespaces', async () => {
+  const base = resourceArchive({ 'assets/minecraft/lang/en_us.json': { 'item.minecraft.diamond': 'Diamond', 'chat.type.text': '<%s> %s' }, 'assets/minecraft/lang/de_de.json': { 'item.minecraft.diamond': 'Diamant' } });
+  const overlay = zipSync({ 'assets/minecraft/lang/en_us.json': enc.encode(JSON.stringify({ 'item.minecraft.diamond': 'Custom diamond' })), 'assets/custom/lang/en_us.json': enc.encode(JSON.stringify({ 'custom.notice': 'Native translated notice' })) });
+  const pack = await loadResourcePack([base, overlay], { registry });
+  assert.equal(pack.languages.get('en_us')['item.minecraft.diamond'], 'Custom diamond'); assert.equal(pack.languages.get('en_us')['chat.type.text'], '<%s> %s'); assert.equal(pack.languages.get('en_us')['custom.notice'], 'Native translated notice');
+  assert.equal(pack.languages.get('de_de')['item.minecraft.diamond'], 'Diamant'); assert.equal(Object.getPrototypeOf(pack.languages.get('en_us')), null);
+});
+
+test('end portal and gateway tiles retain separate native projected layer counts without duplicating pixels', async () => {
+  const blocks = [{ name: 'air', minStateId: 0, maxStateId: 0, boundingBox: 'empty' }, { name: 'end_portal', minStateId: 1, maxStateId: 1, boundingBox: 'empty' }, { name: 'end_gateway', minStateId: 2, maxStateId: 2, boundingBox: 'empty' }];
+  const pack = await loadResourcePack(resourceArchive({ 'assets/minecraft/textures/entity/end_portal.png': png(2, 2, new Uint8Array(16).fill(255)), 'assets/minecraft/textures/environment/end_sky.png': png(2, 2, new Uint8Array(16).fill(127)) }), { registry: { blocks } });
+  const portal = pack.atlas.tiles[pack.atlas.entityTiles.get('minecraft:entity/end_portal')], gateway = pack.atlas.tiles[pack.atlas.entityTiles.get('minecraft:entity/end_gateway_portal')];
+  assert.notEqual(portal.id, gateway.id); assert.deepEqual([portal.x, portal.y, portal.width, portal.height], [gateway.x, gateway.y, gateway.width, gateway.height]); assert.equal(gateway.aliasOf, portal.id);
+  assert.equal(portal.portalLayers, 15); assert.equal(gateway.portalLayers, 16); assert.equal(portal.portalSkyTile, pack.atlas.weatherTiles.get('minecraft:environment/end_sky')); assert.equal(gateway.portalSkyTile, portal.portalSkyTile);
+  assert.deepEqual(pack.materials.get(1).model.quads.map(quad => quad.normal.map(value => value || 0)), [[0, 1, 0], [0, -1, 0]], 'native end portal renders only its horizontal surfaces'); assert.equal(pack.materials.get(2).model.quads.length, 6); assert.equal(pack.materials.get(2).faces.up.tile, gateway.id);
 });
