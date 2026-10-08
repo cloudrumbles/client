@@ -3,8 +3,10 @@
 ## Goal and platform
 
 Build on Pomme's existing native Rust/Vulkan Minecraft client to deliver
-Photon-level lighting and shaders at **at least 60 FPS on an NVIDIA GeForce
-GTX 1650 Ti**. Native Rust and Vulkan are the chosen direction. Browser delivery,
+actual, replaceable Photon shader-pack rendering, with **60 FPS on an NVIDIA
+GeForce GTX 1650 Ti as an unverified target**. Native Rust is the required
+direction. The existing gameplay renderer uses Vulkan; the new compatibility
+runtime uses OpenGL to execute original pack GLSL directly. Browser delivery,
 WASM and WebGPU are no longer requirements. This is a private project; source
 adaptations should retain their exact upstream revision and attribution.
 
@@ -40,8 +42,10 @@ These changes are browser research and implementation. They do not modify the
 native Vulkan renderer, execute the original Photon shaderpack, load the Java
 performance mods, or establish complete Minecraft or Photon image parity.
 Software WebGPU checks establish bounded correctness; **the 1650 Ti / 60 FPS
-target has not been measured**. The native worktree and implementation were not
-started before this checkpoint was requested.
+target has not been measured**. A distinct native branch now adds original-pack execution in
+[pomme-shaderpack](pomme-shaderpack/README.md) and Vulkan indirect-feature fixes.
+The pack runtime renders fixtures; full playable integration remains unfinished.
+See its [status and limits](pomme-shaderpack/IMPLEMENTATION.md).
 
 ## Native implementation plan
 

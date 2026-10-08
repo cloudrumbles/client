@@ -39,6 +39,7 @@ work are documented in [NATIVE_RENDERING_GOAL.md](./NATIVE_RENDERING_GOAL.md).
 
 ```bash
 pomme-client/         # Minecraft client (Rust, Vulkan)
+pomme-shaderpack/     # Experimental original GLSL pack host (Rust, OpenGL)
 pomme-launcher/       # Launcher app (Tauri, React, TypeScript)
 pomme-protocol/       # Per-version protocol data and wire encoding
 pomme-block/          # Data-free stand-in for azalea-block; block tables are Pomme's own
@@ -53,6 +54,15 @@ the launcher. The launcher handles authentication, asset downloading,
 version management, and spawns the client with the appropriate flags.
 
 ## Building
+
+### Experimental original shader-pack runtime
+
+A native Rust/OpenGL compatibility runtime now executes external original Photon
+GLSL packs on deterministic block fixtures, with replaceable directory/ZIP pack
+inputs, native window controls and per-pass measurements. It is separate from the
+Vulkan gameplay renderer; live-world integration and GTX 1650 Ti qualification
+remain unfinished. Build/run commands and exact limits are in
+[pomme-shaderpack](./pomme-shaderpack/README.md).
 
 ### Experimental browser client
 
