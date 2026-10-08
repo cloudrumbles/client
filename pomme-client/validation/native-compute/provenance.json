@@ -71,5 +71,12 @@
   "evidence_distinction": {
     "qualified": "all directories except explicitly named predecessor",
     "predecessor-2627b8f-known-temporal-issue": "original earlier source2627b8f captures/screenshot only; not final8d qualification"
+  },
+  "deliverable": {
+    "archive": "native-compute-8d8f41b-linux-x86_64.tar.gz",
+    "bytes": 168404869,
+    "sha256": "7ad073102373d85ffdf42760de2f2ebe75ffb62d46f75643de9d9e71425b5440",
+    "source_revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f",
+    "evidence_publication": "Bundle preserves initial ad2f948 evidence snapshot, with CI truthfully marked in progress at packaging time. Final CI is reported separately in this publication when complete."
   }
 }

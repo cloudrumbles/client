@@ -1,0 +1,288 @@
+{
+  "revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f",
+  "platform": "linux-x86_64",
+  "binaries": {
+    "pomme-client": {
+      "sha256": "f9b26708a3c30267212a270469b4959b526353a0ec36d131e44cf5fe8096f8af",
+      "bytes": 56962152,
+      "embedded_revision_present": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f",
+      "verification": "ELF header and embedded revision scan; executable not run"
+    },
+    "pomme-pack-vulkan": {
+      "sha256": "3a764e94785591b3dd3ee0858b893fa20d40f531a1f312676cb21e4d57fbed93",
+      "bytes": 14614448,
+      "embedded_revision_present": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f",
+      "verification": "ELF header and embedded revision scan; executable not run"
+    }
+  },
+  "build": [
+    "cargo build --release --locked --no-default-features -p pomme-client --features shader-packs",
+    "cargo build --release --locked -p pomme-shaderpack --features vulkan --bin pomme-pack-vulkan"
+  ],
+  "source_dependencies_reused_from": "2e278c08eb24e54ec163155aeec002b403305662",
+  "cargo_lock_sha256": "049c195ca2ab161ce305de792b1aaeb257cdafe3d424755eb148ee27d21d4a8e",
+  "SteelMC_revision": "9142c96cfe72441c6050d98800cbb395dc92e964",
+  "runtime_shaderc": {
+    "version": "2025.2-1",
+    "exact_source_included": true,
+    "dsc_sha256": "72b3bab1bc63730a428765dc026105f822b8d6962c96eb2fd4d505929900f2bd",
+    "dsc_sha256_validated": [
+      {
+        "file": "shaderc_2025.2.orig.tar.gz",
+        "sha256": "3fddc13bbb87411c6f7b8f447e87c1637933450087e70fc21da650041f4e0132",
+        "bytes": 228308
+      },
+      {
+        "file": "shaderc_2025.2-1.debian.tar.xz",
+        "sha256": "914fbacaeb36f7f3b781afa1efd4ed534d5fd53770a8977e513e1d99b7082e71",
+        "bytes": 6512
+      }
+    ],
+    "signature_verification": "Not performed; preserves .dsc signature and supplied HTTPS acquisition provenance",
+    "components": {
+      "built_using_expected": {
+        "glslang": "15.1.0+1.4.309.0-1",
+        "spirv-tools": "2025.1~rc1-1"
+      },
+      "provided": {
+        "glslang": {
+          "version": "15.1.0+1.4.309.0-1",
+          "dsc_sha256": "5ce0f9040bd1f03575976a1599830ef86c22f2ff7b8721c50eb841b3e235e30b",
+          "dsc_sha256_validated": [
+            {
+              "file": "glslang_15.1.0+1.4.309.0.orig.tar.gz",
+              "bytes": 3786512,
+              "sha256": "180f17ea51e6b71bf57b9e0fea78ba3ecd76e3ec8e4c91f0771b922eb22bf4b2"
+            },
+            {
+              "file": "glslang_15.1.0+1.4.309.0-1.debian.tar.xz",
+              "bytes": 14772,
+              "sha256": "1738dcf3cf37ea9a2fc9c11eb0e990cdfbc62ddd6a09d82675835fa310e57ff7"
+            }
+          ],
+          "signature_verification": "Not performed; supplied signed source descriptor preserved",
+          "acquisition_provenance": [
+            {
+              "package": "glslang",
+              "file": "glslang/glslang_15.1.0+1.4.309.0-1.debian.tar.xz",
+              "url": "https://deb.debian.org/debian/pool/main/g/glslang/glslang_15.1.0+1.4.309.0-1.debian.tar.xz",
+              "sha256": "1738dcf3cf37ea9a2fc9c11eb0e990cdfbc62ddd6a09d82675835fa310e57ff7"
+            },
+            {
+              "package": "glslang",
+              "file": "glslang/glslang_15.1.0+1.4.309.0-1.dsc",
+              "url": "https://deb.debian.org/debian/pool/main/g/glslang/glslang_15.1.0+1.4.309.0-1.dsc",
+              "sha256": "5ce0f9040bd1f03575976a1599830ef86c22f2ff7b8721c50eb841b3e235e30b"
+            },
+            {
+              "package": "glslang",
+              "file": "glslang/glslang_15.1.0+1.4.309.0.orig.tar.gz",
+              "url": "https://deb.debian.org/debian/pool/main/g/glslang/glslang_15.1.0+1.4.309.0.orig.tar.gz",
+              "sha256": "180f17ea51e6b71bf57b9e0fea78ba3ecd76e3ec8e4c91f0771b922eb22bf4b2"
+            }
+          ]
+        },
+        "spirv-tools": {
+          "version": "2025.1~rc1-1",
+          "dsc_sha256": "7b28afc67c92082904b5057f62a7f2de4d3a290854802d2bc525a8ef551a3b4a",
+          "dsc_sha256_validated": [
+            {
+              "file": "spirv-tools_2025.1~rc1.orig.tar.gz",
+              "bytes": 3244258,
+              "sha256": "6895160d5a842552eda6412440747cbadddd47005957bc43bb03926162686777"
+            },
+            {
+              "file": "spirv-tools_2025.1~rc1-1.debian.tar.xz",
+              "bytes": 4084,
+              "sha256": "2800ed5d1de05295a5b88293540124859cd9fb7778ccba8c14175d06d57b89d0"
+            }
+          ],
+          "signature_verification": "Not performed; supplied signed source descriptor preserved",
+          "acquisition_provenance": [
+            {
+              "package": "spirv-tools",
+              "file": "spirv-tools/spirv-tools_2025.1~rc1-1.debian.tar.xz",
+              "url": "https://deb.debian.org/debian/pool/main/s/spirv-tools/spirv-tools_2025.1~rc1-1.debian.tar.xz",
+              "sha256": "2800ed5d1de05295a5b88293540124859cd9fb7778ccba8c14175d06d57b89d0"
+            },
+            {
+              "package": "spirv-tools",
+              "file": "spirv-tools/spirv-tools_2025.1~rc1-1.dsc",
+              "url": "https://deb.debian.org/debian/pool/main/s/spirv-tools/spirv-tools_2025.1~rc1-1.dsc",
+              "sha256": "7b28afc67c92082904b5057f62a7f2de4d3a290854802d2bc525a8ef551a3b4a"
+            },
+            {
+              "package": "spirv-tools",
+              "file": "spirv-tools/spirv-tools_2025.1~rc1.orig.tar.gz",
+              "url": "https://deb.debian.org/debian/pool/main/s/spirv-tools/spirv-tools_2025.1~rc1.orig.tar.gz",
+              "sha256": "6895160d5a842552eda6412440747cbadddd47005957bc43bb03926162686777"
+            }
+          ]
+        },
+        "spirv-headers": {
+          "version": "1.6.1+1.4.309.0-1",
+          "dsc_sha256": "95abc1fde5b98a9e9c0a85f15d7fda4c23fe9938f7f3f0e6abeb50544e14b43a",
+          "dsc_sha256_validated": [
+            {
+              "file": "spirv-headers_1.6.1+1.4.309.0.orig.tar.gz",
+              "bytes": 528173,
+              "sha256": "64ea06bf123c5c063a6be01dd45adec6a30cc0862000781ca18f9104693b722c"
+            },
+            {
+              "file": "spirv-headers_1.6.1+1.4.309.0-1.debian.tar.xz",
+              "bytes": 3412,
+              "sha256": "8b12c88f8543a655ea95dfdc29970a227c2fb506e696bec8bb3d2079d5454ccc"
+            }
+          ],
+          "signature_verification": "Not performed; supplied signed source descriptor preserved",
+          "acquisition_provenance": [
+            {
+              "package": "spirv-headers",
+              "file": "spirv-headers/spirv-headers_1.6.1+1.4.309.0-1.debian.tar.xz",
+              "url": "https://deb.debian.org/debian/pool/main/s/spirv-headers/spirv-headers_1.6.1+1.4.309.0-1.debian.tar.xz",
+              "sha256": "8b12c88f8543a655ea95dfdc29970a227c2fb506e696bec8bb3d2079d5454ccc"
+            },
+            {
+              "package": "spirv-headers",
+              "file": "spirv-headers/spirv-headers_1.6.1+1.4.309.0-1.dsc",
+              "url": "https://deb.debian.org/debian/pool/main/s/spirv-headers/spirv-headers_1.6.1+1.4.309.0-1.dsc",
+              "sha256": "95abc1fde5b98a9e9c0a85f15d7fda4c23fe9938f7f3f0e6abeb50544e14b43a"
+            },
+            {
+              "package": "spirv-headers",
+              "file": "spirv-headers/spirv-headers_1.6.1+1.4.309.0.orig.tar.gz",
+              "url": "https://deb.debian.org/debian/pool/main/s/spirv-headers/spirv-headers_1.6.1+1.4.309.0.orig.tar.gz",
+              "sha256": "64ea06bf123c5c063a6be01dd45adec6a30cc0862000781ca18f9104693b722c"
+            }
+          ]
+        }
+      },
+      "missing_embedded_sources": [],
+      "missing_build_header_sources": []
+    },
+    "embedded_source_set_complete": true,
+    "build_source_set_complete": true
+  },
+  "source_preservation": "Exact git-archive project, locked dependency archives, gitlink source and notices; not an offline Cargo vendor tree",
+  "evidence_revision_inventory": [
+    {
+      "file": "live/inspection.json",
+      "field": "revision",
+      "revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f"
+    },
+    {
+      "file": "live/vulkan-live.json",
+      "field": "revision",
+      "revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f"
+    },
+    {
+      "file": "low-state/colortex4.json",
+      "field": "revision",
+      "revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f"
+    },
+    {
+      "file": "low-state/inspection.json",
+      "field": "revision",
+      "revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f"
+    },
+    {
+      "file": "low-state/vulkan.json",
+      "field": "revision",
+      "revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f"
+    },
+    {
+      "file": "predecessor-2627b8f-known-temporal-issue/inspection.json",
+      "field": "revision",
+      "revision": "2627b8fddb4342ef31a89406b9407fa7caa28408"
+    },
+    {
+      "file": "predecessor-2627b8f-known-temporal-issue/vulkan-live.json",
+      "field": "revision",
+      "revision": "2627b8fddb4342ef31a89406b9407fa7caa28408"
+    },
+    {
+      "file": "provenance.json",
+      "field": "pack.revision",
+      "revision": "15458c0937f8647c37eb6a501bef5eb3bf3da31b"
+    }
+  ],
+  "target_hardware_tested": false,
+  "unbundled": [
+    "Photon shader pack",
+    "Mojang Minecraft JARs/assets",
+    "external vanilla server",
+    "private Voxy/Avvai"
+  ],
+  "checksums": {
+    "COPYING": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "Cargo.lock": "049c195ca2ab161ce305de792b1aaeb257cdafe3d424755eb148ee27d21d4a8e",
+    "LICENSE": "ae468e0990205edd38c9caa7309aa84bac7ea4b767988ee3766fc046a1eea4f3",
+    "README.txt": "671ffe2b6736472bbde3fff576628c02acaf70a69a580d34ec4d155c159ae47f",
+    "SteelMC-submodule-source.tar.gz": "046969648f6d364c482d5980f21f2ee75dd998319a0b439418f4da3cd08ee023",
+    "THIRD_PARTY_LICENSES.md": "9f1f5cd3ba52a02fcb070fe0e62ad4b8d89848b30ee1dedcf3a11f3b420afb22",
+    "dependencies.json": "3a31e50dacb84072bd980c5594e995b5099b1a7ba524fb8babd6b90e00d09c29",
+    "evidence/README.md": "852a45f279bfdc97c705a9fc4e0bbf4cc8689c9aec27388fe33920b9c8d3cc1f",
+    "evidence/checks/clippy.log": "ba86e679daa68f88869c896d2a39dbb3059888b250e9c4c06a8f8188f5a40453",
+    "evidence/checks/format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evidence/checks/unit.log": "158e2f5c7d45eb500d9718af2c81514f5aa60fa0fcea5e9739c074fb2405d684",
+    "evidence/fixtures/actor_vulkan.log": "f948dab1a57c585dfff4498d5947d298068171a9772a65e88fa2335b91dfcdf3",
+    "evidence/fixtures/compute_vulkan.log": "f2ecf391286a93b863ea5fa097ffeb5b7055f6b3035cc22b8590b4287bfea1b0",
+    "evidence/fixtures/result.json": "b731f90a6575830f592595b6674a5518b68d4ff3af96680aa18fc4f602058cf0",
+    "evidence/inspect-compute-evidence.py": "ab60c02753955bc32590116066b1d7d534d4f18550562aab709c27d40af85741",
+    "evidence/live/client.log": "79a9f337f777a8c160e7831e28fad3450b44b46baa92eaf05dc15c44b817a501",
+    "evidence/live/inspection.json": "eb891f53f61a0daef126884dd1797bfb7da3ec6913479610a8aa935d36e91b52",
+    "evidence/live/native-window.png": "3dcab696809a58b184128e4a128b3c8472a1ca1e8f734519785a3da44d0f2916",
+    "evidence/live/release-build.log": "dfc6453ad9d48bf76f3f047ede760dd4e7cae825acedafff4cf3ec999914f43c",
+    "evidence/live/vulkan-live.json": "603972c5847a21c0d93c5945dad4689a507af4754021347cbfe15ecd20413d3e",
+    "evidence/live/vulkan-live.png": "98a8cabecc68d947bc84a1675c620258221a3d74f9f05ca182852bc737948cc2",
+    "evidence/low-state/colortex4.bin": "e1fe41cca74929b36af39d6df3151c6eae194d6c231d946f0ed232ca488dfa9e",
+    "evidence/low-state/colortex4.json": "bf09f6a14e82ecba3eb78141958bd24a9c732bc2d5f3a25bbf7f441fc3a4a802",
+    "evidence/low-state/final.png": "21b61cfce50161d7cbd73cc80e91ccf72ea61b7f74809023c180b2e5e9d55a76",
+    "evidence/low-state/inspection.json": "2232419fbf7343b7bcda6daf5cb20aea2a439578caff6c8588fae1d4eb843e3c",
+    "evidence/low-state/validation.log": "418d71cc274cd2b63ddc7c7ee87106c25a3f655ea5588275a9bce374113c4de0",
+    "evidence/low-state/vulkan.json": "4c596bea99c538203763be5773a2aeac3630f48b7bd0c1690e2bdf566ee6ab0a",
+    "evidence/medium-compile/compile.log": "3fa87328c616589f340ff746899f6076d96fe845d99c6249f73a1fa669a0e796",
+    "evidence/medium-compile/compute.json": "88987be63f4347278e57699c86e79dd0854381b8c298b2341f245233ae92d4ee",
+    "evidence/medium-compile/inspection.json": "475963bbe21551e6628791cd6363ca552a0f72b4c739813af54481b07b25e817",
+    "evidence/predecessor-2627b8f-known-temporal-issue/client.log": "781d0e9b40f406dcf7c6a66f24cb3b5ecbdeaabba38c086d8b1b6c7bba6cdbc4",
+    "evidence/predecessor-2627b8f-known-temporal-issue/inspection.json": "6a78ad69e69d2dd89e436b32b5a9f0e3d72916d5cd994b307932bd685feb2a79",
+    "evidence/predecessor-2627b8f-known-temporal-issue/native-window.png": "a798e63a570e337478cffc1c825aceef9e171aa558c512af0a77562ba1e06bad",
+    "evidence/predecessor-2627b8f-known-temporal-issue/vulkan-live.json": "f2e60dc702bfb3e2e4ee16fc4fc26c96dd1ce60e816af2b40d288ca91409b8cd",
+    "evidence/predecessor-2627b8f-known-temporal-issue/vulkan-live.png": "51f365776e865ab57729b52dc060055dbd0aa3aa0521e9ec8cff54be3c2ac94c",
+    "evidence/provenance.json": "ffe2e7aeb74fdb02727d022471499a17e21095d3f9f492cf7314d3a0aecca502",
+    "evidence/release-build.log": "dfc6453ad9d48bf76f3f047ede760dd4e7cae825acedafff4cf3ec999914f43c",
+    "git-dependency-workspaces.tar.gz": "362a1f1d10ae95a4dbb58635b34c101cdfe56bce6fd080de19017dbaaff3f820",
+    "lib/libshaderc.so.1": "31400b359d2f4b4a43168978412a72913474725befb87966068cfac1922ac6c9",
+    "notices/iris/LICENSE": "a5681bf9b05db14d86776930017c647ad9e6e56ff6bbcfdf21e5848288dfaf1b",
+    "notices/iris/NOTICE": "d896336848792852978a01cf6e69bdf97d8d59f7b75f0e0c4829218d47cb7157",
+    "notices/libshaderc-copyright": "82eb30e969cd07912a318337aeb602866c09a071b45dd8e1481e9ab592ae7a12",
+    "notices/runtime/glslang/LICENSE.txt": "adb783e734e906d1f46db5df29991dbde84bdb0ceab502ac2febb44fe3c2b5f4",
+    "notices/runtime/glslang/debian-copyright": "c9b0641e1b752ec1ee888ecd1327d7b74120fcd12f3756544e7a268aeb6a3582",
+    "notices/runtime/shaderc/LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "notices/runtime/shaderc/debian-copyright": "82eb30e969cd07912a318337aeb602866c09a071b45dd8e1481e9ab592ae7a12",
+    "notices/runtime/spirv-headers/LICENSE": "ff04ae7e6a468587fe59434fee2e67c0e2a749b592c794b764ff80f30b94a084",
+    "notices/runtime/spirv-headers/debian-copyright": "8fc161235004e552eeaa7df5e70be1cedb150741ecffd4520d652b5a9016fc5a",
+    "notices/runtime/spirv-tools/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "notices/runtime/spirv-tools/debian-copyright": "96bf43b6c019d8a2912e2d9396511bb87a6bb950321dca1af806d3370548d457",
+    "pomme-client": "f9b26708a3c30267212a270469b4959b526353a0ec36d131e44cf5fe8096f8af",
+    "pomme-pack-vulkan": "3a764e94785591b3dd3ee0858b893fa20d40f531a1f312676cb21e4d57fbed93",
+    "project-source.tar.gz": "1f1c260b2b3b53d01f49a9758125ed637b1d2f108c4d463c1daef170f8fae481",
+    "run-native.sh": "37b12cca18c8d281e876bb7283e490e5d957a8096612f32cec51ab0edad40e74",
+    "run-vulkan.sh": "e7bc7464bc26bbb409e83acfe9133584c65f7fbde6105ad6495930b01dde72bf",
+    "runtime-source/glslang/glslang_15.1.0+1.4.309.0-1.debian.tar.xz": "1738dcf3cf37ea9a2fc9c11eb0e990cdfbc62ddd6a09d82675835fa310e57ff7",
+    "runtime-source/glslang/glslang_15.1.0+1.4.309.0-1.dsc": "5ce0f9040bd1f03575976a1599830ef86c22f2ff7b8721c50eb841b3e235e30b",
+    "runtime-source/glslang/glslang_15.1.0+1.4.309.0.orig.tar.gz": "180f17ea51e6b71bf57b9e0fea78ba3ecd76e3ec8e4c91f0771b922eb22bf4b2",
+    "runtime-source/shaderc/provenance.json": "b2099642661e9ea0019b5856a7f58b5a44f650e7de7c8a9d97fdbf3e1d1beb52",
+    "runtime-source/shaderc/shaderc_2025.2-1.debian.tar.xz": "914fbacaeb36f7f3b781afa1efd4ed534d5fd53770a8977e513e1d99b7082e71",
+    "runtime-source/shaderc/shaderc_2025.2-1.dsc": "72b3bab1bc63730a428765dc026105f822b8d6962c96eb2fd4d505929900f2bd",
+    "runtime-source/shaderc/shaderc_2025.2.orig.tar.gz": "3fddc13bbb87411c6f7b8f447e87c1637933450087e70fc21da650041f4e0132",
+    "runtime-source/spirv-headers/spirv-headers_1.6.1+1.4.309.0-1.debian.tar.xz": "8b12c88f8543a655ea95dfdc29970a227c2fb506e696bec8bb3d2079d5454ccc",
+    "runtime-source/spirv-headers/spirv-headers_1.6.1+1.4.309.0-1.dsc": "95abc1fde5b98a9e9c0a85f15d7fda4c23fe9938f7f3f0e6abeb50544e14b43a",
+    "runtime-source/spirv-headers/spirv-headers_1.6.1+1.4.309.0.orig.tar.gz": "64ea06bf123c5c063a6be01dd45adec6a30cc0862000781ca18f9104693b722c",
+    "runtime-source/spirv-tools/spirv-tools_2025.1~rc1-1.debian.tar.xz": "2800ed5d1de05295a5b88293540124859cd9fb7778ccba8c14175d06d57b89d0",
+    "runtime-source/spirv-tools/spirv-tools_2025.1~rc1-1.dsc": "7b28afc67c92082904b5057f62a7f2de4d3a290854802d2bc525a8ef551a3b4a",
+    "runtime-source/spirv-tools/spirv-tools_2025.1~rc1.orig.tar.gz": "6895160d5a842552eda6412440747cbadddd47005957bc43bb03926162686777",
+    "rust-dependency-sources.tar.gz": "cb9f870dc63785771759c605e975c177efdbbdfefedacd9826c5aa501edb9dc7",
+    "rust-toolchain.toml": "b26d39d64b417b0049eecc9108671772ad6c368fda6c395e584071c4ba402a5f"
+  }
+}

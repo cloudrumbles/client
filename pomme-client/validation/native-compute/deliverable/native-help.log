@@ -1,0 +1,45 @@
+Minecraft client
+
+Usage: pomme-client [OPTIONS]
+
+Options:
+      --renderer-path <RENDERER_PATH>
+          Compare the immutable shared scene with the previous immediate path [default: shared] [possible values: legacy, shared]
+      --shader-pack <SHADER_PACK>
+          Original pack directory/ZIP rendered by Vulkan in the game window
+      --shader-reference-window
+          Run the separate OpenGL compatibility reference viewport instead
+      --shader-alternate-pack <SHADER_ALTERNATE_PACKS>
+          Additional user pack paths; P in the shader viewport cycles them
+      --shader-profile <SHADER_PROFILE>
+          
+      --shader-option <SHADER_OPTIONS>
+          
+      --shader-width <SHADER_WIDTH>
+          [default: 640]
+      --shader-height <SHADER_HEIGHT>
+          [default: 360]
+      --shader-frames <SHADER_FRAMES>
+          Capture exactly this many submitted pack frames, then stop retaining diagnostics
+      --shader-output <SHADER_OUTPUT>
+          [default: shaderpack-live-output]
+      --version <VERSION>
+          
+      --username <USERNAME>
+          
+      --uuid <UUID>
+          
+      --access-token <ACCESS_TOKEN>
+          
+      --launch-token <LAUNCH_TOKEN>
+          
+      --assets-dir <ASSETS_DIR>
+          
+      --versions-dir <VERSIONS_DIR>
+          
+      --game-dir <GAME_DIR>
+          
+      --quick-access-multiplayer <QUICK_ACCESS_MULTIPLAYER>
+          
+  -h, --help
+          Print help

@@ -1,0 +1,14 @@
+{
+  "directory": "/workspace/client-deliverables/native-compute-8d8f41b-linux-x86_64",
+  "archive": "/workspace/client-deliverables/native-compute-8d8f41b-linux-x86_64.tar.gz",
+  "revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f",
+  "bytes": 168404869,
+  "sha256": "7ad073102373d85ffdf42760de2f2ebe75ffb62d46f75643de9d9e71425b5440",
+  "runtime_source_included": true,
+  "runtime_embedded_source_complete": true,
+  "checks": {
+    "all_70_manifest_hashes": "passed",
+    "runtime_shaderc_build_source_set_complete": true,
+    "native_vulkan_wrapper_help_with_external_LD_LIBRARY_PATH_cleared": "passed"
+  }
+}

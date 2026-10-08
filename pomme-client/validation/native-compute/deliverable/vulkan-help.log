@@ -1,0 +1,39 @@
+Usage: pomme-pack-vulkan [OPTIONS] --pack <PACK>
+
+Options:
+      --pack <PACK>
+          
+      --dimension <DIMENSION>
+          [default: world0]
+      --profile <PROFILE>
+          
+      --option <OPTIONS>
+          
+      --minecraft-version <MINECRAFT_VERSION>
+          [default: 26.3]
+      --render
+          
+      --dump-colortex <DUMP_COLORTEX>
+          Save raw mip-zero current color-buffer bytes and format/extent
+      --width <WIDTH>
+          [default: 320]
+      --height <HEIGHT>
+          [default: 180]
+      --frames <FRAMES>
+          [default: 4]
+      --scene <SCENE>
+          [default: terrain]
+      --atlas <ATLAS>
+          
+      --warmup <WARMUP>
+          [default: 0]
+      --scenario <SCENARIO>
+          [default: static] [possible values: static, orbit, state-changes]
+      --time <TIME>
+          [default: 6000]
+      --rain <RAIN>
+          [default: 0]
+      --output <OUTPUT>
+          [default: vulkan-pack-output]
+  -h, --help
+          Print help
