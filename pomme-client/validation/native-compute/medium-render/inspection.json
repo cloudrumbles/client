@@ -1,0 +1,131 @@
+{
+  "revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f",
+  "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "samples": 16,
+  "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+  "compute_programs": [
+    {
+      "base": "deferred4",
+      "groups": [
+        1,
+        1,
+        1
+      ],
+      "images": [
+        {
+          "access": "WriteOnly",
+          "binding": 30,
+          "format": "rgba16f",
+          "name": "colorimg4",
+          "qualifiers": [],
+          "ty": "image2D"
+        }
+      ],
+      "local_size": [
+        256,
+        1,
+        1
+      ],
+      "program": "deferred4_a",
+      "samplers": [
+        {
+          "binding": 11,
+          "name": "colortex4",
+          "ty": "sampler2D"
+        }
+      ],
+      "shared_memory_driver_allocation_bytes": null,
+      "shared_memory_logical_bytes": 27648,
+      "spirv_capabilities": [
+        1
+      ]
+    }
+  ],
+  "last_dispatch": [
+    {
+      "groups": [
+        1,
+        1,
+        1
+      ],
+      "local_size": [
+        256,
+        1,
+        1
+      ],
+      "program": "deferred4_a",
+      "storage_images": [
+        "colorimg4"
+      ]
+    }
+  ],
+  "validation_status": "verified",
+  "validation_errors": 0,
+  "physical_GTX_1650_Ti_tested": false,
+  "binary_sha256": "3a764e94785591b3dd3ee0858b893fa20d40f531a1f312676cb21e4d57fbed93",
+  "measured_scope": "serialized Vulkan graph, GPU timestamps and CPU command recording; excludes game/presentation",
+  "invalidations": 1,
+  "original_photon_metadata_rows_2_to_11": [
+    [
+      1.166015625,
+      1.1435546875,
+      1.2216796875,
+      0.0
+    ],
+    [
+      -0.04949951171875,
+      -0.053863525390625,
+      -0.07135009765625,
+      0.0
+    ],
+    [
+      -0.261962890625,
+      -0.235595703125,
+      -0.1898193359375,
+      0.0
+    ],
+    [
+      1.068359375,
+      1.0341796875,
+      1.0673828125,
+      0.0
+    ],
+    [
+      0.01001739501953125,
+      0.0025768280029296875,
+      -0.0245361328125,
+      0.0
+    ],
+    [
+      -0.35888671875,
+      -0.320068359375,
+      -0.24951171875,
+      0.0
+    ],
+    [
+      0.09197998046875,
+      0.0941162109375,
+      0.1065673828125,
+      0.0
+    ],
+    [
+      0.05621337890625,
+      0.05126953125,
+      0.040130615234375,
+      0.0
+    ],
+    [
+      -0.1495361328125,
+      -0.1251220703125,
+      -0.0701904296875,
+      0.0
+    ],
+    [
+      2.150390625,
+      2.0859375,
+      2.169921875,
+      0.0
+    ]
+  ],
+  "metadata_finite_nonzero": true
+}

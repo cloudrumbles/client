@@ -46,11 +46,20 @@
     "exact_head_CI": {
       "run_id": 37794726297,
       "url": "https://github.com/cloudrumbles/client/actions/runs/37794726297",
-      "status": "in_progress"
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": 8,
+      "all_jobs_passed": true,
+      "linux_job_id": 113371597891,
+      "GPU_fixtures_step": "executed and passed with validation_status verified",
+      "artifact_id": 11558663453,
+      "artifact_name": "vulkan-fixture-results",
+      "container_artifact_download": "GitHub Azure artifact download returned HTTP403; parent independently inspected artifact. Full Linux job log and local runtime fixture raw logs retained."
     },
     "exact_head_release_shaderpack_unit": "31 passed;2 opt-in ignored; GPU fixtures executed separately",
     "exact_head_release_alltarget_shaderpack_client_strict_Clippy": "passed",
-    "exact_head_cargo_fmt_and_git_diff_check": "passed"
+    "exact_head_cargo_fmt_and_git_diff_check": "passed",
+    "original_Photon_medium_packaged_wrapper_16_samples_8_warmup_GPU_execution": "passed; positive validation activation,0 errors,actualdeferred4_a and finite/nonzero raw SH"
   },
   "known_limits": [
     "Complete Photon/Iris visual parity remains unqualified.",
