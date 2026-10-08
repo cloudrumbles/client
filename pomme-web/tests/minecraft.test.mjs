@@ -236,7 +236,7 @@ test('real status effects, attributes, experience and clock packets update the l
   const { client } = session({ onEvent: (event) => events.push(event), onTime: (time) => times.push(time) });
   login(client); position(client);
   receive(client, 'entity_effect', { entityId: 9, effectId: 2, amplifier: 1, duration: 1200, hideParticles: 0, factorCodec: undefined });
-  assert.deepEqual(client.state.effects, [{ id: 2, name: 'haste', amplifier: 1, duration: 1200 }]);
+  assert.deepEqual(client.state.effects, [{ id: 2, name: 'haste', amplifier: 1, duration: 1200, factorData: null }]);
   receive(client, 'entity_effect', { entityId: 9, effectId: 3, amplifier: 0, duration: 600, hideParticles: 0, factorCodec: undefined });
   assert.equal(client.state.effects.length, 2);
   receive(client, 'remove_entity_effect', { entityId: 9, effectId: 2 });

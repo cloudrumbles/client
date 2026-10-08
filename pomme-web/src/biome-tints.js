@@ -128,7 +128,7 @@ export async function hashBiomeSeed(rawSeed, crypto = globalThis.crypto) {
 
 const unsignedLong = value => BigInt.asUintN(64, value);
 const biomeLcg = (seed, salt) => unsignedLong(seed * (seed * 6364136223846793005n + 1442695040888963407n) + salt);
-function nativeBiomeQuart(seed, position) {
+export function nativeBiomeQuart(seed, position) {
   const cell = position.map(value => Math.floor((value - 2) / 4)), fractions = position.map(value => ((value - 2) % 4 + 4) % 4 / 4);
   let selected = cell, best = Infinity;
   for (let corner = 0; corner < 8; corner++) {

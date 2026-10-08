@@ -5,6 +5,10 @@ renderer. It connects to Java servers through a local Node gateway, imports
 modern Anvil regions, and loads user-provided Minecraft resource packs. The
 native Vulkan client remains available separately.
 
+This preserves the browser work completed before the project moved to native
+Rust/Vulkan. The current platform choice, 1650 Ti performance target and remaining
+implementation are recorded in [the native rendering goal](https://github.com/cloudrumbles/client/blob/feat/wasm-webgpu-client/NATIVE_RENDERING_GOAL.md).
+
 ## Run
 
 ```sh
@@ -57,8 +61,10 @@ separate saves and performs graceful save/stop/reopen. This service runs the
 authoritative simulation on your computer; the rendering/world client runs in
 the browser.
 
-For local exploration/building, select `r.x.z.mca` files from a Java world's
-`region` folder and optionally `level.dat`. Imports preserve native IDs, negative
+For local exploration/building, select a Java world folder, or select `r.x.z.mca`
+files from its `region` folder and optionally `level.dat`. A folder includes
+modern ground items from the separate `entities` folder; bare terrain selections
+cover only actors in the selected terrain files. Imports preserve native IDs, negative
 coordinates and source build heights, including custom dimensions. Full chunks, resource packs, lighting and edits are
 cached locally; **Resume saved Java world** restores the last import. The browser
 cache does not write back to the original Java save. Imported worlds currently
@@ -66,6 +72,10 @@ provide creative building with a bounded Rust/WASM simulation for buttons,
 levers, redstone lamps and their scheduled updates. A separate WASM inventory
 uses native recipes and tags from the selected matching client JAR, with 2×2
 player crafting, 3×3 crafting tables and persistent native stack components.
+Native local drops, pickup delays, ground collision and item meshes share an
+atomic inventory/actor save. Q drops the selected item; supported cursor and menu
+drops use the same path. Saved actors retain their identities through pack changes
+and world reopen. This slice does not establish full survival or mob AI.
 When `level.dat` contains a supported player inventory, its selected slot,
 explicit empty slots, armor, offhand and typed stack metadata initialize an
 unsaved browser inventory. A saved browser inventory takes precedence. Unsupported
@@ -74,6 +84,13 @@ the imported builder instead of replacing source contents with starter items.
 Server-side world generation, mobs and survival simulation come from a connected
 server. [authority/README.md](./authority/README.md) and
 [authority/INVENTORY.md](./authority/INVENTORY.md) describe the browser authority's scope.
+
+**Browser terrain** generates new 1.21.11 Overworld, Nether or End terrain in a
+dedicated WASM worker, with exact signed 64-bit seeds and browser saves. It runs
+without a native server. The pinned source currently supplies biomes, noise and
+surface; trees, ores, carvers and completed structures remain unfinished. Use a
+matching private 1.21.11 JAR for native textures. [generation/README.md](./generation/README.md)
+records the source pin, MIT attribution, reproducible build and exact scope.
 
 ## Controls
 
@@ -214,6 +231,15 @@ npm run test:shadow-casters # Fullbright omissions, mixed casters and camera pol
 npm run test:source-inventory # Typed level.dat bootstrap, precedence and persistence
 npm run test:native-menu-ui # Actual DOM actions, WASM worker and save/reopen
 npm run test:inventory-items # Atomic inventory/item records and worker rollback
+npm run test:local-world-items # Actual worker/WASM item delivery and durable actors
+npm run test:local-world-items-main # Native drops/physics/pickup in the production app
+npm run test:environment-fog # Source immersion and hand fog GPU controls
+npm run test:environment-main # Native effects, world clocks and pack/import lifecycle
+npm run test:actor-alpha   # Native vertex/texture alpha and emissive-layer controls
+npm run test:pcss          # Contact/distant shadow filtering and sloped receivers
+npm run test:shadow-guard  # Proven-zero direct lighting skips shadow lookups
+npm run test:irradiance-storage # Persistent, bounded, exact sun-angle cache
+npm run test:source-generation # Actual native WASM worker/world/storage/lighting
 npm run test:recipes      # Modern recipe displays and actual outgoing wire codecs
 npm run test:text-ui      # Styled native text across HUD, chat, books and signs
 npm run test:browser      # Demo, cache invalidation, controls and benchmark

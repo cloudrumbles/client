@@ -70,4 +70,28 @@ for (const version of ['1.20.4', '1.21.11']) {
     assert.equal(accepted.moved, 7); assert.equal(accepted.worldItems.items.length, 19); assert.equal(runtime.components.length, before.components.length + 1);
     storage.close();
   });
+  test(`native ${version} no-space pickup and failed durable mutation preserve QUICK_CRAFT input`, async () => {
+    for (const full of [true, false]) {
+      const { runtime, storage, transactions } = await setup();
+      for (let index = full ? 0 : 1; index < 36; index++) runtime.setSlot('player', index, stack('stone', 64));
+      runtime.setSlot('cursor', 0, stack('oak_planks', 10));
+      runtime.menuClick(-999, { mode: 5, button: 0 }); runtime.menuClick(1, { mode: 5, button: 1 }); runtime.menuClick(2, { mode: 5, button: 1 });
+      const before = runtime.snapshot(), transient = runtime.transactionCheckpoint().transient;
+      const candidate = appendWorldItemDrops(transactions.state(), [stack('oak_planks', 7, { nbtData: { exact: 'ground only' } })], context, registry), actor = candidate.items[0];
+      if (full) {
+        const result = await transactions.transaction('pickup', { worldItems: candidate, expectedItemsRevision: 0, actorId: actor.id, actorRevision: actor.revision }); assert.equal(result.moved, 0);
+        const put = storage.put; storage.put = async () => { throw new Error('Simulated durable save failure'); };
+        await assert.rejects(transactions.transaction('commit', { worldItems: result.worldItems, expectedItemsRevision: result.worldItems.revision }), /save failure/); storage.put = put;
+        assert.throws(() => runtime.pickup(stack('oak_planks', 100)), /stack count/);
+      } else {
+        storage.put = async () => { throw new Error('Simulated durable save failure'); };
+        await assert.rejects(transactions.transaction('pickup', { worldItems: candidate, expectedItemsRevision: 0, actorId: actor.id, actorRevision: actor.revision }), /save failure/);
+      }
+      assert.deepEqual(runtime.snapshot(), before); assert.deepEqual(runtime.transactionCheckpoint().transient, transient);
+      runtime.menuClick(-999, { mode: 5, button: 2 });
+      assert.equal(runtime.state().grid[0].itemCount, 5); assert.equal(runtime.state().grid[1].itemCount, 5); assert.equal(runtime.state().cursor.present, false);
+      const saved = runtime.snapshot(); runtime.menuClick(-999, { mode: 5, button: 0 }); runtime.restore(saved);
+      assert.equal(runtime.transactionCheckpoint().transient[1], 0, 'Ordinary save restore intentionally cancels ephemeral menu input.'); storage.close();
+    }
+  });
 }

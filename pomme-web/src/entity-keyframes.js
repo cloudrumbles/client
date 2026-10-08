@@ -47,7 +47,7 @@ export function advanceWalk(track, input, enabled = true) {
   const tick = Math.floor(input.time * 20), partial = input.time * 20 - tick;
   const state = track.specialWalk ??= { tick, speed: 0, oldSpeed: 0, position: 0 };
   if (tick - state.tick > 100) state.tick = tick - 100;
-  const target = enabled ? Math.min(1, Math.max(0, input.worldSpeed || 0) * (input.family === 'camel' ? .3 : .2)) : 0;
+  const target = enabled ? Math.min(input.walkMax ?? 1, Math.max(0, input.worldSpeed || 0) * (input.walkTargetScale ?? (input.family === 'camel' ? .3 : .2))) : 0;
   while (state.tick < tick) {
     state.tick++; state.oldSpeed = state.speed; state.speed += (target - state.speed) * .4; state.position += state.speed;
   }

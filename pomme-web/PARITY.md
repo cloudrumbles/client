@@ -33,7 +33,8 @@ cargo build --locked -p pumpkin \
   --config 'profile.dev.package.pumpkin-world.opt-level=3'
 ```
 
-Pumpkin is GPL-3.0. Its plugin API has separate licenses. This client does not
+The pinned 1.21.11 commit is MIT-licensed; current rolling Pumpkin is GPL-3.0.
+The exact source revision's original notice is preserved. Its plugin API has separate licenses. This client does not
 bundle the Pumpkin executable, copyrighted Minecraft assets, account profiles
 or a server JAR. Pumpkin's Wasm plugin host is a plugin runtime; it does not make
 the server itself a browser-compatible WebAssembly program.
@@ -72,8 +73,13 @@ Renderer tests use actual WebGPU readbacks in Chromium. The software adapter
 available in CI can verify rendering and invalidation behavior, but cannot
 establish a 60 FPS hardware result on the user's NVIDIA GPU. Nvidium's NV mesh
 shader API is not exposed by browser WebGPU. Sodium, Iris and Voxy techniques
-must be implemented against the browser renderer; their Java/OpenGL mods are
-not loaded into WebAssembly by this client.
+are adapted where documented; their Java/OpenGL mods are not loaded into
+WebAssembly by this client. The mesher now includes a Rust adaptation of latest
+Sodium's array light-cache lifecycle, pinned to
+`8aa723c69af6ce40255862df6c3bf8c6cca9d883` with the original source and notices in
+`core/third_party/sodium`. The project has since moved to native Rust/Vulkan;
+[the goal document](https://github.com/cloudrumbles/client/blob/feat/wasm-webgpu-client/NATIVE_RENDERING_GOAL.md)
+records that direction and the native work still outstanding.
 
 Pumpkin's
 [`README`](https://github.com/Pumpkin-MC/Pumpkin/blob/1a6a6e6f158e0ef143b18299d20aaeeb2a285881/README.md)
@@ -204,7 +210,11 @@ Typed player inventory bootstrap and native menu actions pass actual DOM,
 worker, WASM and IndexedDB checks with both 1.20.4 and 1.21.11 recipe sources.
 Supported source metadata is retained; unsupported components defer initialization.
 Atomic inventory/item-sidecar storage checks cover exact rollback and durable
-reopen, but local dropped-item gameplay is not connected in this checkpoint.
+reopen. Local ground-item integration now includes source actors, native fixed
+ticks, drops and pickups; production lifecycle validation is tracked separately
+from the worker/storage proof. Whole-world folder imports include separate modern
+entity regions. Bare terrain selections cover only actors in the selected terrain
+files. Saved initialized actor history takes precedence over later source files.
 
 Incremental LOD tests cover retained mip arrays, unchanged-level revisions,
 conservative shared-face culling and original-JAR GPU checks across six dimension

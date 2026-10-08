@@ -13,7 +13,8 @@ async function dispatch(action, args) {
       const saved = args.snapshot ?? await storage.get(runtime.version, worldKey);
       if (saved) runtime.restore(saved);
       itemTransactions = new InventoryItemTransactions({ runtime, storage, worldKey, registry: args.registry, worldItems: saved?.worldItems });
-      return { restored: !!saved, state: runtime.state(), worldItems: itemTransactions.state() };
+      const companion = saved?.worldItems;
+      return { restored: !!saved, worldItemsRestored: !!companion && (companion.initialized === true || companion.revision > 0 || companion.tick > 0 || companion.nextId > 1 || companion.items?.length > 0 || companion.deferred?.length > 0), state: runtime.state(), worldItems: itemTransactions.state() };
     } catch (error) { storage.close(); throw error; }
   }
   if (!runtime) throw new Error('Browser inventory is not initialized.');
@@ -39,6 +40,7 @@ async function dispatch(action, args) {
     case 'world-items-pickup': value = await itemTransactions.transaction('pickup', args); break;
     case 'world-items-drop': value = await itemTransactions.transaction('drop', args); break;
     case 'world-items-deliver': value = await itemTransactions.transaction('deliver', args); break;
+    case 'world-items-grid': value = await itemTransactions.transaction('grid', args); break;
     case 'acknowledge-drops': value = runtime.acknowledgeDrops(); break;
     case 'save': value = itemTransactions.snapshot(); await storage.put(worldKey, value); break;
     case 'close': if (args.save !== false) await storage.put(worldKey, itemTransactions.snapshot()); storage.close(); closed = true; break;

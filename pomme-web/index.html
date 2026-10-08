@@ -22,8 +22,18 @@
       <label class="file-label">Minecraft textures &amp; models<input id="resource-pack" type="file" accept=".zip,.jar" /></label>
       <p id="pack-status" class="muted">Import your 1.20.4 client JAR or a resource pack.</p>
       <label class="file-label">Java world files<input id="world-files" type="file" accept=".mca,.dat" multiple /></label>
-      <p class="muted">Select region files and optionally level.dat. Imported worlds allow local building.</p>
+      <label class="file-label">Java world folder<input id="world-folder" type="file" webkitdirectory multiple /></label>
+      <p class="muted">Select a world folder to include saved ground items, or select region files and optionally level.dat. Imported worlds allow local building.</p>
       <button id="resume-import" class="button button-secondary" type="button" hidden>Resume saved Java world</button>
+      <form id="browser-world-form">
+        <h3>Browser terrain</h3>
+        <p class="muted">Java 1.21.11 terrain runs in your browser. This preview generates biomes and terrain surfaces; trees, ores, carvers and completed structures are still being added. Load your 1.21.11 client JAR for textures, items and crafting.</p>
+        <div class="server-row"><label>World name<input id="browser-world-name" value="Browser world" maxlength="64" /></label><label>Seed<input id="browser-world-seed" value="1650" maxlength="21" required /></label></div>
+        <label>Dimension<select id="browser-world-dimension"><option value="minecraft:overworld">Overworld</option><option value="minecraft:the_nether">Nether</option><option value="minecraft:the_end">End</option></select></label>
+        <button class="button button-secondary" type="submit">Create terrain world</button>
+        <button id="resume-generated" class="button button-quiet" type="button" hidden>Resume saved browser terrain</button>
+        <p id="browser-world-status" class="muted" role="status">Terrain and local edits are saved on this device.</p>
+      </form>
       <form id="singleplayer-form">
         <h3>Singleplayer</h3>
         <label>Local world service<input id="singleplayer-service" value="http://127.0.0.1:5175" type="url" required /></label>

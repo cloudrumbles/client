@@ -14,6 +14,9 @@ copyFileSync(new URL('../core/target/wasm32-unknown-unknown/release/pomme_web_co
 const authorityBuild = spawnSync(process.execPath, [fileURLToPath(new URL('../authority/build.mjs', import.meta.url))], { stdio: 'inherit' });
 if (authorityBuild.error) throw authorityBuild.error;
 if (authorityBuild.status !== 0) process.exit(authorityBuild.status ?? 1);
+const generationBuild = spawnSync(process.execPath, [fileURLToPath(new URL('../generation/build.mjs', import.meta.url))], { stdio: 'inherit' });
+if (generationBuild.error) throw generationBuild.error;
+if (generationBuild.status !== 0) process.exit(generationBuild.status ?? 1);
 mkdirSync(new URL('../data/', import.meta.url), { recursive: true });
 mkdirSync(new URL('../vendor/', import.meta.url), { recursive: true });
 const blockSounds = JSON.parse(readFileSync(new URL('../src/block-sounds.json', import.meta.url)));

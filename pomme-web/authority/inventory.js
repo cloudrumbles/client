@@ -168,14 +168,16 @@ export class InventoryRuntime {
   pickup(stack, { creative = false } = {}) {
     const item = this.definitions.get(stack?.itemId); if (!item || item.name === 'air') throw new Error('Pickup requires a nonempty native item.');
     const checkpoint = this.transactionCheckpoint();
+    let nativeMutated = false;
     try {
       const words = this.stackWords(stack), remaining = this.core.inventory_pickup(...words, Number(Boolean(creative)) | (nativeInventoryStackDamaged(stack, item, this.version) ? 2 : 0));
       if (remaining < 0) throw new Error('Browser inventory rejected native pickup.');
+      nativeMutated = remaining !== words[1];
       // Inventory.add can reject a valid ground stack when all slots are full.
       // Its opaque metadata then belongs only to the actor, never the inventory.
-      if (remaining === words[1]) this.rollbackTransaction(checkpoint);
+      if (remaining === words[1]) this.restoreTransactionComponents(checkpoint);
       return { moved: words[1] - remaining, remaining, state: this.state() };
-    } catch (error) { this.rollbackTransaction(checkpoint); throw error; }
+    } catch (error) { if (nativeMutated) this.rollbackTransaction(checkpoint); else this.restoreTransactionComponents(checkpoint); throw error; }
   }
   click(area, slot, button = 0) { this.accept(this.core.inventory_click(this.area(area), integer(slot, 0, 35, 'click slot'), integer(button, 0, 1, 'mouse button')), 'click'); return this.state(); }
   menuClick(slot, { button = 0, mode = 0, creative = true, allowDrops = false, width } = {}) {
@@ -210,10 +212,16 @@ export class InventoryRuntime {
       recipeId: recipeKey === 0xffffffff ? null : this.recipeIds[recipeKey], result: this.readStack(words.subarray(words.length - 4)) };
   }
   snapshot() { return { schema: 1, version: this.version, fingerprint: this.fingerprint, words: this.output(this.core.inventory_snapshot()), components: structuredClone(this.components) }; }
-  transactionCheckpoint() { return { words: this.output(this.core.inventory_snapshot()), components: structuredClone(this.components), keys: new Map(this.componentKeys), bytes: this.componentBytes }; }
+  transactionCheckpoint() {
+    const words = this.output(this.core.inventory_snapshot());
+    const transient = this.core.inventory_transient_snapshot ? this.output(this.core.inventory_transient_snapshot()) : null;
+    return { words, transient, components: structuredClone(this.components), keys: new Map(this.componentKeys), bytes: this.componentBytes };
+  }
+  restoreTransactionComponents(checkpoint) { this.components = checkpoint.components; this.componentKeys = checkpoint.keys; this.componentBytes = checkpoint.bytes; }
   rollbackTransaction(checkpoint) {
     this.stage(checkpoint.words); this.accept(this.core.inventory_restore(checkpoint.words.length), 'transaction rollback');
-    this.components = checkpoint.components; this.componentKeys = checkpoint.keys; this.componentBytes = checkpoint.bytes;
+    if (checkpoint.transient) { this.stage(checkpoint.transient); this.accept(this.core.inventory_transient_restore(checkpoint.transient.length), 'menu input rollback'); }
+    this.restoreTransactionComponents(checkpoint);
   }
   restore(snapshot) {
     if (snapshot?.schema !== 1 || snapshot.version !== this.version || snapshot.fingerprint !== this.fingerprint) throw new Error('Inventory save belongs to different native item/recipe data.');

@@ -17,9 +17,9 @@ export class CachedIrradiance {
   constructor({ onVolume = () => {}, onStatus = () => {}, workerFactory = () => new Worker(new URL('./irradiance.worker.js', import.meta.url), { type: 'module' }), schedule = callback => setTimeout(callback, 60), cancelSchedule = timer => clearTimeout(timer) } = {}) {
     Object.assign(this, { onVolume, onStatus, workerFactory, schedule, cancelSchedule });
     this.columns = new Map(); this.generation = 0; this.revision = 0; this.sequence = 0; this.sunBucket = 0;
-    this.metrics = { jobs: 0, discardedJobs: 0, reusedFrames: 0, invalidations: 0, localCacheHits: 0, volumeUploads: 0, sourceBytes: 0, outputBytes: 0, lastWorkerMs: null };
+    this.metrics = { jobs: 0, discardedJobs: 0, reusedFrames: 0, invalidations: 0, localCacheHits: 0, sunCacheHits: 0, diskCacheHits: 0, prefetchedSunCacheHits: 0, sunCacheEntries: 0, sunCacheBytes: 0, residentCacheBytes: 0, volumeUploads: 0, sourceBytes: 0, outputBytes: 0, lastWorkerMs: null, lastDiskReadMs: null };
   }
-  configure({ materials, atlas = null, minY = -64, height = 384, hasSkylight = true, generation = this.generation + 1 }) {
+  configure({ materials, atlas = null, minY = -64, height = 384, hasSkylight = true, generation = this.generation + 1, persistentCache = true }) {
     if (!Number.isSafeInteger(minY) || !Number.isInteger(height) || height < 16 || height > 1024 || !Number.isSafeInteger(minY + height) || !Number.isSafeInteger(generation)) throw new Error('Invalid irradiance world bounds.');
     const tables = irradianceMaterials(materials, atlas);
     this.clear(); this.worker?.terminate(); this.worker = null;
@@ -40,6 +40,13 @@ export class CachedIrradiance {
           if (!(data.localData instanceof Uint16Array) || !(data.bounceData instanceof Uint16Array) || data.localData.length !== cells * 4 || data.bounceData.length !== cells * 4 || !equal(data.origin, this.origin) || !equal(data.dimensions, this.dimensions)) { this.fail('Malformed irradiance result.'); return; }
           this.completedKey = job.key; this.metrics.jobs++; this.metrics.volumeUploads++;
           this.metrics.localCacheHits += Number(Boolean(data.stats?.localCacheHit));
+          this.metrics.sunCacheHits += Number(Boolean(data.stats?.sunCacheHit));
+          this.metrics.diskCacheHits += Number(Boolean(data.stats?.diskCacheHit));
+          this.metrics.prefetchedSunCacheHits += Number(Boolean(data.stats?.prefetchedSunCacheHit));
+          this.metrics.sunCacheEntries = data.stats?.sunCacheEntries ?? 0;
+          this.metrics.sunCacheBytes = data.stats?.sunCacheBytes ?? 0;
+          this.metrics.residentCacheBytes = data.stats?.residentCacheBytes ?? 0;
+          this.metrics.lastDiskReadMs = data.stats?.diskReadMs ?? null;
           this.metrics.lastWorkerMs = data.stats?.workerMs ?? null;
           this.metrics.outputBytes = data.localData.byteLength + data.bounceData.byteLength;
           this.onVolume(data);
@@ -47,18 +54,18 @@ export class CachedIrradiance {
         this.queue();
       };
       worker.onerror = event => { if (this.worker === worker) this.fail(event.message ?? 'Irradiance worker stopped.'); };
-      worker.postMessage({ type: 'init', generation, tables });
+      worker.postMessage({ type: 'init', generation, tables, persistentCache: Boolean(persistentCache) });
     } catch (error) { this.fail(error.message); }
   }
   fail(message) {
     this.failed = true; this.cancelSchedule(this.timer); this.timer = null;
-    this.inFlight = null; this.worker?.terminate(); this.worker = null; this.metrics.outputBytes = 0;
+    this.inFlight = null; this.worker?.terminate(); this.worker = null; this.metrics.outputBytes = 0; this.metrics.sunCacheEntries = this.metrics.sunCacheBytes = this.metrics.residentCacheBytes = 0;
     this.onVolume(null); this.onStatus(`Cached colored lighting unavailable: ${message}`);
   }
   clear() {
     this.cancelSchedule(this.timer); this.timer = null; this.inFlight = null;
     this.columns.clear(); this.origin = null; this.dimensions = null; this.completedKey = null;
-    this.revision++; this.metrics.sourceBytes = 0; this.metrics.outputBytes = 0; this.onVolume(null);
+    this.revision++; this.metrics.sourceBytes = 0; this.metrics.outputBytes = 0; this.metrics.sunCacheEntries = this.metrics.sunCacheBytes = this.metrics.residentCacheBytes = 0; this.onVolume(null);
   }
   currentKey() { return this.origin ? `${this.generation}:${this.origin.join(',')}:${this.dimensions.join(',')}:${this.revision}:${this.sunBucket}:${Number(this.hasSkylight)}` : null; }
   changed({ geometry = true } = {}) {

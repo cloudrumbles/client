@@ -1,0 +1,16 @@
+{
+  "minecraftVersion": "1.21.11",
+  "sourceCommit": "70b31323967bb99fd4feefab8e96124be369cd6f",
+  "upstreamLicense": "MIT",
+  "upstreamArchiveSHA256": "a58c0ac04e2f097d5ffe6f85cba3f1360a17bcdd0de12c6e7fd4fea532cc43a8",
+  "stages": [
+    "biomes",
+    "noise",
+    "surface"
+  ],
+  "inputHash": "698192a9f2d7d014a0da4dc94ed38dde38e793ddf1b0db852cb8a402896e3e78",
+  "artifacts": {
+    "pomme_upstream_generation_wasm.js": "c17304b81dd343af2dfbd5e577957ea77862f9a5f65d02381f76f73c84116ccc",
+    "pomme_upstream_generation_wasm_bg.wasm": "24da22655385255e0d2f5a8b13410f4b0b4361853dbd6fb5b68f80e1648ce70d"
+  }
+}

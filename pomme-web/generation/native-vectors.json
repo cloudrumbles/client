@@ -1,0 +1,68 @@
+{
+  "sourceCommit": "70b31323967bb99fd4feefab8e96124be369cd6f",
+  "minecraftVersion": "1.21.11",
+  "stages": [
+    "biomes",
+    "noise",
+    "surface"
+  ],
+  "oracle": "Native Rust, each world in a fresh process to exclude upstream allocation-address cache reuse",
+  "vectors": [
+    {
+      "seed": "0",
+      "dimension": 0,
+      "x": 0,
+      "z": 0,
+      "blocks": "ec512b3ce49b7f2e62b23b93a69a1b56792cbdc18e4f7613bb5551c0ca53d025",
+      "biomes": "c156c6f19afbb453ef0f4f9fb0424234c73211ce031c69275cf3a7c8a37888ba"
+    },
+    {
+      "seed": "42",
+      "dimension": 0,
+      "x": -17,
+      "z": 31,
+      "blocks": "0d8e8bd4672d12e3f316606f7ce355c3b37003c1dd130e7693fca6209b8a15f0",
+      "biomes": "82a8b6bd047a93031ec3fa9b3dc207c02f6dac343a404324e6bd18ca8a13f0ce"
+    },
+    {
+      "seed": "-1",
+      "dimension": 0,
+      "x": 1874,
+      "z": -1874,
+      "blocks": "50fb43b79d338a4b3690a080e9c068c2680a4c0fab72492d79595c57093fc7d5",
+      "biomes": "2ec6134dd640dd9b75f1674f3f3b525fcf7bf5ac216b192f0ac721e5e1e865ec"
+    },
+    {
+      "seed": "42",
+      "dimension": 1,
+      "x": 0,
+      "z": 0,
+      "blocks": "25161c93f394786134ed05bbf50294a4fdd7c37769b06be71c012068ff7b2a27",
+      "biomes": "1921ce2e152e26b82c69a727ddf9a06ca141f28820a5dee955cb67b6dc644196"
+    },
+    {
+      "seed": "-1",
+      "dimension": 1,
+      "x": -17,
+      "z": 31,
+      "blocks": "a48b68099a646d11c73e44cb226e58603cc2d22d3fc35139b48a13c9e18db27e",
+      "biomes": "1921ce2e152e26b82c69a727ddf9a06ca141f28820a5dee955cb67b6dc644196"
+    },
+    {
+      "seed": "42",
+      "dimension": 2,
+      "x": 0,
+      "z": 0,
+      "blocks": "34ae6a8be257bc6cf2b403df0df7d9b0f12df6837915da67aae5c0cc40c253c3",
+      "biomes": "cb73746090ab5f2531897b2c179ba0e6c89fb537981ec07a6086ccc071feecdc"
+    },
+    {
+      "seed": "-1",
+      "dimension": 2,
+      "x": -17,
+      "z": 31,
+      "blocks": "de2f256064a0af797747c2b97505dc0b9f3df0de4f489eac731c23ae9ca9cc31",
+      "biomes": "cb73746090ab5f2531897b2c179ba0e6c89fb537981ec07a6086ccc071feecdc"
+    }
+  ]
+}

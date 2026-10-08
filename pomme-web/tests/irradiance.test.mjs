@@ -1,8 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { IRRADIANCE_LIMITS, floatToHalf, irradianceMaterials, solveIrradiance, validateIrradianceSnapshot } from '../src/irradiance.js';
+import { IRRADIANCE_LIMITS, floatToHalf, irradianceMaterials, solveIrradiance, validateIrradianceSnapshot, snapshotGeometryKey } from '../src/irradiance.js';
 import { CachedIrradiance } from '../src/irradiance-cache.js';
 import { createIrradianceProcessor } from '../src/irradiance.worker.js';
+import { IrradianceSunCache } from '../src/irradiance-sun-cache.js';
+import { irradianceMaterialKey, irradianceSourceKey } from '../src/irradiance-source-key.js';
+import { IrradianceDiskCache } from '../src/irradiance-disk-cache.js';
+import { IDBFactory } from 'fake-indexeddb';
 
 const materials = new Map([[0, { opacity: 0, color: [1,1,1] }], [1, { opacity: 15, color: [.5,.5,.5] }],
   [2, { opacity: 0, emitLight: 15, emissionColor: [1,0,0], color: [1,0,0] }],
@@ -93,6 +97,108 @@ test('worker cache detects changed actual source content and reset cancels bound
   await cancellable({type:'init',generation:2,tables}); release();
   assert.equal(await pending,null);
   assert.equal(await cancellable(request),null);
+});
+
+test('all240 repeated day angles reuse exact half-float bounce bits without processing light cells', async () => {
+  const process = createIrradianceProcessor({ yieldControl: async () => {} });
+  await process({ type: 'init', generation: 1, tables });
+  const snapshot = fixture([8, 8, 8]);
+  for (let z = 0; z < 8; z++) for (let x = 0; x < 8; x++) write(snapshot, x, 2, z, 4);
+  write(snapshot, 3, 3, 3, 2);
+  const results = [];
+  for (let sunBucket = 0; sunBucket < 240; sunBucket++) {
+    const result = await process({ type: 'solve', generation: 1, id: sunBucket, key: String(sunBucket), snapshot: { ...snapshot, sunBucket } });
+    assert.equal(result.stats.sunCacheHit, false); results.push(result);
+  }
+  for (let sunBucket = 0; sunBucket < 240; sunBucket++) {
+    const result = await process({ type: 'solve', generation: 1, id: 240 + sunBucket, key: String(sunBucket), snapshot: { ...snapshot, sunBucket } });
+    assert.equal(result.stats.sunCacheHit, true); assert.equal(result.stats.processedCells, 0);
+    assert.deepEqual(result.localData, results[sunBucket].localData); assert.deepEqual(result.bounceData, results[sunBucket].bounceData);
+    assert.equal(result.stats.sunCacheEntries, 240); assert.ok(result.stats.sunCacheBytes <= result.stats.sunCacheMaxBytes);
+    result.localData.fill(0); result.bounceData.fill(0);
+  }
+  const repeat = await process({ type: 'solve', generation: 1, id: 500, key: 'immutable', snapshot });
+  assert.deepEqual(repeat.bounceData, results[60].bounceData, 'returned buffers cannot mutate cached day lighting');
+  snapshot.sky[0] = 0;
+  const changed = await process({ type: 'solve', generation: 1, id: 501, key: 'light-edit', snapshot });
+  assert.equal(changed.stats.sunCacheHit, false); assert.equal(changed.stats.localCacheHit, false); assert.equal(changed.stats.sunCacheEntries, 1);
+});
+
+test('hash-colliding geometry never reuses stale local or sun lighting', async () => {
+  const a = fixture([4, 1, 1]), b = fixture([4, 1, 1]);
+  a.states.set([9244, 7255, 26814, 65085]); b.states.set([50987, 22683, 21829, 3009]);
+  assert.equal(snapshotGeometryKey(a), snapshotGeometryKey(b));
+  const sourceTables = irradianceMaterials(new Map([...a.states].map(id => [id, { opacity: 0, emitLight: 15, emissionColor: [1, 0, 0] }]).concat([...b.states].map(id => [id, { opacity: 0, emitLight: 15, emissionColor: [0, 0, 1] }]))));
+  const process = createIrradianceProcessor({ yieldControl: async () => {} });
+  await process({ type: 'init', generation: 1, tables: sourceTables });
+  const first = await process({ type: 'solve', generation: 1, id: 1, key: 'same', snapshot: a });
+  const next = await process({ type: 'solve', generation: 1, id: 2, key: 'same', snapshot: b });
+  assert.equal(next.stats.sunCacheHit, false); assert.equal(next.stats.localCacheHit, false);
+  assert.notDeepEqual(first.localData, next.localData); assert.deepEqual(next.localData, solveIrradiance(b, sourceTables).localData);
+});
+
+test('persistent source identity survives day repetition and rejects edits, material changes and32bit hash collisions', async () => {
+  const a = fixture([4, 1, 1]), b = fixture([4, 1, 1]);
+  a.states.set([9244, 7255, 26814, 65085]); b.states.set([50987, 22683, 21829, 3009]);
+  const materialKey = await irradianceMaterialKey(tables), first = await irradianceSourceKey(a, materialKey);
+  assert.match(first, /^[0-9a-f]{64}$/);
+  assert.equal(await irradianceSourceKey({ ...a, sunBucket: 0 }, materialKey), first);
+  assert.notEqual(await irradianceSourceKey(b, materialKey), first);
+  const edited = { ...a, sky: a.sky.slice() }; edited.sky[0]--;
+  assert.notEqual(await irradianceSourceKey(edited, materialKey), first);
+  assert.notEqual(await irradianceSourceKey({ ...a, hasSkylight: false }, materialKey), first);
+  const changed = { ...tables, albedo: tables.albedo.slice() }; changed.albedo[0] ^= 1;
+  assert.notEqual(await irradianceSourceKey(a, await irradianceMaterialKey(changed)), first);
+});
+
+test('sun-cache lossless compressed and raw paths obey LRU byte limits', () => {
+  const cache = new IrradianceSunCache({ maxBytes: 100 });
+  const constant = new Uint16Array(32 * 4); for (let cell = 0; cell < 32; cell++) constant.set([0x3c00, 0x3800, 0, cell % 2 ? 0 : 0x3c00], cell * 4);
+  for (let bucket = 0; bucket < 10; bucket++) cache.store(bucket, constant);
+  assert.equal(cache.stats().sunCacheEntries, 10); assert.deepEqual(cache.get(0), constant);
+  cache.store(10, constant); assert.equal(cache.get(1), null); assert.deepEqual(cache.get(0), constant);
+  const raw = constant.slice(); for (let cell = 0; cell < 32; cell++) raw[cell * 4] = cell;
+  cache.store(11, raw); assert.equal(cache.get(11), null, 'oversize entries do not exceed the cache budget');
+  const rawCache = new IrradianceSunCache({ maxBytes: 200 }); rawCache.store(0, raw); assert.deepEqual(rawCache.get(0), raw);
+  cache.clear(); assert.equal(cache.stats().sunCacheBytes, 0);
+});
+
+test('disk lighting survives worker generations, prefetches periodic angles, and rejects changed sources', async () => {
+  const disk = new IrradianceDiskCache({ indexedDB: new IDBFactory() });
+  const processor = createIrradianceProcessor({ yieldControl: async () => {}, diskCache: disk });
+  const snapshot = fixture([8, 8, 8]);
+  for (let z = 0; z < 8; z++) for (let x = 0; x < 8; x++) write(snapshot, x, 2, z, 4);
+  const wait = async predicate => { for (let at = 0; at < 500; at++) { if (predicate()) return; await new Promise(resolve => setTimeout(resolve, 1)); } assert.fail('Lighting storage did not settle.'); };
+  await processor({ type: 'init', generation: 1, tables });
+  const first = await processor({ type: 'solve', generation: 1, id: 1, key: 'a', snapshot }); await wait(() => disk.stats().diskPending === 0);
+  const next = await processor({ type: 'solve', generation: 1, id: 2, key: 'b', snapshot: { ...snapshot, sunBucket: 61 } }); await wait(() => disk.stats().diskPending === 0);
+  assert.equal(first.stats.diskCacheHit, false); assert.equal(next.stats.diskCacheHit, false); assert.equal(disk.stats().diskWrites, 2);
+  await processor({ type: 'init', generation: 2, tables });
+  const restored = await processor({ type: 'solve', generation: 2, id: 3, key: 'restore', snapshot });
+  assert.equal(restored.stats.diskCacheHit, true); assert.equal(restored.stats.processedCells, 0); assert.deepEqual(restored.bounceData, first.bounceData); assert.deepEqual(restored.localData, first.localData);
+  await wait(() => disk.stats().diskPending === 0);
+  const prefetched = await processor({ type: 'solve', generation: 2, id: 4, key: 'prefetch', snapshot: { ...snapshot, sunBucket: 61 } });
+  assert.equal(prefetched.stats.diskCacheHit, false); assert.equal(prefetched.stats.prefetchedSunCacheHit, true); assert.equal(prefetched.stats.processedCells, 0); assert.deepEqual(prefetched.bounceData, next.bounceData);
+  snapshot.sky[0] = 0;
+  const edited = await processor({ type: 'solve', generation: 2, id: 5, key: 'edit', snapshot });
+  assert.equal(edited.stats.diskCacheHit, false); assert.equal(edited.stats.sunCacheHit, false); assert.deepEqual(edited.bounceData, solveIrradiance(snapshot, tables).bounceData);
+  await disk.close(); assert.equal(disk.stats().diskErrors, 0);
+});
+
+test('disk latency and failures cannot publish a retired world or prevent a fresh solve', async () => {
+  let release;
+  const delayed = { get: () => new Promise(resolve => { release = resolve; }), put: async () => null };
+  const processor = createIrradianceProcessor({ diskCache: delayed, yieldControl: async () => {} });
+  await processor({ type: 'init', generation: 1, tables });
+  const pending = processor({ type: 'solve', generation: 1, id: 1, key: 'old', snapshot: fixture([8, 8, 8]) });
+  for (let at = 0; at < 100 && !release; at++) await new Promise(resolve => setTimeout(resolve, 1));
+  assert.equal(typeof release, 'function');
+  await processor({ type: 'init', generation: 2, tables }); release(null); assert.equal(await pending, null);
+  const failing = createIrradianceProcessor({ diskCache: { get: async () => { throw new Error('Storage denied'); }, put: async () => { throw new Error('Quota exceeded'); } }, yieldControl: async () => {} });
+  await failing({ type: 'init', generation: 1, tables });
+  const snapshot = fixture([8, 8, 8]); write(snapshot, 3, 3, 3, 2);
+  const result = await failing({ type: 'solve', generation: 1, id: 1, key: 'fresh', snapshot });
+  assert.equal(result.stats.diskCacheHit, false); assert.deepEqual(result.localData, solveIrradiance(snapshot, tables).localData);
 });
 
 function harness() {

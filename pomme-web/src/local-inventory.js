@@ -3,6 +3,7 @@ import { loadNativeCraftingData } from '../authority/native-crafting-data.js';
 import { ServerGameplay } from './gameplay.js';
 import { LocalInventorySession } from './local-inventory-session.js';
 import { planSourceInventoryBootstrap } from './source-level-inventory.js';
+import { LocalInventoryItems } from './local-inventory-items.js';
 const HOTBAR = ['grass_block', 'stone', 'oak_planks', 'sand', 'oak_leaves', 'glowstone'];
 
 class LocalGameplay extends ServerGameplay {
@@ -26,7 +27,7 @@ class LocalGameplay extends ServerGameplay {
     }));
   }
   key(event) {
-    if ([this.controls.chat, this.controls.command, this.controls.advancements, this.controls.playerList, this.controls.drop].includes(event.code)) return this.blocking;
+    if ([this.controls.chat, this.controls.command, this.controls.advancements, this.controls.playerList].includes(event.code) || event.code === this.controls.drop && !this.session.owner.itemAdapter) return this.blocking;
     return super.key(event);
   }
 }
@@ -82,8 +83,8 @@ export class LocalInventory {
       local.notifySelection(); return local;
     } catch (error) { await local.close({ save: false }); throw error; }
   }
-  constructor({ registry, world, isCurrent = () => true, onStatus = () => {}, onSelectedBlock = () => {} }) {
-    this.registry = registry; this.world = world; this.isCurrent = isCurrent; this.onStatus = onStatus; this.onSelectedBlock = onSelectedBlock;
+  constructor({ registry, world, player, sourceInventory, isCurrent = () => true, onStatus = () => {}, onSelectedBlock = () => {} }) {
+    this.registry = registry; this.world = world; this.player = player; this.sourceInventory = sourceInventory; this.isCurrent = isCurrent; this.onStatus = onStatus; this.onSelectedBlock = onSelectedBlock;
     this.blocks = new Map(); for (const block of registry.blocks) for (let id = block.minStateId; id <= block.maxStateId; id++) this.blocks.set(id, block);
     this.items = new Map(registry.items.map(item => [item.id, item])); this.blockNames = new Map(registry.blocks.map(block => [block.name, block]));
     this.pending = Promise.resolve(); this.pendingCount = 0; this.closed = false; this.lastSelected = undefined;
@@ -119,7 +120,7 @@ export class LocalInventory {
     if (!this.current()) return false;
     const state = this.world?.core?.block_get?.(x, y, z) ?? this.world?.block_get?.(x, y, z) ?? this.world?.getBlock?.(x, y, z);
     if (this.blocks.get(state)?.name !== 'crafting_table') return false;
-    const changed = await this.run(() => this.authority.switchGrid(3, 3, { allowDrops: false }));
+    const changed = await this.run(() => this.switchGrid(3));
     if (!this.current()) return false;
     if (changed === false || this.authority.state.width !== 3) throw new Error('Inventory is busy. Try opening the table again.');
     this.session.windowId = 1; this.session.state.windowId = 1; this.session.menus.set(1, { inventoryType: 'crafting' });
@@ -127,17 +128,40 @@ export class LocalInventory {
     this.gameplay.event({ type: 'window', windowId: 1, inventoryType: 'crafting', titleComponent: { translate: 'container.crafting', fallback: 'Crafting table' } });
     return true;
   }
-  async save() { if (this.closed) return; return this.run(() => this.authority.save()); }
+  switchGrid(width) { return this.itemAdapter ? this.itemAdapter.switchGrid(width) : this.authority.switchGrid(width, width, { allowDrops: false }); }
+  menuClick(slot, options) { return this.itemAdapter ? this.itemAdapter.menuClick(slot, options) : this.authority.menuClick(slot, { ...options, allowDrops: false }); }
+  attachWorldItems(options = {}) {
+    if (this.itemAdapter) return Promise.resolve(this.worldItems);
+    return this.itemsAttachPromise ??= this.openWorldItems(options);
+  }
+  async openWorldItems(options) {
+    if (!this.current() || this.itemAdapter) return this.worldItems ?? null;
+    await this.pending; if (!this.current()) return null;
+    const snapshot = await this.authority.worldItems(); if (!this.current()) return null;
+    const adapter = new LocalInventoryItems(this, { ...options, snapshot });
+    this.itemAdapter = adapter; this.worldItems = adapter.worldItems; this.playerUuid = adapter.playerUuid;
+    try { if (this.authority.state.drops.length) await this.run(() => adapter.deliverPending()); }
+    catch (error) {
+      await adapter.closeGate();
+      if (this.itemAdapter === adapter) { this.itemAdapter = null; this.worldItems = null; this.playerUuid = undefined; }
+      throw error;
+    }
+    return this.current() ? this.worldItems : null;
+  }
+  tickWorldItems(seconds, { bounds } = {}) { return this.itemAdapter?.advance(seconds, bounds) ?? 0; }
+  async save() { if (this.closed) return; return this.run(() => this.itemAdapter ? this.itemAdapter.save() : this.authority.save()); }
   close({ save = true } = {}) {
     if (this.closePromise) return this.closePromise;
     // Gate input, callbacks and DOM synchronously; accepted operations still finish
     // against their old private worker before its own world-key save commits.
     this.closed = true; this.gameplay?.close();
+    const actorClosing = this.itemAdapter?.closeGate().catch(() => {});
     this.closePromise = this.pending.then(async () => {
       if (!this.authority) return;
+      await actorClosing;
       // If returning cursor/grid items would require a ground actor, persist the
       // intact open menu rather than creating an invisible pending drop.
-      if (save) { try { await this.authority.switchGrid(2, 2, { allowDrops: false }); } catch {} }
+      if (save) { try { if (this.itemAdapter) await this.itemAdapter.shutdown(); else await this.authority.switchGrid(2, 2, { allowDrops: false }); } catch {} }
       await this.authority.close({ save });
     });
     return this.closePromise;

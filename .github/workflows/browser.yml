@@ -80,6 +80,20 @@ jobs:
           npm run test:source-inventory
           npm run test:native-menu-ui
           npm run test:inventory-items
+          npm run test:environment-fog
+          npm run test:actor-alpha
+          npm run test:pcss
+          npm run test:shadow-guard
+          npm run test:irradiance-storage
+          npm run test:source-generation
+          npm run test:source-generation-main
+          npm run test:local-world-items
+          for version in 1.20.4 1.21.11 26.1; do
+            POMME_MINECRAFT_VERSION="$version" npm run test:environment-main
+          done
+          for version in 1.20.4 1.21.11; do
+            POMME_MINECRAFT_VERSION="$version" npm run test:local-world-items-main
+          done
       - uses: actions/upload-artifact@v4
         if: always()
         with:

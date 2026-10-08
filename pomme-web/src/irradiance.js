@@ -1,7 +1,8 @@
 // An optional, bounded lighting approximation. Native sky/block light stays
 // authoritative; these cells supply source color and one material-colored
 // bounce. This is independent code, not a translated shader-pack algorithm.
-export const IRRADIANCE_LIMITS = Object.freeze({ dimensions: [48, 32, 48], maxCells: 48 * 32 * 48, sunBuckets: 240, maxColumns: 16, maxSections: 3, materialBytes: 8 * 65536 });
+export const IRRADIANCE_LIMITS = Object.freeze({ dimensions: [48, 32, 48], maxCells: 48 * 32 * 48, sunBuckets: 240, maxColumns: 16, maxSections: 3, materialBytes: 8 * 65536,
+  maxSunCacheBytes: 32 * 1024 * 1024 });
 const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 const srgb = value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
 const byte = value => Math.round(clamp(Number(value) || 0, 0, 1) * 255);
@@ -91,7 +92,7 @@ export function snapshotGeometryKey(input) {
   // independently of geometry. Sun is intentionally excluded from local reuse.
   let hash = 2166136261;
   for (const bytes of [input.states, input.known, input.sky, input.block]) {
-    for (const value of bytes) { hash ^= value; hash = Math.imul(hash, 16777619); }
+    for (let index = 0; index < bytes.length; index++) { hash ^= bytes[index]; hash = Math.imul(hash, 16777619); }
   }
   return `${input.origin.join(',')}:${input.dimensions.join(',')}:${hash >>> 0}`;
 }

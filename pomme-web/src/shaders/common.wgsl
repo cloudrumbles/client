@@ -18,6 +18,9 @@ struct Frame {
     world_time: vec4<f32>,
     irradiance_origin: vec4<f32>,
     irradiance_extent: vec4<f32>,
+    environment_fog_color: vec4<f32>, // Linear HDR color, source environment type.
+    environment_fog_ranges: vec4<f32>, // Start/end, sky end, cylindrical shape.
+    environment_fog_render: vec4<f32>, // Render start/end, modern linear mode, immersion.
 };
 
 @group(0) @binding(0) var<uniform> frame: Frame;
@@ -142,6 +145,40 @@ fn clouded_atmosphere(ray: vec3<f32>) -> vec3<f32> {
     return color;
 }
 
+// Native distances are evaluated per vertex, then interpolated just like
+// the original vertex shaders. Leave the existing atmospheric branch intact
+// when no source environment fog has been admitted.
+fn native_fog_distances(position: vec3<f32>) -> vec2<f32> {
+    if (frame.environment_fog_color.w < 0.5) { return vec2<f32>(0.0); }
+    let delta = position - frame.eye_time.xyz;
+    return vec2<f32>(length(delta), max(length(delta.xz), abs(delta.y)));
+}
+fn native_fog_fraction(distance: f32, start: f32, end: f32) -> f32 {
+    if (distance <= start) { return 0.0; }
+    if (distance >= end) { return 1.0; }
+    return (distance - start) / (end - start);
+}
+fn native_fog_value(distances: vec2<f32>) -> f32 {
+    let ranges = frame.environment_fog_ranges;
+    let render = frame.environment_fog_render;
+    if (render.z > 0.5) {
+        return max(native_fog_fraction(distances.x, ranges.x, ranges.y),
+            native_fog_fraction(distances.y, render.x, render.y));
+    }
+    let distance = select(distances.x, distances.y, ranges.w > 0.5);
+    let factor = native_fog_fraction(distance, ranges.x, ranges.y);
+    // Original 1.20.4 linear_fog uses smoothstep; modern uses a linear ratio.
+    return factor * factor * (3.0 - 2.0 * factor);
+}
+fn native_sky_color(surface: vec3<f32>) -> vec3<f32> {
+    if (frame.environment_fog_color.w < 0.5) { return surface; }
+    if (frame.environment_fog_render.w > 0.5) { return frame.environment_fog_color.rgb; }
+    var factor = native_fog_fraction(frame.fog.y, 0.0, frame.environment_fog_ranges.z);
+    // Native sky fog uses SkyEnd for both ranges. World render-distance
+    // ranges would incorrectly fully fog a sky whose SkyEnd is farther away.
+    if (frame.environment_fog_render.z < 0.5) { factor = factor * factor * (3.0 - 2.0 * factor); }
+    return mix(surface, frame.environment_fog_color.rgb, factor);
+}
 fn fog_color(world_position: vec3<f32>, surface: vec3<f32>) -> vec3<f32> {
     let delta = world_position - frame.eye_time.xyz;
     let distance = length(delta);
@@ -154,7 +191,95 @@ fn fog_color(world_position: vec3<f32>, surface: vec3<f32>) -> vec3<f32> {
     return mix(surface, color, clamp(fog_amount, 0.0, 0.91));
 }
 
-fn terrain_shadow(world_position: vec3<f32>, normal: vec3<f32>) -> f32 {
+fn fog_color_native(world_position: vec3<f32>, surface: vec3<f32>, distances: vec2<f32>) -> vec3<f32> {
+    if (frame.environment_fog_color.w > 0.5) {
+        return mix(surface, frame.environment_fog_color.rgb, native_fog_value(distances));
+    }
+    return fog_color(world_position, surface);
+}
+fn fog_color_material(world_position: vec3<f32>, surface: vec3<f32>, distances: vec2<f32>, flags: u32) -> vec3<f32> {
+    // Native first-person rendering selects Fog.NONE for every admitted
+    // source fog, including blindness/darkness in air.
+    if ((flags & 8388608u) != 0u && frame.environment_fog_color.w > 0.5) { return surface; }
+    return fog_color_native(world_position, surface, distances);
+}
+// Independently implemented bounded directional PCSS. Conceptual audit:
+// Photon uses variable penumbras; no Photon code or assets are included here.
+const SUN_SHADOW_SEARCH = array<vec2<f32>, 9>(
+    vec2<f32>(0.0), vec2<f32>(-1.0,-1.0), vec2<f32>(1.0,-1.0),
+    vec2<f32>(-1.0,1.0), vec2<f32>(1.0,1.0), vec2<f32>(-1.0,0.0),
+    vec2<f32>(1.0,0.0), vec2<f32>(0.0,-1.0), vec2<f32>(0.0,1.0)
+);
+const SUN_SHADOW_DISC = array<vec2<f32>, 12>(
+    vec2<f32>(0.204124145, 0.000000000),
+    vec2<f32>(-0.260699267, 0.238821884),
+    vec2<f32>(0.039904201, -0.454687792),
+    vec2<f32>(0.328594541, 0.428593391),
+    vec2<f32>(-0.603011395, -0.106664225),
+    vec2<f32>(0.571225035, -0.363366609),
+    vec2<f32>(-0.191063595, 0.710747050),
+    vec2<f32>(-0.364378997, -0.701589586),
+    vec2<f32>(0.790556673, 0.288710029),
+    vec2<f32>(-0.822442486, 0.339492303),
+    vec2<f32>(0.396471625, -0.847236833),
+    vec2<f32>(0.292982446, 0.934074205)
+);
+fn soft_sun_shadow(uv: vec2<f32>, receiver_depth: f32, texel: vec2<f32>, normal: vec3<f32>) -> f32 {
+    let high = frame.screen_quality.z > 1.5;
+    let search_count = select(5u,9u,high);
+    let search_radius = select(4.0,8.0,high);
+    let dimensions = vec2<i32>(textureDimensions(shadow_map));
+    // Project the actual surface plane into light UV/depth. Compare each
+    // offset against its corresponding receiver depth so broad kernels do
+    // not turn a sloped receiver into its own blocker.
+    let row_x = vec3<f32>(frame.light_view_projection[0].x,frame.light_view_projection[1].x,frame.light_view_projection[2].x);
+    let row_y = vec3<f32>(frame.light_view_projection[0].y,frame.light_view_projection[1].y,frame.light_view_projection[2].y);
+    let row_z = vec3<f32>(frame.light_view_projection[0].z,frame.light_view_projection[1].z,frame.light_view_projection[2].z);
+    let normal_depth = dot(normal,row_z);
+    var receiver_gradient = vec2<f32>(0.0);
+    if (abs(normal_depth) > 0.000001) {
+        let depth_scale = dot(row_z,row_z) / normal_depth;
+        receiver_gradient = vec2<f32>(-2.0 * dot(normal,row_x) / dot(row_x,row_x),
+            2.0 * dot(normal,row_y) / dot(row_y,row_y)) * depth_scale;
+    }
+    var blocker_separation_sum = 0.0;
+    var blocker_count = 0.0;
+    for (var index = 0u; index < 9u; index++) {
+        if (index >= search_count) { break; }
+        let offset = SUN_SHADOW_SEARCH[index] * texel * search_radius;
+        let sample_uv = uv + offset;
+        let pixel = clamp(vec2<i32>(sample_uv * vec2<f32>(dimensions)),vec2<i32>(0),dimensions-vec2<i32>(1));
+        let blocker = textureLoad(shadow_map,pixel,0);
+        let pixel_uv = (vec2<f32>(pixel) + vec2<f32>(0.5)) / vec2<f32>(dimensions);
+        let difference = receiver_depth + dot(receiver_gradient,pixel_uv-uv) - blocker;
+        if (blocker < 1.0 && difference > 0.0) { blocker_separation_sum += difference; blocker_count += 1.0; }
+    }
+    // The center search read preserves thin contact shadows. No blockers
+    // means the surface is lit, including steep unoccluded receiver planes.
+    if (blocker_count == 0.0) { return 1.0; }
+    let light_span = 1.0 / max(length(row_z),0.00001);
+    let separation = (blocker_separation_sum / blocker_count) * light_span;
+    // Orthographic projection rows give UV per world unit. The 0.02 radian
+    // apparent radius agrees with this renderer's analytic solar disk.
+    let uv_per_world = 0.5 * length(row_x);
+    let radius_pixels = clamp(separation * 0.02 * uv_per_world / texel.x,0.5,select(4.0,8.0,high));
+    let filter_count = select(8u,12u,high);
+    let normalization = sqrt(12.0 / f32(filter_count));
+    var visibility = 0.0;
+    for (var index = 0u; index < 12u; index++) {
+        if (index >= filter_count) { break; }
+        let offset = SUN_SHADOW_DISC[index] * normalization * texel * radius_pixels;
+        let pixel = clamp(vec2<i32>((uv+offset) * vec2<f32>(dimensions)),vec2<i32>(0),dimensions-vec2<i32>(1));
+        let pixel_uv = (vec2<f32>(pixel) + vec2<f32>(0.5)) / vec2<f32>(dimensions);
+        let reference = receiver_depth + dot(receiver_gradient,pixel_uv-uv);
+        // A hardware2x2 comparison uses one reference for four different
+        // points on a slope. Point comparisons use each texel's corrected
+        // receiver depth, without multiplying the bounded texture-read cost.
+        visibility += select(0.0,1.0,reference <= textureLoad(shadow_map,pixel,0));
+    }
+    return visibility / f32(filter_count);
+}
+fn terrain_shadow_geometry(world_position: vec3<f32>, normal: vec3<f32>, geometric_normal: vec3<f32>) -> f32 {
     if (frame.camera_forward.w < 0.5) { return 1.0; }
     let light_clip = frame.light_view_projection * vec4<f32>(world_position, 1.0);
     let light_ndc = light_clip.xyz / light_clip.w;
@@ -165,15 +290,13 @@ fn terrain_shadow(world_position: vec3<f32>, normal: vec3<f32>) -> f32 {
     let alignment = clamp(dot(normal, frame.light_direction_daylight.xyz), 0.0, 1.0);
     let depth = light_ndc.z - (0.00023 + (1.0 - alignment) * 0.0012) * frame.fog.w;
     let texel = 1.0 / vec2<f32>(textureDimensions(shadow_map));
-    // Low: hardware 2x2 PCF. Balanced/high: a stable 3x3 filter.
+    // Low: original hardware2x2 PCF. Balanced/high: bounded variable penumbra.
     if (frame.screen_quality.z < 0.5) {
         return textureSampleCompareLevel(shadow_map, shadow_sampler, uv, depth);
     }
-    var shadow = 0.0;
-    for (var x = -1; x <= 1; x += 1) {
-        for (var y = -1; y <= 1; y += 1) {
-            shadow += textureSampleCompareLevel(shadow_map, shadow_sampler, uv + vec2<f32>(f32(x), f32(y)) * texel, depth);
-        }
-    }
-    return shadow / 9.0;
+    return soft_sun_shadow(uv, depth, texel, geometric_normal);
+}
+
+fn terrain_shadow(world_position: vec3<f32>, normal: vec3<f32>) -> f32 {
+    return terrain_shadow_geometry(world_position, normal, normal);
 }

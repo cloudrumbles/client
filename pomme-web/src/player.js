@@ -199,7 +199,6 @@ export class Player {
       const amplifier = typeof value === 'number' ? value : value?.amplifier;
       if (!name || !Number.isInteger(amplifier) || amplifier < 0 || amplifier > 255) continue;
       const duration = typeof value === 'object' && Number.isInteger(value.duration) ? value.duration : -1;
-      if (duration === 0) continue;
       const previous = this.effects.get(name);
       next.set(name, previous?.amplifier === amplifier && previous?.sourceDuration === duration ? previous : { amplifier, duration, sourceDuration: duration });
     }

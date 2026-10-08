@@ -1,8 +1,10 @@
 import { ENTITY_MODELS } from './entity-model-data.js';
 import { SPECIAL_ENTITY_MODELS } from './entity-special-model-data.js';
 import { MODERN_ENTITY_MODELS } from './entity-modern-model-data.js';
+import { REMAINING_ENTITY_MODELS } from './entity-remaining-model-data.js';
+import { BOAT_WATER_PATCH_MODEL } from './entity-boat-state.js';
 
-const MODEL_DEFINITIONS = { ...ENTITY_MODELS, ...SPECIAL_ENTITY_MODELS, ...MODERN_ENTITY_MODELS };
+const MODEL_DEFINITIONS = { ...ENTITY_MODELS, ...SPECIAL_ENTITY_MODELS, ...MODERN_ENTITY_MODELS, ...REMAINING_ENTITY_MODELS, boat_water_patch: BOAT_WATER_PATCH_MODEL };
 
 const TRIANGLES = [0, 1, 2, 0, 2, 3];
 const CACHE = new Map();
@@ -84,7 +86,7 @@ const AGEABLE = {
   piglin: [.75, 16, 0, .5, 24], zombified_piglin: [.75, 16, 0, .5, 24], armor_stand: [.75, 16, 0, .5, 24],
   camel: [.45, 29.35, 0, .45, 29.35], sniffer: [.5, 24, 0, .5, 24],
 };
-export const hasNativeBabyTransform = family => Object.hasOwn(AGEABLE, family) || ['rabbit', 'llama', 'trader_llama', 'camel_husk', 'happy_ghast', 'nautilus'].includes(family);
+export const hasNativeBabyTransform = family => Object.hasOwn(AGEABLE, family) || ['rabbit', 'llama', 'trader_llama', 'camel_husk', 'happy_ghast', 'nautilus', 'armadillo'].includes(family);
 function ageTransform(part, model, input) {
   if (input.nativeAdultOnly) return null;
   const family = input.family === 'camel_husk' ? 'camel' : input.family;
@@ -102,6 +104,11 @@ function ageTransform(part, model, input) {
 
 function partAnimation(part, input) {
   let rotation = [...part.rotation], translation = [0, 0, 0];
+  if (input.nativePoseOnly) {
+    const keyed = input.keyframes?.get(part.name);
+    return { rotation: rotation.map((value, axis) => value + (keyed?.rotation[axis] ?? 0)),
+      translation: keyed?.translation ?? translation, scale: keyed?.scale.map(value => 1 + value) ?? [1, 1, 1] };
+  }
   const age = (input.time || 0) * 20;
   const side = part.name.startsWith('left') ? -1 : 1;
   if (part.name === 'head' || part.name === 'head_parts' || input.family === 'chicken' && !input.modernFarm && ['beak', 'red_thing'].includes(part.name)) rotation = [(part.name === 'head_parts' ? part.rotation[0] : 0) + (input.pitch || 0), input.headYaw || 0, 0];
@@ -292,6 +299,7 @@ export function drawEntityModel(writer, name, context, input = {}, options = {})
     transforms.push({ matrix, position });
     visibility.push(!options.hiddenParts?.has(part.name) && (part.parent === null || visibility[part.parent]));
     if (!visibility[index]) continue;
+    if (options.skipDrawParts?.has(part.name)) continue;
     if (options.parts && !options.parts.has(part.name)) continue;
     if (options.hideHat && ['hat', 'hat_rim'].includes(part.name)) continue;
     const age = ageTransform(part, model, input);
@@ -305,7 +313,7 @@ export function drawEntityModel(writer, name, context, input = {}, options = {})
       const layer = part.cubes[cube].layer;
       if (layer && options.playerCustomization !== undefined && !(options.playerCustomization & layer)) continue;
       const normalMatrix = input.keyframes?.size ? inverseTranspose(matrix) : age && age.scale.some(value => value !== age.scale[0]) ? matrix.map((value, index) => value / age.scale[Math.floor(index / 3)] ** 2) : undefined;
-      writer.triangles(part.geometry[cube], context, { matrix, position, normalMatrix, tile: options.tile ?? context.skin?.tile ?? -1, tint: options.tint || [1, 1, 1], flags: options.flags ?? 32, inflation: options.inflation ?? 0, reversed: true, uvOffset: options.uvOffset });
+      writer.triangles(part.geometry[cube], context, { matrix, position, normalMatrix, tile: options.tile ?? context.skin?.tile ?? -1, tint: options.tint || [1, 1, 1], flags: options.flags ?? 32, inflation: options.inflation ?? 0, reversed: true, uvOffset: options.uvOffset, alpha: options.alpha });
     }
   }
   return { model, transforms };

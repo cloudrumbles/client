@@ -6,7 +6,7 @@ import { ResolutionController, summarizeFrames, summarizeGpuTimes } from './perf
 import { BrowserWorld } from './world.js';
 import { loadMinecraftRegistry } from './registry.js';
 import { loadResourcePack } from './assets.js';
-import { importAnvil, importLevelDat, validateImportBounds } from './anvil.js';
+import { importAnvil, importLevelDat, validateImportBounds, registryStates } from './anvil.js';
 import { MinecraftSession, simplifyNbt } from './minecraft.js';
 import { MinecraftAudio } from './audio.js';
 import { MinecraftEffects } from './effects.js';
@@ -26,7 +26,11 @@ import { ServerGameplay } from './gameplay.js';
 import { storeResourcePack, restoreResourcePack } from './pack-store.js';
 import { AuthorityWorldBridge } from '../authority/bridge.js';
 import { BreakingOverlay } from './breaking-overlay.js';
+import { EnvironmentRuntime } from './environment-runtime.js';
 import { readSourceLevelInventory, unavailableSourceLevelInventory, storeSourceLevelInventory, restoreSourceLevelInventory } from './source-level-inventory.js';
+import { classifySourceRegionFiles, readSourceWorldItems, unavailableSourceWorldItems, storeSourceWorldItems, restoreSourceWorldItems } from './source-world-items.js';
+import { SourceGeneratedWorld } from '../generation/source-generated-world.js';
+import { SOURCE_DIMENSIONS, sourceSeed, validateSourceWorld, storeSourceWorld, restoreSourceWorld } from '../generation/source-world-state.js';
 
 const $ = id => document.getElementById(id);
 const seed = 1650;
@@ -40,6 +44,7 @@ let controller = new ResolutionController(scale);
 let lastTime = 0, accumulator = 0, hudAt = 0, frames = [], benchmark = null, lastResult = null;
 let saveTimer;
 let worldAge = 0n, worldAgeAt = 0;
+let worldDayTime = 0n, dayTimeAt = 0, localDimensionType = 'minecraft:overworld';
 const gameTime = () => worldAge + BigInt(Math.max(0, Math.floor((performance.now() - worldAgeAt) / 50)));
 let saveDirty = false;
 let localWorldClient = null, localWorldActive = false, userPackFile = null, packIsServer = false, connectionEpoch = 0;
@@ -48,8 +53,13 @@ let serverMapKey = '';
 let importedAuthority = null, authorityEpoch = 0, authorityClosing = Promise.resolve(), authoritySaveTimer;
 let localInventory = null, inventoryEpoch = 0, inventoryClosing = Promise.resolve();
 let sourceInventorySaving = Promise.resolve();
+let sourceItemsSaving = Promise.resolve(), localItemScene = null;
 let breaking = null, localBreakingId = null, breakingClock = 0;
+let environment = null, fogBiomeTags = null;
+const fogRegistries = new Map();
 let worldResetting = Promise.resolve();
+let generatedWorld = null, generatedMetadata = null;
+let packRebuilds = 0;
 let authoritySaving = null, authorityIngestDepth = 0, authorityColumnsRunning = false;
 const authorityColumns = new Map();
 
@@ -58,8 +68,20 @@ function closeImportedInventory() {
   const previous = localInventory; localInventory = null;
   if (previous && gameplay === previous.gameplay) gameplay = null;
   const closing = previous ? previous.close() : Promise.resolve();
+  if (localItemScene) {
+    localItemScene.clear();
+    if (entities === localItemScene) entities = null;
+    localItemScene = null;
+  }
   inventoryClosing = Promise.all([inventoryClosing.catch(authorityWarning), closing]).then(() => {});
   return inventoryClosing;
+}
+function sourceGroundItemsNote() {
+  const source = localInventory?.sourceItems;
+  if (source?.unavailable) return ' · saved ground items preserved for later loading';
+  const deferred = localInventory?.worldItems?.state.deferred.length;
+  if (deferred) return ` · ${deferred} ground item${deferred === 1 ? '' : 's'} preserved for native component loading`;
+  return source?.externalEntityRegionsProvided === false ? ' · ground items cover selected terrain files only' : '';
 }
 async function saveImportedInventory() {
   const inventory = localInventory;
@@ -67,12 +89,19 @@ async function saveImportedInventory() {
   try { await inventory.save(); }
   catch (error) { if (localInventory === inventory && !inventory.closed) throw error; }
 }
-async function openImportedInventory(guard = () => true, sourceInventory) {
+async function openImportedInventory(guard = () => true, sourceInventory, sourceItems) {
   await inventoryClosing;
   if (!guard() || mode !== 'import' || session) return null;
   const epoch = connectionEpoch, generation = world.generation, token = ++inventoryEpoch;
   const current = () => guard() && connectionEpoch === epoch && world.generation === generation && inventoryEpoch === token && mode === 'import' && !session;
   await sourceInventorySaving.catch(error => { if (current()) status(`Source inventory cache unavailable: ${error.message}`); });
+  if (!current()) return null;
+  await sourceItemsSaving.catch(error => { if (current()) status(`Source ground item cache unavailable: ${error.message}`); });
+  if (!current()) return null;
+  if (sourceItems == null) {
+    try { sourceItems = await restoreSourceWorldItems(world.worldKey, { isCurrent: current }); }
+    catch (error) { sourceItems = unavailableSourceWorldItems(error, { version: registry.version.minecraftVersion }); }
+  }
   if (!current()) return null;
   if (sourceInventory == null) {
     try { sourceInventory = await restoreSourceLevelInventory(world.worldKey, { isCurrent: current }); }
@@ -91,8 +120,26 @@ async function openImportedInventory(guard = () => true, sourceInventory) {
     if (!current()) { await inventory?.close({ save: false }); return null; }
     localInventory = inventory;
     if (inventory) {
+      inventory.sourceItems = sourceItems;
       gameplay = inventory.gameplay;
       player.onFlyingChange = value => { if (current()) inventory.session.setFlying(value); };
+      const itemScene = new EntityScene({ renderer, registry, materials: world.materialRegistry.materials, atlas: pack?.atlas,
+        getLight: position => sceneLight(...position.map(Math.floor)) });
+      itemScene.maps = maps; localItemScene = entities = itemScene;
+      try {
+        await inventory.attachWorldItems({ sourceItems,
+          sample: (x, y, z) => { const material = world.materialRegistry.materials.get(core.block_get(x, y, z)); return { material, flags: material?.flags ?? 0 }; },
+          loaded: (x, z) => Boolean(core.world_column_loaded(x, z)), bounds: () => world.bounds(),
+          collisionRevision: () => `${world.sourceRevision}:${core.world_origin_x()}:${core.world_origin_z()}`,
+          collisionBoxes: bounds => blockEntities?.collisionBoxes(bounds) ?? [], ultraWarm: localDimensionType === 'minecraft:the_nether',
+          onEvent: event => { if (current() && entities === itemScene) itemScene.consume(event); } });
+        if (!current()) { await inventory.close({ save: false }); return null; }
+        const deferred = inventory.worldItems?.state.deferred.length;
+        if (deferred) status(`${deferred} source ground item${deferred === 1 ? '' : 's'} preserved for native component loading.`);
+      } catch (error) {
+        itemScene.clear(); if (entities === itemScene) entities = null; if (localItemScene === itemScene) localItemScene = null;
+        if (current()) status(`Source ground items preserved for later loading: ${error.message}`);
+      }
     }
     return inventory;
   } catch (error) {
@@ -104,6 +151,38 @@ async function openImportedInventory(guard = () => true, sourceInventory) {
 
 function clearBreaking() {
   breaking?.destroy(); breaking = null; localBreakingId = null; breakingClock = 0;
+}
+function configureEnvironment({ reset = false } = {}) {
+  if (!world || !registry) return;
+  const version = registry.version.minecraftVersion;
+  if (!environment || environment.version !== version) environment = new EnvironmentRuntime({ version });
+  else if (reset) environment.reset();
+  const dimensionId = session?.state.dimensionType ?? localDimensionType;
+  environment.configure({ world, registry, atlas: pack?.atlas, registries: session?.adapter.modern ? session.adapter.registries : fogRegistries,
+    dimensionId, dimensionName: session?.state.dimension ?? localDimensionType, dimension: session?.dimensionTypes.get(dimensionId), biomeTags: fogBiomeTags });
+}
+function nativeDayTime() {
+  if (importedAuthority && authorityCurrent(importedAuthority)) return importedAuthority.state.daytime;
+  if (session?.adapter.version === '26.1') {
+    const clockId = session.dimensionTypes.get(session.state.dimensionType)?.default_clock ?? 'minecraft:overworld';
+    const clock = session.clockStates.get(clockId); if (clock) return nativeClockTime(clock);
+  }
+  return BigInt.asIntN(64, worldDayTime + ($('cycle').checked ? BigInt(Math.max(0, Math.floor((performance.now() - dayTimeAt) / 50))) : 0n));
+}
+function nativeClocks() {
+  if (session?.adapter.version !== '26.1') return undefined;
+  return new Map([...session.clockStates].map(([name, clock]) => [name, nativeClockTime(clock)]));
+}
+function nativeClockTime(clock) { return BigInt.asIntN(64, clock.totalTicks + BigInt(Math.floor(clock.partialTick + ($('cycle').checked ? (performance.now() - clock.receivedAt) / 50 * clock.rate : 0)))); }
+function tickEnvironment() {
+  environment?.tick(player, { dayTime: nativeDayTime(), clocks: nativeClocks(), weather: effects?.weather(), spectator: session?.state.gameMode === 3, sourceEffects: session?.state.effects ?? [], simplify: simplifyNbt });
+}
+function environmentFog(now) {
+  if (!ready || !environment) return null;
+  return environment.sample(player, { nowMs: now, partialTick: Math.min(1, player.accumulator * 20),
+    aspect: $('world').width / $('world').height, farPlane: renderer.stats().farPlane, renderDistanceChunks: session?.state.viewDistance ?? 8,
+    weather: effects?.weather(), skyFlash: effects?.lightningTicks ?? 0, spectator: session?.state.gameMode === 3,
+    voidRange: session?.state.isFlat ? 1 : 32, dayTime: nativeDayTime() });
 }
 function updateBreaking(dt) {
   if (!breaking) return;
@@ -226,7 +305,7 @@ async function openImportedAuthority(guard = () => true) {
     if (!current()) { await bridge.close({ save: false }); return null; }
     importedAuthority = bridge;
     if (!bridge.authority.initial.restored) {
-      await bridge.authority.setTime(BigInt(Math.floor(phase * 24000)), $('cycle').checked);
+      await bridge.authority.setTime(worldDayTime, $('cycle').checked);
       if (!current()) return null;
       await persistAuthority(bridge);
     } else phase = Number((bridge.state.daytime % 24000n + 24000n) % 24000n) / 24000;
@@ -271,6 +350,7 @@ function flushSave() {
   catch { $('world-status').textContent = 'Save storage is full; this session remains playable'; }
 }
 function saveImportedLocation() {
+  saveGeneratedLocation();
   if (mode !== 'import' || !ready || loadingWorld || benchmark) return;
   try {
     const previous = JSON.parse(localStorage.getItem('pomme-last-import') || 'null');
@@ -386,6 +466,7 @@ function configureMaps({ resetAtlas = false } = {}) {
 }
 function refreshScenes() {
   clearBreaking();
+  configureEnvironment();
   blockEntities?.clear(); effects?.destroy();
   setLanguage(pack?.languages ?? null);
   const materials = world.materialRegistry?.materials ?? pack?.materials;
@@ -423,6 +504,8 @@ function refreshScenes() {
   for (const column of world.columns.values()) blockEntities?.loadColumn(column);
 }
 async function resetWorld(options, guard = () => true) {
+  const { preserveEnvironment = false, ...worldOptions } = options;
+  if (guard()) closeGeneratedWorld({ clearMetadata: options.worldKey !== generatedMetadata?.worldKey });
   clearBreaking();
   const closing = closeImportedAuthority();
   // World.reset closes several stores asynchronously. Serialize resets so an
@@ -430,10 +513,11 @@ async function resetWorld(options, guard = () => true) {
   const pending = worldResetting.catch(() => {}).then(async () => {
     await closing;
     if (!guard()) return;
+    if (!preserveEnvironment) environment?.reset();
     blockEntities?.clear(); effects?.clear();
     clearPlayerState();
-    await world.reset({ atlas: pack?.atlas, colormaps: pack?.atlas?.colormaps, biomeDefinitions: pack?.atlas?.biomeDefinitions, biomeSeed: session?.state.biomeSeed ?? 0n, ...options });
-    if (guard()) refreshScenes();
+    await world.reset({ atlas: pack?.atlas, colormaps: pack?.atlas?.colormaps, biomeDefinitions: pack?.atlas?.biomeDefinitions, biomeSeed: session?.state.biomeSeed ?? 0n, ...worldOptions });
+    if (guard()) { refreshScenes(); attachGeneratedWorld(); }
   });
   worldResetting = pending;
   await pending;
@@ -446,6 +530,7 @@ function updateRidingState({ teleport = false } = {}) {
 }
 function applyPlayerState(state) {
   player.setEffects(state.effects);
+  environment?.syncEffects(player, state.effects, simplifyNbt);
   const sleepingPosition = state.sleepingPosition;
   player.setSleeping(state.status === 'playing' && (state.pose === 2 || state.pose === 'sleeping' || Boolean(sleepingPosition)), { position: sleepingPosition ? [sleepingPosition.x, sleepingPosition.y, sleepingPosition.z] : null });
   if (state.gliding !== undefined) player.setFallFlying(state.gliding);
@@ -519,7 +604,13 @@ async function installPack(next, cacheWarning = '', { guard = () => true, nextRe
   packStatus(next, cacheWarning);
   if (mode !== 'demo') {
     const columns = [...world.columns.values()], bounds = world.bounds();
-    await resetWorld({ registry, materials: next?.materials, minY: bounds.min[1], height: bounds.max[1] - bounds.min[1], originX: bounds.min[0] / 16, originZ: bounds.min[2] / 16, hasSkylight: world.hasSkylight, worldKey: world.worldKey, mode }, guard);
+    const wasReady = ready;
+    // Rebuilding the core temporarily removes every column. Pause native
+    // player/effect ticks until the retained terrain and state are restored.
+    ready = false;
+    packRebuilds++;
+    try {
+    await resetWorld({ registry, materials: next?.materials, minY: bounds.min[1], height: bounds.max[1] - bounds.min[1], originX: bounds.min[0] / 16, originZ: bounds.min[2] / 16, hasSkylight: world.hasSkylight, worldKey: world.worldKey, biomeSeed: world.biomeSeed, mode, preserveEnvironment: true }, guard);
     if (!guard()) return;
     if (mode === 'import') world.setOverlay(persistedEdits());
     for (const column of columns) world.ingestColumn(column);
@@ -528,10 +619,9 @@ async function installPack(next, cacheWarning = '', { guard = () => true, nextRe
       if (!guard()) return;
       await openImportedInventory(guard);
       if (!guard()) return;
-      await updateAuthorityRunning();
     }
-    entities?.clear();
     if (mode === 'server' && session) {
+      entities?.clear();
       entities = new EntityScene({ renderer, registry, registries: session.adapter.registries, materials: next?.materials ?? world.materialRegistry.materials, atlas: next?.atlas,
         getLight: position => sceneLight(...position.map(Math.floor)) });
       entities.maps = maps;
@@ -541,6 +631,8 @@ async function installPack(next, cacheWarning = '', { guard = () => true, nextRe
       applyPlayerState(session.state);
       updateFireworkBoost();
     }
+    } finally { packRebuilds--; if (guard()) ready = wasReady; }
+    if (mode === 'import' && guard()) await updateAuthorityRunning();
   } else { refreshScenes(); audio?.setMusicMode('menu'); }
   status(next ? 'Minecraft textures and models loaded' : 'Using native materials without imported textures');
   return next;
@@ -554,7 +646,10 @@ function updateFireworkBoost() {
   })));
 }
 function detachServer() {
+  saveGeneratedLocation();
+  closeGeneratedWorld({ clearMetadata: true });
   clearBreaking();
+  environment?.reset(); fogRegistries.clear(); fogBiomeTags = null;
   void closeImportedAuthority().catch(authorityWarning);
   const epoch = ++connectionEpoch;
   const previous = session, previousPacks = serverPacks; session = null; serverPacks = null;
@@ -581,6 +676,104 @@ async function restoreBasePack(epoch) {
 async function leaveServer() {
   await restoreBasePack(detachServer());
 }
+function closeGeneratedWorld({ clearMetadata = false } = {}) {
+  generatedWorld?.close(); generatedWorld = null;
+  if (clearMetadata) generatedMetadata = null;
+}
+function attachGeneratedWorld() {
+  if (!generatedMetadata || generatedMetadata.worldKey !== world.worldKey || mode !== 'import' || session) return;
+  generatedWorld?.close();
+  const native = registryStates(registry);
+  generatedWorld = new SourceGeneratedWorld({ world,
+    context: { worldKey: generatedMetadata.worldKey, seed: generatedMetadata.seed, dimension: generatedMetadata.dimension, version: '1.21.11' },
+    registry: { version: registry.version.minecraftVersion, lookup: native.lookup, biomes: registry.biomes },
+    onError: error => { $('browser-world-status').textContent = `Terrain streaming paused: ${error.message}`; },
+  });
+}
+function saveGeneratedLocation() {
+  if (!generatedMetadata || !ready || loadingWorld || benchmark || session || generatedMetadata.worldKey !== world?.worldKey) return;
+  const captured = validateSourceWorld({ ...generatedMetadata, spawn: player.position, dayTime: String(nativeDayTime()), cycle: $('cycle').checked });
+  generatedMetadata = captured;
+  const saving = Promise.all([storeSourceWorld(captured), persistAuthority()]);
+  void saving.catch(error => { $('browser-world-status').textContent = `World settings could not be saved: ${error.message}`; });
+  return saving;
+}
+function generatedSpawn(preferred, dimension) {
+  const emptyAt = position => !core.collides_aabb(position[0] - .3, position[1], position[2] - .3, position[0] + .3, position[1] + 1.8, position[2] + .3);
+  const dryAt = position => ![0, 1].some(offset => {
+    const material = world.materialRegistry.materials.get(core.block_get(Math.floor(position[0]), Math.floor(position[1]) + offset, Math.floor(position[2])));
+    return fluidState(material, material?.flags ?? 0).kind;
+  });
+  if (world.contains(Math.floor(preferred[0] / 16), Math.floor(preferred[2] / 16)) && core.world_column_loaded(Math.floor(preferred[0] / 16), Math.floor(preferred[2] / 16)) && emptyAt(preferred) && dryAt(preferred)
+      && core.collides_aabb(preferred[0] - .2, preferred[1] - .05, preferred[2] - .2, preferred[0] + .2, preferred[1], preferred[2] + .2)) return preferred.slice();
+  const cx = Math.floor(preferred[0] / 16), cz = Math.floor(preferred[2] / 16);
+  const { minY, height } = SOURCE_DIMENSIONS[dimension];
+  const columns = [8, 4, 12, 1, 15];
+  const top = dimension === 'minecraft:the_nether' ? 120 : minY + height - 2;
+  for (const dx of columns) for (const dz of columns) for (let y = top; y > minY; y--) {
+    const position = [cx * 16 + dx + .5, y, cz * 16 + dz + .5];
+    if (emptyAt(position) && dryAt(position) && core.collides_aabb(position[0] - .2, y - .05, position[2] - .2, position[0] + .2, y, position[2] + .2)) return position;
+  }
+  const x = cx * 16 + 8, z = cz * 16 + 8;
+  return [x + .5, Math.max(minY + 2, core.terrain_height(x, z) + 2), z + .5];
+}
+async function openGeneratedWorld(settings, { resume = false } = {}) {
+  let saved = validateSourceWorld(settings);
+  await leaveServer();
+  const epoch = connectionEpoch, active = () => connectionEpoch === epoch && !session;
+  if (document.pointerLockElement) document.exitPointerLock();
+  await resourcePackSaving.catch(() => {});
+  if (!active()) return;
+  if (!pack) { const cached = await restoreResourcePack(); if (cached) await loadPack(cached); }
+  if (!active() || !await selectRegistryVersion('1.21.11', { guard: active })) return;
+  const retained = await restoreSourceWorld(saved.worldKey, { isCurrent: active });
+  if (!active()) return;
+  if (retained && (retained.seed !== saved.seed || retained.dimension !== saved.dimension)) throw new Error('Saved terrain settings do not match this world.');
+  if (!retained) await storeSourceWorld(saved, { isCurrent: active });
+  if (!active()) return;
+  generatedMetadata = retained ?? saved;
+  saved = generatedMetadata;
+  mode = 'import'; loadingWorld = true; ready = false; $('play').disabled = true;
+  serverDimension = null; serverStatus = null;
+  localDimensionType = saved.dimension; worldDayTime = BigInt(generatedMetadata.dayTime); dayTimeAt = performance.now();
+  $('cycle').checked = generatedMetadata.cycle;
+  phase = Number((worldDayTime % 24000n + 24000n) % 24000n) / 24000;
+  const biomeSeed = await hashBiomeSeed(BigInt(saved.seed));
+  if (!active()) return;
+  switchSaveKey(`pomme-web-edits:${saved.worldKey}`);
+  await resetWorld({ registry, materials: pack?.materials, ...SOURCE_DIMENSIONS[saved.dimension], worldKey: saved.worldKey, biomeSeed, mode,
+    originX: Math.floor(saved.spawn[0] / 16) - 8, originZ: Math.floor(saved.spawn[2] / 16) - 8 }, active);
+  if (!active()) return;
+  world.setOverlay(persistedEdits());
+  await generatedWorld.ensureColumn(Math.floor(saved.spawn[0] / 16), Math.floor(saved.spawn[2] / 16));
+  if (!active()) return;
+  const spawn = generatedSpawn(saved.spawn, saved.dimension);
+  nativeHotbar(); player.setPosition(spawn); player.fly = false;
+  await openImportedAuthority(active);
+  if (!active()) return;
+  await openImportedInventory(active, { present: false });
+  if (!active()) return;
+  loadingWorld = false; ready = true;
+  await updateAuthorityRunning();
+  if (!active()) return;
+  generatedMetadata = validateSourceWorld({ ...generatedMetadata, spawn, dayTime: String(nativeDayTime()) });
+  await storeSourceWorld(generatedMetadata, { isCurrent: active });
+  if (!active()) return;
+  $('resume-generated').hidden = false;
+  $('play').disabled = false; $('welcome').hidden = true; $('pause').hidden = false;
+  $('browser-world-status').textContent = `${saved.name} · Java 1.21.11 · seed ${saved.seed} · saved on this device${resume ? ' · restored' : ''}`;
+  status(`${saved.name} · browser terrain ready`);
+}
+async function createGeneratedWorld({ name = 'Browser world', seed = '1650', dimension = 'minecraft:overworld' } = {}) {
+  const settings = validateSourceWorld({ schemaVersion: 1, kind: 'source-generated', version: '1.21.11', worldKey: `generated:1.21.11:${crypto.randomUUID()}`,
+    name: String(name).trim() || 'Browser world', seed: sourceSeed(seed), dimension, spawn: [8.5, 80, 8.5], dayTime: '5280', cycle: true });
+  return openGeneratedWorld(settings);
+}
+async function resumeGeneratedWorld() {
+  const saved = await restoreSourceWorld();
+  if (!saved) throw new Error('No saved browser terrain world is available.');
+  return openGeneratedWorld(saved, { resume: true });
+}
 async function resumeImported() {
   const saved = JSON.parse(localStorage.getItem('pomme-last-import') || 'null');
   if (!saved?.worldKey || !Array.isArray(saved.spawn) || !saved.spawn.every(Number.isFinite)) throw new Error('No saved Java world is available.');
@@ -591,6 +784,8 @@ async function resumeImported() {
   const active = () => connectionEpoch === epoch && !session;
   if (saved.version && !await selectRegistryVersion(saved.version, { guard: () => connectionEpoch === epoch })) return;
   mode = 'import'; loadingWorld = true; ready = false;
+  localDimensionType = saved.dimensionType ?? 'minecraft:overworld';
+  worldDayTime = BigInt(saved.dayTime ?? 0); dayTimeAt = performance.now();
   switchSaveKey(`pomme-web-edits:${saved.worldKey}`);
   await resetWorld({ registry, materials: pack?.materials, minY: saved.minY, height: saved.height, hasSkylight: saved.hasSkylight,
     originX: Math.floor(saved.spawn[0] / 16) - 8, originZ: Math.floor(saved.spawn[2] / 16) - 8, worldKey: saved.worldKey, biomeSeed: BigInt(saved.biomeSeed ?? 0), mode }, active);
@@ -609,16 +804,17 @@ async function resumeImported() {
   loadingWorld = false; ready = true;
   await updateAuthorityRunning();
   $('play').disabled = false; $('welcome').hidden = true; $('pause').hidden = false;
-  status(`${saved.name} · restored from browser storage`);
+  status(`${saved.name} · restored from browser storage${sourceGroundItemsNote()}`);
 }
-async function importFiles(files, { version, minY, height, hasSkylight = true } = {}) {
+async function importFiles(files, { version, minY, height, hasSkylight = true, dimensionType = 'minecraft:overworld', entityRegions = [] } = {}) {
   await leaveServer();
   const epoch = connectionEpoch, active = () => connectionEpoch === epoch && !session;
   if (document.pointerLockElement) document.exitPointerLock();
-  const regions = [...files].filter(file => /\.mca$/i.test(file.name));
+  const { terrainRegions: regions, entityRegions: entityFiles } = classifySourceRegionFiles(files, { entityRegions });
   if (!regions.length) throw new Error('Select one or more r.x.z.mca files from your Java world’s region folder.');
-  if (regions.length > 64 || regions.reduce((sum, file) => sum + file.size, 0) > 256 * 1024 * 1024) throw new Error('Import at most 64 region files, totaling 256 MB.');
-  const level = [...files].find(file => file.name === 'level.dat');
+  const allRegions = [...regions, ...entityFiles];
+  if (allRegions.length > 64 || allRegions.reduce((sum, file) => sum + file.size, 0) > 256 * 1024 * 1024) throw new Error('Import at most 64 region files, totaling 256 MB.');
+  const level = [...files].find(file => file.name === 'level.dat' && (!(file.webkitRelativePath ?? '') || file.webkitRelativePath.replaceAll('\\', '/').split('/').length === 2));
   const metadata = level ? await importLevelDat(level) : null;
   if (!active()) return null;
   let sourceInventory = null;
@@ -635,6 +831,15 @@ async function importFiles(files, { version, minY, height, hasSkylight = true } 
   if (!active()) return null;
   const targetVersion = version ?? (BROWSER_PROTOCOL_VERSIONS.includes(metadata?.version) ? metadata.version : registry?.version.minecraftVersion ?? '1.20.4');
   if (!await selectRegistryVersion(targetVersion, { guard: active })) return null;
+  let sourceItems;
+  try { sourceItems = await readSourceWorldItems(entityFiles.length ? entityFiles : regions, { version: metadata?.version ?? targetVersion, dataVersion: metadata?.dataVersion, isCurrent: active }); }
+  catch (error) {
+    if (!active()) return null;
+    sourceItems = unavailableSourceWorldItems(error, { version: metadata?.version ?? targetVersion, dataVersion: metadata?.dataVersion });
+    status(`Source ground items preserved for later loading: ${error.message}`);
+  }
+  if (!active()) return null;
+  sourceItems.externalEntityRegionsProvided = entityFiles.length > 0;
   const explicitBounds = minY !== undefined || height !== undefined;
   if (explicitBounds && (minY === undefined || height === undefined)) throw new Error('Supply both minY and height for a custom imported dimension.');
   let dimension = validateImportBounds(minY ?? -64, height ?? 384);
@@ -642,12 +847,19 @@ async function importFiles(files, { version, minY, height, hasSkylight = true } 
   if (!first) throw new Error('Keep the original r.x.z.mca region filenames.');
   const spawn = metadata?.spawn ?? [Number(first[1]) * 512 + 8, 100, Number(first[2]) * 512 + 8];
   mode = 'import'; serverDimension = null;
+  if (typeof dimensionType !== 'string' || !/^[a-z0-9_.-]+:[a-z0-9_./-]{1,128}$/.test(dimensionType)) throw new Error('Imported dimension type requires a native resource location.');
+  localDimensionType = dimensionType;
   const dimensionKey = explicitBounds ? `${dimension.minY}:${dimension.height}` : 'source-bounds';
-  const worldKey = `import:${targetVersion}:${dimensionKey}:${hasSkylight ? 'sky' : 'no-sky'}:${regions.map(file => `${file.name}:${file.size}:${file.lastModified}`).sort().join('|')}`;
+  const worldKey = `import:${targetVersion}:${dimensionKey}:${hasSkylight ? 'sky' : 'no-sky'}:${dimensionType === 'minecraft:overworld' ? '' : `${dimensionType}:`}${regions.map(file => `${file.name}:${file.size}:${file.lastModified}`).sort().join('|')}`;
   if (sourceInventory) {
     const saving = storeSourceLevelInventory(worldKey, sourceInventory, { isCurrent: active });
     sourceInventorySaving = Promise.all([sourceInventorySaving.catch(() => {}), saving]).then(() => {});
     void sourceInventorySaving.catch(() => {});
+  }
+  if (sourceItems) {
+    const saving = storeSourceWorldItems(worldKey, sourceItems, { isCurrent: active });
+    sourceItemsSaving = Promise.all([sourceItemsSaving.catch(() => {}), saving]).then(() => {});
+    void sourceItemsSaving.catch(() => {});
   }
   switchSaveKey(`pomme-web-edits:${worldKey}`);
   loadingWorld = true; ready = false; $('play').disabled = true;
@@ -730,18 +942,19 @@ async function importFiles(files, { version, minY, height, hasSkylight = true } 
   }
   player.setPosition(spawn); player.fly = false;
   phase = metadata?.dayTime != null ? Number(BigInt(metadata.dayTime) % 24000n) / 24000 : 0.22;
+  worldDayTime = BigInt(metadata?.dayTime ?? Math.floor(phase * 24000)); dayTimeAt = performance.now();
   await openImportedAuthority(active);
   if (!active()) return null;
-  await openImportedInventory(active, sourceInventory);
+  await openImportedInventory(active, sourceInventory, sourceItems);
   if (!active()) return null;
   loadingWorld = false; ready = true;
   await updateAuthorityRunning();
   if (!active()) return null;
   $('play').disabled = false; $('welcome').hidden = true; $('pause').hidden = false;
-  try { localStorage.setItem('pomme-last-import', JSON.stringify({ worldKey, version: registry.version.minecraftVersion, ...dimension, hasSkylight,
+  try { localStorage.setItem('pomme-last-import', JSON.stringify({ worldKey, version: registry.version.minecraftVersion, ...dimension, hasSkylight, dimensionType, dayTime: String(nativeDayTime()),
     spawn: player.position, phase, biomeSeed: String(biomeSeed), name: metadata?.name || 'Java world' })); } catch {}
   const scope = importedAuthority?.stats();
-  status(`${metadata?.name || 'Java world'} · ${count} chunks imported${skipped ? ` · ${skipped} unsupported entries` : ''}${scope ? ` · ${scope.sections} sections with lever/button/lamp ticks` : ' · local block editing'} ` .trim());
+  status(`${metadata?.name || 'Java world'} · ${count} chunks imported${skipped ? ` · ${skipped} unsupported entries` : ''}${scope ? ` · ${scope.sections} sections with lever/button/lamp ticks` : ' · local block editing'}${sourceGroundItemsNote()}`);
   return { chunks: count, skipped };
 }
 async function connectServer(options) {
@@ -781,6 +994,7 @@ async function connectServer(options) {
             // The native client replaces its local player while retaining the
             // ClientLevel, chunks and remote entities on same-dimension respawn.
             clearPlayerState();
+            configureEnvironment({ reset: true });
             signEditor?.close(false);
             firstPerson?.clear();
             player.setPosition(player.position, state.respawnPosition ?? { yaw: 0, pitch: 0 });
@@ -806,7 +1020,7 @@ async function connectServer(options) {
       connectedSession.acknowledgePosition?.(position.teleportId);
       world.updateCamera(player.eye); ready = true;
     }),
-    onTime: time => { if (!active()) return; worldAge = time.worldAge; worldAgeAt = performance.now(); phase = ((Number(time.timeOfDay) / 24000) + 1) % 1; $('cycle').checked = time.daylightCycle; },
+    onTime: time => { if (!active()) return; worldAge = time.worldAge; worldAgeAt = performance.now(); worldDayTime = time.dayTime; dayTimeAt = worldAgeAt; phase = ((Number(time.timeOfDay) / 24000) + 1) % 1; $('cycle').checked = time.daylightCycle; },
     onInventory: inventory => { if (!active()) return; gameplay?.inventory(inventory); applyPlayerState(session.state); },
     onEntity: event => serverQueue(() => {
       entities?.consume(event);
@@ -823,6 +1037,15 @@ async function connectServer(options) {
       }
       gameplay?.event(event);
       if (event.type === 'tags' || event.type === 'registry') entities?.consume(event);
+      if (event.type === 'registry') {
+        for (const [id, data] of Object.entries(event.codec ?? {})) if (Array.isArray(data.value ?? data.entries)) fogRegistries.set(id, data.value ?? data.entries);
+        configureEnvironment();
+      }
+      if (event.type === 'tags') {
+        const biomes = event.tags?.find(entry => entry.tagType === 'minecraft:worldgen/biome');
+        const tag = biomes?.tags.find(entry => entry.tagName === 'minecraft:has_closer_water_fog');
+        if (biomes) { fogBiomeTags = new Set(tag?.entries ?? []); configureEnvironment(); }
+      }
       if (event.type === 'break-progress') breaking?.event(event, Math.floor(breakingClock));
       if (event.type === 'resource-pack' || event.type === 'remove-resource-pack') {
         if (event.type === 'resource-pack' && (options.resourcePacks || $('server-packs').value) === 'prompt') { keys.clear(); if (document.pointerLockElement) document.exitPointerLock(); }
@@ -897,7 +1120,7 @@ function startBenchmark() {
 function finishBenchmark(cancelled = false, cancellationReason = 'tab hidden or renderer stopped') {
   if (!benchmark) return;
   const stats = renderer.stats();
-  lastResult = { schemaVersion: 2, build: 'pomme-web-minecraft', timestamp: new Date().toISOString(), seed, worldMode: mode, worldRevision: core.world_revision(), editCount: edits.size, cancelled, durationSeconds: (performance.now() - benchmark.start) / 1000, quality: $('quality').value, outputPixels: [$('world').width, $('world').height], renderPixels: [stats.renderWidth, stats.renderHeight], scale, dayPhase: phase, clock: 'requestAnimationFrame intervals (includes browser pacing)', frames: summarizeFrames(benchmark.frames), gpuClock: benchmark.gpu.length ? 'WebGPU timestamp-query' : 'unavailable', gpu: summarizeGpuTimes(benchmark.gpu), renderer: stats, distantTerrain: world.distant?.stats(), userAgent: navigator.userAgent, limits: 'WebGPU shaders inspired by Photon; original GLSL packs and Java mods are not directly loaded. Hardware results must be measured on the target GPU.' };
+  lastResult = { schemaVersion: 2, build: 'pomme-web-minecraft', timestamp: new Date().toISOString(), seed: generatedMetadata?.seed ?? seed, sourceGeneration: generatedMetadata ? { version: generatedMetadata.version, dimension: generatedMetadata.dimension, stages: ['biomes', 'noise', 'surface'] } : null, worldMode: mode, worldRevision: core.world_revision(), editCount: edits.size, cancelled, durationSeconds: (performance.now() - benchmark.start) / 1000, quality: $('quality').value, outputPixels: [$('world').width, $('world').height], renderPixels: [stats.renderWidth, stats.renderHeight], scale, dayPhase: phase, clock: 'requestAnimationFrame intervals (includes browser pacing)', frames: summarizeFrames(benchmark.frames), gpuClock: benchmark.gpu.length ? 'WebGPU timestamp-query' : 'unavailable', gpu: summarizeGpuTimes(benchmark.gpu), renderer: stats, distantTerrain: world.distant?.stats(), userAgent: navigator.userAgent, limits: 'WebGPU shaders inspired by Photon; original GLSL packs and Java mods are not directly loaded. Hardware results must be measured on the target GPU.' };
   if (cancelled) lastResult.cancellationReason = cancellationReason;
   lastResult.samples = { frameIntervalsMs: [...benchmark.frames], gpuDurationsMs: [...benchmark.gpu], gpuPasses: [...benchmark.gpuPasses] };
   lastResult.gpuProfileCapture = { warmupSeconds: 2, routeSeconds: 30, timestampUnit: 'nanoseconds; exact decimal strings',
@@ -943,11 +1166,21 @@ function frame(now) {
         if ($('cycle').checked) phase = Number((importedAuthority.state.daytime % 24000n + 24000n) % 24000n) / 24000;
       } else if ($('cycle').checked) phase = (phase + Math.min(elapsedMs, 250) / 1_200_000) % 1;
       accumulator += dt;
-      while (accumulator >= 1 / 120) { player.step(1 / 120, locked && !gameplay?.blocking && !signEditor?.blocking ? keys : new Set()); accumulator -= 1 / 120; }
+      while (accumulator >= 1 / 120) {
+        const tick = player.motionTime;
+        player.step(1 / 120, locked && !gameplay?.blocking && !signEditor?.blocking ? keys : new Set());
+        if (player.motionTime !== tick) tickEnvironment();
+        accumulator -= 1 / 120;
+      }
       world.updateCamera(player.eye);
+      if (generatedWorld && !loadingWorld) generatedWorld.updateCamera(player.eye);
       session?.tick(player, dt, locked && !gameplay?.blocking && !signEditor?.blocking ? keys : new Set()); gameplay?.tick(dt);
       blockEntities?.update(now / 1000, player.eye, { direction: player.direction, fov: 75 * Math.PI / 180, aspect: $('world').width / $('world').height });
       player.applyBlockMotions?.(blockEntities?.drainBlockMotions?.() ?? []);
+      if (localInventory?.worldItems) {
+        const [x, y, z] = player.position;
+        localInventory.tickWorldItems(dt, { bounds: [x - .3, y, z - .3, x + .3, y + player.height, z + .3] });
+      }
       effects?.tick(dt, { eye: player.eye, direction: player.direction, timeSeconds: now / 1000, hasSkylight: mode === 'server' ? session.state.hasSkylight : world.hasSkylight });
       audio?.updateListener({ eye: player.eye, direction: player.direction }); audio?.localTick?.(dt, { player, world, keys, session }); audio?.tick();
       const inventorySession = session ?? localInventory?.session;
@@ -959,6 +1192,7 @@ function frame(now) {
         visible: inventorySession?.state.status === 'playing' && !player.sleeping,
         leftHanded: Boolean(inventorySession?.state.leftHanded), invisible: Boolean(inventorySession?.state.invisible), skyLight: light.sky, blockLight: light.block });
       entities?.update(now / 1000, player.eye, { direction: player.direction, fov: 75 * Math.PI / 180, aspect: $('world').width / $('world').height, entityId: session?.state.entityId, gameTime: gameTime(),
+        sampleBlock: environment?.sampleBlock,
         inWaterAt: position => {
           const point = position.map(Math.floor), material = world.materialRegistry?.materials.get(core.block_get(...point));
           const fluid = fluidState(material, material?.flags ?? 0);
@@ -976,7 +1210,7 @@ function frame(now) {
   // advance the application's diagnostic revision and preserve HDR history.
   try {
     if (ready) world.irradiance?.update({ eye: player.eye, dayPhase: phase, columns: world.columns });
-    renderer.render({ eye: player.eye, yaw: player.yaw, pitch: player.pitch, timeSeconds: now / 1000, gameTime: gameTime(), dayPhase: phase, quality: $('quality').value, scale, weather: effects?.weather() });
+    renderer.render({ eye: player.eye, yaw: player.yaw, pitch: player.pitch, timeSeconds: now / 1000, gameTime: gameTime(), dayPhase: phase, quality: $('quality').value, scale, weather: effects?.weather(), environmentFog: environmentFog(now) });
   }
   catch (error) { fail(error); return; }
   if (now - hudAt > 500) {
@@ -1007,6 +1241,7 @@ async function boot() {
     onBlock: block => { breaking?.blockChanged(block, block.stateId); blockEntities?.consume({ type: 'block', ...block }); },
     onUnload: column => { breaking?.removeColumn(column.x, column.z); blockEntities?.removeColumn(column.x, column.z); },
     onReady: () => {
+      if (packRebuilds) return;
       ready = mode === 'demo' || (mode === 'server' && session?.state.status === 'playing') || (mode === 'import' && !loadingWorld);
       $('play').disabled = !ready; $('world-status').textContent = mode === 'server' ? 'World ready' : 'World ready · edits saved on this device';
       document.documentElement.dataset.engine = 'ready';
@@ -1014,7 +1249,10 @@ async function boot() {
   });
   world.initDemo(seed, stored);
   try { $('resume-import').hidden = !localStorage.getItem('pomme-last-import'); } catch {}
-  window.pomme = { get core() { return core; }, get player() { return player; }, get renderer() { return renderer; }, get breaking() { return breaking; }, get world() { return world; }, get authority() { return importedAuthority; }, get localInventory() { return localInventory; }, get session() { return session; }, get gameplay() { return gameplay; }, get entities() { return entities; }, get blockEntities() { return blockEntities; }, get signEditor() { return signEditor; }, get serverPacks() { return serverPacks; }, get firstPerson() { return firstPerson; }, get maps() { return maps; }, get effects() { return effects; }, get audio() { return audio; }, get registry() { return registry; }, get assets() { return pack; }, get mode() { return mode; }, connectServer, importFiles, resumeImported, loadPack, edit, useBlock: useImportedBlock, place: placeImported, saveAuthority: persistAuthority, saveInventory: saveImportedInventory, startBenchmark, get benchmark() { return lastResult; }, get ready() { return ready; }, get revision() { return revision; } };
+  void restoreSourceWorld().then(saved => { $('resume-generated').hidden = !saved; }).catch(() => {});
+  window.pomme = { get core() { return core; }, get player() { return player; }, get renderer() { return renderer; }, get breaking() { return breaking; }, get environment() { return environment; }, get world() { return world; }, get authority() { return importedAuthority; }, get localInventory() { return localInventory; }, get session() { return session; }, get gameplay() { return gameplay; }, get entities() { return entities; }, get blockEntities() { return blockEntities; }, get signEditor() { return signEditor; }, get serverPacks() { return serverPacks; }, get firstPerson() { return firstPerson; }, get maps() { return maps; }, get effects() { return effects; }, get audio() { return audio; }, get registry() { return registry; }, get assets() { return pack; }, get mode() { return mode; }, connectServer, importFiles, resumeImported, loadPack, edit, useBlock: useImportedBlock, place: placeImported, saveAuthority: persistAuthority, saveInventory: saveImportedInventory, startBenchmark, get benchmark() { return lastResult; }, get ready() { return ready; }, get revision() { return revision; } };
+  Object.assign(window.pomme, { createGeneratedWorld, resumeGeneratedWorld, saveGeneratedLocation });
+  Object.defineProperties(window.pomme, { generated: { get: () => generatedWorld }, generatedSettings: { get: () => generatedMetadata } });
   requestAnimationFrame(frame);
 }
 
@@ -1088,7 +1326,13 @@ $('benchmark').addEventListener('click', startBenchmark); $('export-results').ad
 $('worlds-toggle').addEventListener('click', () => { $('worlds').hidden = !$('worlds').hidden; $('worlds-toggle').setAttribute('aria-expanded', String(!$('worlds').hidden)); });
 $('resource-pack').addEventListener('change', event => { const file = event.target.files[0]; if (file) enqueue(() => loadPack(file)); });
 $('world-files').addEventListener('change', event => enqueue(() => importFiles([...event.target.files])).then(() => { $('resume-import').hidden = !localStorage.getItem('pomme-last-import'); }));
+$('world-folder').addEventListener('change', event => enqueue(() => importFiles([...event.target.files])).then(() => { $('resume-import').hidden = !localStorage.getItem('pomme-last-import'); }));
 $('resume-import').addEventListener('click', () => enqueue(resumeImported));
+$('browser-world-form').addEventListener('submit', event => {
+  event.preventDefault();
+  enqueue(() => createGeneratedWorld({ name: $('browser-world-name').value, seed: $('browser-world-seed').value, dimension: $('browser-world-dimension').value }));
+});
+$('resume-generated').addEventListener('click', () => enqueue(resumeGeneratedWorld));
 async function refreshLocalWorlds(selectedId = '') {
   const url = $('singleplayer-service').value.trim();
   if (!localWorldClient || localWorldClient.url !== url) localWorldClient = new SingleplayerClient({ url });

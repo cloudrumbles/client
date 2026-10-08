@@ -8,10 +8,11 @@ import { GpuPassProfiler } from './gpu-profile.js';
 import { BreakingMeshStore } from './breaking-mesh-store.js';
 import { CRUMBLING_RENDER_STATE } from './breaking-overlay.js';
 import { opaqueGeometryCastsShadow } from './shadow-casters.js';
+import { admitEnvironmentFog } from './render-environment-fog.js';
 
 const VERTEX_FLOATS = 14;
 const VERTEX_BYTES = VERTEX_FLOATS * 4;
-const FRAME_BYTES = 400;
+const FRAME_BYTES = 448;
 const TEMPORAL_BYTES = 208;
 const HDR_FORMAT = 'rgba16float';
 const DEPTH_FORMAT = 'depth32float';
@@ -547,6 +548,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
   let geometryRebases = 0;
   let historyIndex = 0, historyValid = false, historyUsed = false;
   let temporalResets = 0, lastTemporalReset = 'initial', previousFrame = null;
+  let environmentFogState = null;
   let jitterSequence = 0, temporalCpuMs = 0;
   let reflectionsEnabled = true;
   let translucentTriangles = 0;
@@ -1195,9 +1197,11 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     return true;
   }
 
-  function render({ eye = [64, 38, 100], yaw = 0, pitch = 0, timeSeconds = 0, gameTime = null, dayPhase = 0.22, revision = 0, quality = qualityName, scale: requestedScale = scale, reflections = true, terrainBundles = true, weather = {} } = {}) {
+  function render({ eye = [64, 38, 100], yaw = 0, pitch = 0, timeSeconds = 0, gameTime = null, dayPhase = 0.22, revision = 0, quality = qualityName, scale: requestedScale = scale, reflections = true, terrainBundles = true, weather = {}, environmentFog = null } = {}) {
     ensureAlive();
     if (breakingMeshes.fullReactive) invalidateTemporal('breaking removal overflow');
+    const fogState = admitEnvironmentFog(environmentFog);
+    environmentFogState = fogState;
     const started = performance.now();
     renderBundleEnabled = Boolean(terrainBundles);
     renderBundleEncodeCpuMs = 0;
@@ -1216,7 +1220,8 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     if (previousFrame) {
       const phaseDelta = Math.abs(normalizedPhase - previousFrame.phase);
       const yawDelta = Math.abs(Math.atan2(Math.sin(yaw - previousFrame.yaw), Math.cos(yaw - previousFrame.yaw)));
-      if (previousFrame.geometryRevision !== geometryRevision || previousFrame.revision !== revision) invalidateTemporal('world edit');
+      if (previousFrame.environmentFogType !== (fogState?.code ?? 0)) invalidateTemporal('environment fog type');
+      else if (previousFrame.geometryRevision !== geometryRevision || previousFrame.revision !== revision) invalidateTemporal('world edit');
       else if (Math.hypot(...eye.map((value, axis) => value - previousFrame.eye[axis])) > 8 || yawDelta > 0.55 || Math.abs(pitch - previousFrame.pitch) > 0.35) invalidateTemporal('camera cut');
       else if (Math.min(phaseDelta, 1 - phaseDelta) > 0.025) invalidateTemporal('day phase jump');
       else if (Math.abs(timeSeconds - previousFrame.time) > 0.75) invalidateTemporal('frame gap');
@@ -1265,6 +1270,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     frameData.set([...(irradianceVolume?.origin ?? [0, 0, 0]).map((value, axis) => value - worldConfig.renderOrigin[axis]), 1], 92);
     frameData.set([...(irradianceVolume?.dimensions ?? [1, 1, 1]), Number(Boolean(irradianceVolume))], 96);
     frameData[58] *= Math.max(1, Number(weather.fogMultiplier) || 1);
+    frameData.set(fogState ? [...fogState.color,fogState.code,fogState.start,fogState.end,fogState.skyEnd,Number(fogState.shape === 'cylinder'),fogState.renderStart,fogState.renderEnd,Number(fogState.separateRenderDistance),Number(fogState.immersed)] : [0,0,0,0,0,0,0,0,0,0,0,0],100);
     const skyUpdated = updateSkyCache(eye, normalizedPhase, timeSeconds);
     device.queue.writeBuffer(frameBuffer, 0, frameData);
     device.queue.writeBuffer(postBuffer, 0, new Float32Array([1.10 + (1 - daylight) * 0.35, preset.bloom, 0, 0]));
@@ -1570,7 +1576,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
     lastShadowSource = dynamicCasters.length ? dynamicShadowTexture : shadowTexture;
     frameCount++;
     jitterSequence++;
-    previousFrame = { eye: [...eye], renderEye, yaw, pitch, phase: normalizedPhase, geometryRevision, revision, time: timeSeconds, viewProjection, jitter };
+    previousFrame = { eye: [...eye], renderEye, yaw, pitch, phase: normalizedPhase, geometryRevision, revision, time: timeSeconds, viewProjection, jitter, environmentFogType:fogState?.code ?? 0 };
     triangles = renderedVertices / 3;
     cpuMs = performance.now() - started;
     return { shadowUpdated, skyUpdated, visibleChunks, drawCalls, cpuMs, gpuMs, historyUsed };
@@ -1579,6 +1585,7 @@ export async function createRenderer(canvas, { onStatus = () => {}, onGpuSample 
   function stats() {
     return {
       backend: 'WebGPU', adapterInfo, gpuTimingSupported, gpuMs, lastGpuMs, gpuSampleCount,
+      environmentFog: environmentFogState && { ...environmentFogState,color:[...environmentFogState.color],sourceColor:[...environmentFogState.sourceColor] },
       gpuProfile: gpuProfiler.stats(),
       cpuMs, cpuEncodeMs: cpuMs, shadowCpuMs, skyCpuMs, temporalCpuMs,
       temporalEnabled: QUALITY[qualityName].id > 0, temporalUpscaling: QUALITY[qualityName].id > 0 && scale < 0.999,

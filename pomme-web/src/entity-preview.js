@@ -23,7 +23,21 @@ export function previewEntityData(nbt, definition, registry) {
     for (const [part, saved] of Object.entries({ head: 'Head', body: 'Body', left_arm: 'LeftArm', right_arm: 'RightArm', left_leg: 'LeftLeg', right_leg: 'RightLeg' })) if (Array.isArray(nbt.Pose?.[saved])) set(`${part}_pose`, nbt.Pose[saved]);
   }
   if (name === 'cat') { field('variant', 'CatType', Number); if (nbt.variant) set('variant', ['tabby', 'black', 'red', 'siamese', 'british_shorthair', 'calico', 'persian', 'ragdoll', 'white', 'jellie', 'all_black'].indexOf(strip(nbt.variant))); }
-  if (name === 'wolf' || name === 'cat') set('flags', (nbt.Sitting ? 1 : 0) | (nbt.Owner || nbt.OwnerUUID ? 4 : 0));
+  if (name === 'wolf' || name === 'cat' || name === 'parrot') set('flags', (nbt.Sitting ? 1 : 0) | (nbt.Owner || nbt.OwnerUUID ? 4 : 0));
+  if (name === 'parrot') field('variant', 'Variant', Number);
+  if (name === 'phantom') field('size', nbt.size !== undefined ? 'size' : 'Size', Number);
+  if (name === 'armadillo') field('armadillo_state', 'state', strip);
+  if (name === 'copper_golem') field('weather_state', 'weather_state', value => Math.max(0, ['unaffected', 'exposed', 'weathered', 'oxidized'].indexOf(strip(value))));
+  if (name === 'bogged') field('sheared', 'sheared', Boolean);
+  if (name === 'mannequin') {
+    field('profile', 'profile'); field('immovable', 'immovable', Boolean);
+    field('player_main_hand', 'main_hand', value => strip(value) === 'left' ? 0 : 1);
+    field('pose', 'pose', value => ({ standing: 0, fall_flying: 1, sleeping: 2, swimming: 3, crouching: 5 })[strip(value)] ?? 0);
+    const layers = ['cape', 'jacket', 'left_sleeve', 'right_sleeve', 'left_pants_leg', 'right_pants_leg', 'hat'];
+    if (Array.isArray(nbt.hidden_layers)) set('player_mode_customisation', nbt.hidden_layers.reduce((mask, layer) => {
+      const index = layers.indexOf(strip(layer)); return index < 0 ? mask : mask & ~(1 << index);
+    }, 127));
+  }
   if (name === 'horse') set('flags', (nbt.Tame ? 2 : 0) | (nbt.SaddleItem ? 4 : 0));
   if (name === 'fox') { field('type', 'Type', value => strip(value) === 'snow' ? 1 : 0); set('flags', (nbt.Sitting ? 1 : 0) | (nbt.Crouching ? 4 : 0) | (nbt.Sleeping ? 32 : 0)); }
   if (name === 'frog') field('variant', 'variant', value => ['temperate', 'warm', 'cold'].indexOf(strip(value)));

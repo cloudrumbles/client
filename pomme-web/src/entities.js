@@ -9,7 +9,9 @@ import { drawDroppedItem, drawEquippedItem } from './entity-item-rendering.js';
 import { entityLightFlags } from './entity-lighting.js';
 import { prepareSpecialEntity, prepareDragon } from './entity-keyframes.js';
 import { prepareModernEntity, resolveModernEntity } from './entity-modern-models.js';
+import { consumeRemainingStatus, mannequinProfile, mannequinSkinPatch, prepareRemainingEntity, remainingEntityAnimated, resolveRemainingEntity } from './entity-remaining-models.js';
 import { actorEyeFlags, FULLBRIGHT, EMISSIVE_TRANSLUCENT, WIND_TRANSLUCENT } from './actor-layers.js';
+import { advanceBoatVisual, boatBubbleMatrix, nativeBoatUnderWater } from './entity-boat-state.js';
 
 // Server entities use the native client's cuboid models and imported sheets.
 const STRIDE = 14;
@@ -24,10 +26,10 @@ const TRIANGLES = [0, 1, 2, 0, 2, 3];
 const UVS = [[0, 1], [0, 0], [1, 0], [1, 1]];
 const TOP_UVS = [[0, 0], [0, 1], [1, 1], [1, 0]];
 const SKIN_UV_CACHE = new Map();
-const HUMANOIDS = /^(?:player|zombie|husk|drowned|skeleton|stray|wither_skeleton|villager|wandering_trader|witch|pillager|vindicator|evoker|illusioner|piglin|piglin_brute|zombified_piglin|armor_stand)$/;
+const HUMANOIDS = /^(?:player|mannequin|giant|bogged|parched|zombie|husk|drowned|skeleton|stray|wither_skeleton|villager|wandering_trader|witch|pillager|vindicator|evoker|illusioner|piglin|piglin_brute|zombified_piglin|armor_stand)$/;
 const QUADRUPEDS = /^(?:pig|cow|mooshroom|sheep|wolf|cat|ocelot|fox|goat|horse|donkey|mule|llama|trader_llama|polar_bear|panda|hoglin|zoglin)$/;
 const HIDDEN = new Set(['marker', 'interaction', 'area_effect_cloud']);
-const INVISIBLE_LAYERS = new Set(['spider', 'cave_spider', 'enderman', 'ender_dragon', 'breeze', 'happy_ghast', 'nautilus', 'zombie_nautilus', 'camel', 'camel_husk']);
+const INVISIBLE_LAYERS = new Set(['spider', 'cave_spider', 'enderman', 'ender_dragon', 'breeze', 'happy_ghast', 'nautilus', 'zombie_nautilus', 'camel', 'camel_husk', 'phantom', 'creaking', 'copper_golem']);
 const PICK_SKIP = new Set([...HIDDEN, 'item', 'experience_orb', 'lightning_bolt']);
 const SKINS = {
   player: ['player/wide/steve', 64], zombie: ['zombie/zombie', 64], husk: ['zombie/husk', 64], drowned: ['zombie/drowned', 64],
@@ -120,7 +122,7 @@ export class MeshWriter {
     const next = new Float32Array(Math.max(this.length + count, this.vertices.length * 2));
     next.set(this.vertices.subarray(0, this.length)); this.vertices = next;
   }
-  triangles(source, context, { matrix, position, normalMatrix, tile = -1, tint = [1, 1, 1], flags = 32, inflation = 0, reversed = false, uvOffset = [0, 0] }) {
+  triangles(source, context, { matrix, position, normalMatrix, tile = -1, tint = [1, 1, 1], flags = 32, inflation = 0, reversed = false, uvOffset = [0, 0], alpha = 1 }) {
     this.reserve(source.length / 8 * STRIDE);
     const worldMatrix = context.rotationMatrix ||= rotationMatrix(context.rotation);
     const combined = new Float64Array(9);
@@ -143,7 +145,7 @@ export class MeshWriter {
         vertices[target + axis] = point; vertices[target + 3 + axis] = (axis === 0 ? normalX : axis === 1 ? normalY : normalZ) * normalScale;
         vertices[target + 6 + axis] = context.hurt ? clamp(tint[axis] * (axis === 0 ? 1.4 : 0.65), 0, 1) : tint[axis];
       }
-      vertices[target + 9] = 1; vertices[target + 10] = source[index + 6] + uvOffset[0]; vertices[target + 11] = source[index + 7] + uvOffset[1];
+      vertices[target + 9] = clamp(alpha, 0, 1); vertices[target + 10] = source[index + 6] + uvOffset[0]; vertices[target + 11] = source[index + 7] + uvOffset[1];
       vertices[target + 12] = tile; vertices[target + 13] = flags;
       this.length += STRIDE;
     }
@@ -305,7 +307,9 @@ export class EntityScene {
     this.players = new Map();
     this.itemTags = new Map();
     this.writer = new MeshWriter();
+    this.waterMaskWriter = new MeshWriter();
     this.key = '__minecraft_entities';
+    this.waterMaskKey = '__minecraft_boat_water_mask';
     this.time = 0;
     this.lastUpload = -Infinity;
     this.eye = [0, 0, 0];
@@ -332,6 +336,21 @@ export class EntityScene {
 
   consume(event) {
     if (!event) return;
+    if (event.type === 'record') {
+      const point = Array.isArray(event.position) ? event.position : [event.position?.x, event.position?.y, event.position?.z];
+      if (!point.every(Number.isInteger) || point.some(value => Math.abs(value) > 2147483647)) return;
+      // LevelEventHandler notifies living AABBs intersecting the unit jukebox
+      // cube inflated by three. Parrot.aiStep then applies its tighter radius.
+      for (const track of this.entities.values()) {
+        if (track.definition.name !== 'parrot') continue;
+        const position = this.sample(track), half = (track.definition.width || .5) / 2, height = track.definition.height || .9;
+        if (!(position.x + half > point[0] - 3 && position.x - half < point[0] + 4
+          && position.y + height > point[1] - 3 && position.y < point[1] + 4
+          && position.z + half > point[2] - 3 && position.z - half < point[2] + 4)) continue;
+        track.partyJukebox = [...point]; track.entity.partyParrot = Boolean(event.playing); this.dirty = true;
+      }
+      return;
+    }
     if (event.type === 'registry') {
       if (event.id && Array.isArray(event.entries)) this.registries.set(event.id, event.entries);
       for (const [id, registry] of Object.entries(event.codec || {})) {
@@ -368,6 +387,7 @@ export class EntityScene {
     }
     if (event.type === 'status') {
       const track = this.entities.get(event.id);
+      if (track) consumeRemainingStatus(track, event.status, this.time);
       if (track && event.status === 2) { track.hurtUntil = this.time + 0.35; this.dirty = true; }
       if (track && event.status === 3) { track.deathAt = this.time; this.dirty = true; }
       if (track && event.status === 4) { track.attackAt = this.time; this.dirty = true; }
@@ -395,6 +415,7 @@ export class EntityScene {
       track = { entity: { ...entity, vehicleId: entity.vehicleId ?? this.vehicles.get(entity.id) }, definition, target, from: { ...target }, start: this.time, createdAt: this.time, bobOffset: (entity.id * .47) % TAU, lastPacket: this.time, speed: 0, phase: 0, lastRendered: target, hurtUntil: -Infinity, attackAt: -Infinity, deathAt: -Infinity };
       this.entities.set(entity.id, track);
     } else {
+      if (/boat|raft/.test(track.definition.name)) advanceBoatVisual(track, this.time, (key, fallback) => meta(track.entity, track.definition, key, fallback), this.minecraftVersion, this.gameTime);
       track.entity = { ...track.entity, ...entity };
       if (['x', 'y', 'z', 'yaw', 'pitch', 'headYaw'].some((key) => target[key] !== track.target[key])) {
         const prior = this.sample(track);
@@ -405,6 +426,8 @@ export class EntityScene {
         track.target = target; track.start = this.time; track.lastPacket = this.time;
       }
     }
+    if (/boat|raft/.test(track.definition.name)) advanceBoatVisual(track, this.time, (key, fallback) => meta(track.entity, track.definition, key, fallback), this.minecraftVersion, this.gameTime);
+    if (Number.isFinite(entity.visualAgeSeconds)) { track.visualAgeSeconds = entity.visualAgeSeconds; track.visualAgeAt = this.time; }
     this.dirty = true;
     if (this.entities.size > this.maxTracked) {
       const farthest = [...this.entities].sort((a, b) => this.distance(b[1].target) - this.distance(a[1].target));
@@ -461,11 +484,21 @@ export class EntityScene {
     let skin = SKINS[name], model = NATIVE_MODELS[name], slim = false;
     const modern = resolveModernEntity(name, (key, fallback) => meta(entity, definition, key, fallback), this.registries, this.minecraftVersion);
     if (modern) { model = modern.model; skin = [modern.assetId, modern.height]; }
-    if (name === 'player') {
-      const profile = this.players.get(entity.uuid), account = this.skinCache.request(profile);
-      if (account?.state === 'ready') { this.stats.accountSkins++; return { model: account.slim ? 'player_slim' : 'player', skin: { tile: account.tile, sheet: [64, 64], slim: account.slim } }; }
-      const fallback = defaultPlayerSkin(entity.uuid);
-      skin = [fallback.path.replace(/^minecraft:entity\//, ''), 64]; slim = fallback.slim;
+    const remaining = resolveRemainingEntity(name, (key, fallback) => meta(entity, definition, key, fallback), this.minecraftVersion);
+    if (remaining) { model = remaining.model; skin = [remaining.assetId, remaining.height]; }
+    if (name === 'player' || name === 'mannequin') {
+      const profile = name === 'player' ? this.players.get(entity.uuid) : mannequinProfile(meta(entity, definition, 'profile')), account = this.skinCache.request(profile);
+      const patch = name === 'mannequin' ? mannequinSkinPatch(profile, this.atlas) : null;
+      const fallback = defaultPlayerSkin(name === 'player' ? entity.uuid : '00000000-0000-0000-0000-000000000000');
+      if (account?.state === 'ready' || patch?.tile !== undefined) {
+        if (account?.state === 'ready') this.stats.accountSkins++;
+        slim = patch?.slim ?? account?.slim ?? fallback.slim;
+        return { model: slim ? 'player_slim' : 'player', skin: { tile: patch?.tile ?? account.tile, sheet: [64, 64], slim } };
+      }
+      // ClientMannequin starts with the skin of its empty profile, independent
+      // of the entity's spawn UUID, until a profile lookup actually succeeds.
+      slim = patch?.slim ?? fallback.slim;
+      skin = [fallback.path.replace(/^minecraft:entity\//, ''), 64];
       model = slim ? 'player_slim' : 'player';
     }
     if (name === 'mooshroom') skin = [`cow/${meta(entity, definition, 'type', 'red') === 'brown' ? 'brown' : 'red'}_mooshroom`, 32];
@@ -476,7 +509,7 @@ export class EntityScene {
     if (['donkey', 'mule'].includes(name) && meta(entity, definition, 'chest', false)) model += '_chest';
     if (name === 'pufferfish') model = `pufferfish_${clamp(meta(entity, definition, 'puff_state', 0), 0, 2)}`;
     if (name === 'tropical_fish') { const large = (meta(entity, definition, 'type_variant', 0) & 255) === 1; model = large ? 'tropical_fish_large' : 'tropical_fish'; skin = [`fish/tropical_${large ? 'b' : 'a'}`, 32]; }
-    if (name.includes('boat')) {
+    if (name === 'boat' || name === 'chest_boat') {
       const variant = BOAT_VARIANTS[meta(entity, definition, 'type', 0)] || 'oak';
       skin = [`${name === 'chest_boat' ? 'chest_boat' : 'boat'}/${variant}`, name === 'chest_boat' ? 128 : 64];
       model = variant === 'bamboo' ? name === 'chest_boat' ? 'chest_raft' : 'raft' : name;
@@ -493,7 +526,7 @@ export class EntityScene {
     if (name === 'ghast' && meta(entity, definition, 'is_charging', false)) skin = ['ghast/ghast_shooting', 32];
     if (name === 'wither') { const inv = meta(entity, definition, 'inv', 0); if (inv > 0 && !(inv <= 80 && Math.floor(inv / 5) % 2 === 1)) skin = ['wither/wither_invulnerable', 64]; }
     let tile = skin ? this.atlas?.entityTiles?.get(skin[0].includes(':') ? skin[0] : `minecraft:entity/${skin[0]}`) : undefined;
-    if (name === 'player' && tile === undefined) { tile = this.atlas?.entityTiles?.get('minecraft:entity/player/wide/steve'); slim = false; model = 'player'; }
+    if ((name === 'player' || name === 'mannequin') && tile === undefined) { tile = this.atlas?.entityTiles?.get('minecraft:entity/player/wide/steve'); slim = false; model = 'player'; }
     const rectangle = tile !== undefined ? this.atlas?.tiles?.[tile] : null;
     const sheet = tile !== undefined ? [rectangle?.width || (['cod', 'salmon', 'pufferfish', 'tropical_fish'].includes(name) ? 32 : name === 'iron_golem' ? 128 : 64), rectangle?.height || skin[1]] : null;
     return { model, skin: sheet ? { tile, sheet, slim } : null };
@@ -509,13 +542,14 @@ export class EntityScene {
     return { definition, material, tile, block: Boolean(material), itemTile: itemTile ?? -1 };
   }
 
-  equipment(track, context, input, native) {
+  equipment(track, context, input, native, handsOnly = false) {
     // The native equipment renderer always submits OverlayTexture.NO_OVERLAY.
     context = { ...context, hurt: false };
     for (const entry of track.entity.equipment || []) {
       const item = entry.item || entry.equipment, data = this.itemMaterial(item);
       if (!data) continue;
       const slot = entry.slot & 127;
+      if (handsOnly && slot >= 2) continue;
       if (slot < 2) {
         const side = (slot === 1 ? -1 : 1) * (input.leftHanded ? -1 : 1), armIndex = native?.model.parts.findIndex(part => part.name === (side < 0 ? 'left_arm' : 'right_arm'));
         const mesh = this.itemLibrary.get(item, { displayContext: 'thirdperson' });
@@ -643,10 +677,21 @@ export class EntityScene {
     const posed = { ...entity, yaw: position.yaw, pitch: position.pitch, headYaw: position.headYaw };
     if (resolved.model) {
       context.rotation[1] += Math.PI;
-      if (name.includes('boat')) { context.rotation[1] -= Math.PI / 2; context.position[1] += 0.375; }
+      if (/boat|raft/.test(name)) {
+        context.rotation[1] -= Math.PI / 2; context.position[1] += 0.375; context.hurt = false;
+        const boat = track.boatPose ?? advanceBoatVisual(track, time, (key, fallback) => meta(entity, definition, key, fallback), this.minecraftVersion, this.gameTime);
+        const submerged = entity.isUnderWater ?? nativeBoatUnderWater(position, definition, this.sampleBlock);
+        const legacy = /^1\.(\d+)/.exec(this.minecraftVersion)?.[1] <= 20;
+        const bubble = !submerged || legacy ? boat.bubbleDegrees : 0;
+        track.boatSubmerged = submerged;
+        if (boat.hurtRadians || bubble) context.rotationMatrix = combineMatrix(
+          combineMatrix(combineMatrix(rotationMatrix([0, context.rotation[1] + Math.PI / 2, 0]), rotationMatrix([boat.hurtRadians, 0, 0])), boatBubbleMatrix(bubble)),
+          rotationMatrix([0, -Math.PI / 2, 0]));
+      }
       if (name.includes('minecart')) { context.position[1] += 0.375; context.rotation[2] = -position.pitch; }
       if (name === 'trident') context.rotationMatrix = combineMatrix(rotationMatrix([0, position.yaw - Math.PI / 2, 0]), rotationMatrix([0, 0, position.pitch - Math.PI / 2]));
-      if (name === 'player') context.scale *= 0.9375;
+      if (name === 'player' || name === 'mannequin') context.scale *= 0.9375;
+      if (name === 'giant') context.scale *= 6;
       if (name === 'wither_skeleton') context.scale *= 1.2;
       if (name === 'cave_spider') context.scale *= 0.7;
       if (name === 'slime' || name === 'magma_cube') context.scale *= clamp(meta(entity, definition, 'size', 1), 1, 127) * (name === 'slime' ? .999 : 1);
@@ -673,6 +718,22 @@ export class EntityScene {
       }
       const equipmentItem = slot => { const entry = entity.equipment?.find(entry => (entry.slot & 127) === slot); return entry?.item || entry?.equipment; };
       const bodyItem = equipmentItem(6);
+      if (['parrot', 'phantom', 'tadpole', 'armadillo', 'creaking', 'warden', 'copper_golem'].includes(name)) {
+        input.nativeModel = resolved.model; input.minecraftVersion = this.minecraftVersion; input.worldSpeed = speed; input.hiddenParts = hiddenParts;
+        prepareRemainingEntity(track, input, (key, fallback) => meta(entity, definition, key, fallback), {
+          inWater: this.inWaterAt?.([position.x, position.y, position.z]) ?? true,
+          hasHands: Boolean(equipmentItem(0)?.present || equipmentItem(1)?.present),
+        });
+        if (input.suppressDeathRotation) context.rotation[2] = 0;
+        if (input.suppressHurt) context.hurt = false;
+        if (name === 'phantom') {
+          context.scale *= input.phantomScale;
+          context.rotationMatrix = combineMatrix(rotationMatrix(context.rotation), rotationMatrix([position.pitch, 0, 0]));
+          const shifted = transform([0, -1.3125, .1875], context.rotationMatrix);
+          context.position = context.position.map((value, axis) => value + shifted[axis] * context.scale);
+        }
+      }
+      if (name === 'bogged' && meta(entity, definition, 'sheared', false)) hiddenParts.add('mushrooms');
       input.modernFarm = ['cow', 'pig', 'chicken'].includes(name) && resolved.model !== name;
       if (['happy_ghast', 'nautilus', 'zombie_nautilus'].includes(name) || input.modernFarm) {
         input.worldSpeed = speed;
@@ -743,7 +804,15 @@ export class EntityScene {
       let tint = [1, 1, 1];
       if (name === 'tropical_fish') tint = DYE_RGB[(meta(entity, definition, 'type_variant', 0) >>> 16) & 15];
       if (!context.skin) tint = /zombie|creeper|slime/.test(name) ? [0.3, 0.55, 0.22] : name === 'pig' ? [0.84, 0.49, 0.5] : /skeleton/.test(name) ? [0.76, 0.76, 0.69] : [0.65, 0.43, 0.3];
-      const native = drawEntityModel(this.writer, resolved.model, context, input, { playerCustomization: name === 'player' ? meta(entity, definition, 'player_mode_customisation', 127) : undefined, tint, hiddenParts, parts: invisible ? new Set() : undefined });
+      const native = drawEntityModel(this.writer, resolved.model, context, input, { playerCustomization: name === 'player' || name === 'mannequin' ? meta(entity, definition, 'player_mode_customisation', 127) : undefined, tint, hiddenParts, skipDrawParts: input.skipDrawParts, parts: invisible ? new Set() : undefined });
+      if (this.renderer.supportsNativeWaterMask === true && !invisible && /^(?:chest_)?boat(?:_modern)?$/.test(resolved.model) && !track.boatSubmerged)
+        drawEntityModel(this.waterMaskWriter, 'boat_water_patch', { ...context, skin: null, hurt: false }, {}, { tile: -1 });
+      for (const layer of input.nativeLayers ?? []) {
+        if (invisible && name !== 'phantom' && name !== 'creaking') continue;
+        const tile = this.atlas?.entityTiles?.get(layer.path); if (tile === undefined) continue;
+        drawEntityModel(this.writer, resolved.model, layer.noOverlay ? { ...context, hurt: false } : context, input,
+          { tile, flags: layer.flags, parts: layer.parts, alpha: layer.alpha, hiddenParts, skipDrawParts: input.skipDrawParts });
+      }
       if (['camel', 'camel_husk'].includes(name) && !input.nativeCamelBaby && !(input.nativeAdultOnly && baby) && input.camelSaddled && input.camelSaddleTile !== undefined) {
         drawEntityModel(this.writer, 'camel', { ...context, hurt: false }, input, { tile: input.camelSaddleTile,
           parts: new Set(input.camelRidden ? ['saddle', 'bridle', 'reins'] : ['saddle', 'bridle']) });
@@ -758,14 +827,15 @@ export class EntityScene {
         if (eyes !== undefined) drawEntityModel(this.writer, 'ender_dragon', { ...context, hurt: false }, input, { tile: eyes, flags: actorEyeFlags(this.minecraftVersion) });
       }
       if (!invisible && name === 'sheep' && context.fur !== undefined && !(meta(entity, definition, 'wool', 0) & 16)) drawEntityModel(this.writer, 'sheep_fur', context, input, { tile: context.fur, tint: DYE_RGB[meta(entity, definition, 'wool', 0) & 15] });
-      if (!invisible && (name === 'drowned' || name === 'stray')) {
-        const overlay = this.atlas?.entityTiles?.get(`minecraft:entity/${name === 'drowned' ? 'zombie/drowned_outer_layer' : 'skeleton/stray_overlay'}`);
-        if (overlay !== undefined) drawEntityModel(this.writer, name === 'drowned' ? 'drowned_outer' : 'skeleton_outer', context, input, { tile: overlay });
+      if (!invisible && ['drowned', 'stray', 'bogged'].includes(name)) {
+        const overlay = this.atlas?.entityTiles?.get(`minecraft:entity/${name === 'drowned' ? 'zombie/drowned_outer_layer' : `skeleton/${name === 'bogged' ? 'bogged' : 'stray'}_overlay`}`);
+        if (overlay !== undefined) drawEntityModel(this.writer, name === 'drowned' ? 'drowned_outer' : name === 'bogged' ? 'bogged_outer' : 'skeleton_outer', context, input, { tile: overlay });
       }
       if (name === 'slime' && context.skin) drawEntityModel(this.writer, 'slime_outer', context, input, { flags: 64 });
       this.modernEquipment(track, context, input, bodyItem, equipmentItem(7));
       this.layers(track, context, input, resolved.model);
       if (HUMANOIDS.test(name)) this.equipment(track, context, input, native);
+      if (name === 'copper_golem' && !invisible) this.equipment(track, context, input, native, true);
       this.stats.nativeModels++;
     } else if (name === 'arrow' || name === 'spectral_arrow') {
       const type = name === 'spectral_arrow' ? 'spectral_arrow' : meta(entity, definition, 'effect_color', -1) >= 0 ? 'tipped_arrow' : 'arrow';
@@ -781,7 +851,12 @@ export class EntityScene {
     else if (name === 'item') {
       const item = meta(entity, definition, 'item', {}), mesh = this.itemLibrary.get(item, { displayContext: 'ground' });
       context.rotation = [0, 0, 0];
-      if (drawDroppedItem(this.writer, context, item, mesh, { age: Math.max(0, time - (track.createdAt || 0)), bob: track.bobOffset || 0 })) { this.stats.nativeModels++; return; }
+      const age = Number.isFinite(track.visualAgeSeconds)
+        ? track.visualAgeSeconds + clamp(time - track.visualAgeAt, 0, .05)
+        : Math.max(0, time - (track.createdAt || 0));
+      track.lastVisualAge = age;
+      const bob = Number.isFinite(entity.bobOffset) ? entity.bobOffset : track.bobOffset || 0;
+      if (drawDroppedItem(this.writer, context, item, mesh, { age, bob })) { this.stats.nativeModels++; return; }
       const data = this.itemMaterial(item), tile = data?.tile ?? -1;
       const color = tile >= 0 ? [1, 1, 1] : [0.74, 0.65, 0.39];
       context.position[1] += 0.15 + Math.sin(time * 2 + entity.id * 0.47) * 0.045;
@@ -802,7 +877,7 @@ export class EntityScene {
   update(time, eye, camera = {}) {
     this.stats.dynamicShadows = Boolean(this.renderer.stats?.().dynamicShadows);
     if (!Number.isFinite(time) || !eye || eye.length !== 3 || !Array.from(eye).every(Number.isFinite)) return this.stats;
-    this.time = time; this.eye = Array.from(eye); this.inWaterAt = camera.inWaterAt; this.gameTime = camera.gameTime;
+    this.time = time; this.eye = Array.from(eye); this.inWaterAt = camera.inWaterAt; this.sampleBlock = camera.sampleBlock; this.gameTime = camera.gameTime;
     const localEntityId = Number.isInteger(camera.entityId) ? camera.entityId : null;
     if (localEntityId !== this.localEntityId) { this.localEntityId = localEntityId; this.dirty = true; }
     if (time - this.lastUpload < this.uploadInterval) return this.stats;
@@ -813,24 +888,50 @@ export class EntityScene {
     let animated = false;
     for (const track of this.entities.values()) {
       const position = this.sample(track, time);
+      if (track.partyJukebox) {
+        const block = this.sampleBlock?.(...track.partyJukebox);
+        if (Math.hypot(...track.partyJukebox.map((value, axis) => value + .5 - [position.x, position.y, position.z][axis])) >= 3.46
+          || block && String(block.name).replace(/^minecraft:/, '') !== 'jukebox') {
+          track.partyJukebox = null;
+          if (track.entity.partyParrot) { track.entity.partyParrot = false; this.dirty = true; }
+        }
+      }
+      if (/boat|raft/.test(track.definition.name)) {
+        track.boatPose = advanceBoatVisual(track, time, (key, fallback) => meta(track.entity, track.definition, key, fallback), this.minecraftVersion, this.gameTime);
+        if (track.boatPose.animated) animated = true;
+        const submerged = track.entity.isUnderWater ?? nativeBoatUnderWater(position, track.definition, this.sampleBlock);
+        if (submerged !== track.boatSubmerged) this.dirty = true;
+      }
       if (!this.visible(track, position, camera)) continue;
       const lightFlags = entityLightFlags(track, position, this.getLight);
       if (lightFlags !== track.lightFlags) this.dirty = true;
       track.lightFlags = lightFlags;
       candidates.push({ track, position, lightFlags, distance: this.distance(position) });
-      if (time - track.start < 0.08 || (track.speed > 0 && time - track.lastPacket < 0.3) || time < track.hurtUntil + 0.05 || time < track.attackAt + 0.35 || time < track.deathAt + 1 || ['item', 'bee', 'squid', 'glow_squid', 'bat', 'cod', 'salmon', 'pufferfish', 'tropical_fish', 'ghast', 'blaze', 'guardian', 'elder_guardian', 'endermite', 'silverfish', 'wither', 'piglin', 'piglin_brute', 'zombified_piglin', 'camel', 'camel_husk', 'happy_ghast', 'nautilus', 'zombie_nautilus', 'sniffer', 'breeze', 'ender_dragon'].includes(track.definition.name) || ['cow', 'pig', 'chicken'].includes(track.definition.name) && ((track.specialWalk?.speed || 0) > .001 || (track.specialWalk?.oldSpeed || 0) > .001) || track.definition.name === 'chicken' && ((track.entity.grounded ?? track.entity.onGround ?? true) === false || (track.chickenFlap?.speed || 0) > .001 || (track.chickenFlap?.oldSpeed || 0) > .001) || track.definition.name === 'ravager' && time < (track.stunnedAt ?? -Infinity) + 3.05 || ['slime', 'magma_cube'].includes(track.definition.name) && (Boolean(track.entity.onGround) !== track.animationState?.ground || Math.abs(track.animationState?.targetSquish || 0) > .001 || Math.abs(track.animationState?.squish || 0) > .001)) animated = true;
+      const itemAnimated = track.definition.name === 'item' && (!Number.isFinite(track.visualAgeSeconds)
+        || track.lastVisualAge !== track.visualAgeSeconds + clamp(time - track.visualAgeAt, 0, .05));
+      if (remainingEntityAnimated(track, time, (key, fallback) => meta(track.entity, track.definition, key, fallback))) animated = true;
+      if (/boat|raft/.test(track.definition.name) && ['paddle_left', 'paddle_right'].some(key => meta(track.entity, track.definition, key, false))) animated = true;
+      if (itemAnimated || time - track.start < 0.08 || (track.speed > 0 && time - track.lastPacket < 0.3) || time < track.hurtUntil + 0.05 || time < track.attackAt + 0.35 || time < track.deathAt + 1 || ['bee', 'squid', 'glow_squid', 'bat', 'cod', 'salmon', 'pufferfish', 'tropical_fish', 'ghast', 'blaze', 'guardian', 'elder_guardian', 'endermite', 'silverfish', 'wither', 'piglin', 'piglin_brute', 'zombified_piglin', 'camel', 'camel_husk', 'happy_ghast', 'nautilus', 'zombie_nautilus', 'sniffer', 'breeze', 'ender_dragon'].includes(track.definition.name) || ['cow', 'pig', 'chicken'].includes(track.definition.name) && ((track.specialWalk?.speed || 0) > .001 || (track.specialWalk?.oldSpeed || 0) > .001) || track.definition.name === 'chicken' && ((track.entity.grounded ?? track.entity.onGround ?? true) === false || (track.chickenFlap?.speed || 0) > .001 || (track.chickenFlap?.oldSpeed || 0) > .001) || track.definition.name === 'ravager' && time < (track.stunnedAt ?? -Infinity) + 3.05 || ['slime', 'magma_cube'].includes(track.definition.name) && (Boolean(track.entity.onGround) !== track.animationState?.ground || Math.abs(track.animationState?.targetSquish || 0) > .001 || Math.abs(track.animationState?.squish || 0) > .001)) animated = true;
     }
     if (!this.dirty && !animated) return this.stats;
     candidates.sort((a, b) => a.distance - b.distance);
     const visible = candidates.slice(0, this.maxVisible);
     this.meshOrigin = Array.from(eye, value => Math.floor(value / 256) * 256);
     this.writer.reset();
+    this.waterMaskWriter.reset();
     this.stats.texturedModels = 0; this.stats.fallbackModels = 0; this.stats.nativeModels = 0; this.stats.approximateModels = 0; this.stats.accountSkins = 0; this.stats.equipmentParts = 0;
     for (const { track, position, lightFlags } of visible) {
       const first = this.writer.length; this.model(track, position, time);
       for (let index = first + 13; index < this.writer.length; index += STRIDE) this.writer.vertices[index] = (this.writer.vertices[index] & ~LIGHT_MASK) | lightFlags;
       track.lightFlags = lightFlags;
     }
+    if (this.waterMaskWriter.length) {
+      const worldBounds = { min: this.waterMaskWriter.min.map((value, axis) => value + this.meshOrigin[axis]), max: this.waterMaskWriter.max.map((value, axis) => value + this.meshOrigin[axis]) };
+      this.renderer.uploadDynamicMesh(this.waterMaskKey, this.waterMaskWriter.vertices.subarray(0, this.waterMaskWriter.length), EMPTY, worldBounds,
+        { stride: STRIDE, origin: [...this.meshOrigin], nativeWaterMask: true });
+      this.hasWaterMask = true;
+    } else if (this.hasWaterMask) { this.renderer.removeMesh(this.waterMaskKey); this.hasWaterMask = false; }
+    this.stats.waterMaskVertices = this.waterMaskWriter.length / STRIDE;
     if (this.writer.length) {
       const worldBounds = { min: this.writer.min.map((value, axis) => value + this.meshOrigin[axis]), max: this.writer.max.map((value, axis) => value + this.meshOrigin[axis]) };
       this.renderer.uploadDynamicMesh(this.key, this.writer.vertices.subarray(0, this.writer.length), EMPTY, worldBounds, { stride: STRIDE, origin: [...this.meshOrigin] });
@@ -843,8 +944,10 @@ export class EntityScene {
   }
 
   clear() {
-    this.entities.clear(); this.vehicles.clear(); this.players.clear(); this.itemTags.clear(); this.skinCache.clear(); this.writer.reset();
+    this.entities.clear(); this.vehicles.clear(); this.players.clear(); this.itemTags.clear(); this.skinCache.clear(); this.writer.reset(); this.waterMaskWriter.reset();
     if (this.hasMesh) this.renderer.removeMesh(this.key);
+    if (this.hasWaterMask) this.renderer.removeMesh(this.waterMaskKey);
+    this.hasWaterMask = false; this.stats.waterMaskVertices = 0;
     this.hasMesh = false; this.dirty = false; this.lastUpload = -Infinity;
     this.localEntityId = null;
     Object.assign(this.stats, { tracked: 0, visible: 0, vertices: 0, texturedModels: 0, fallbackModels: 0, nativeModels: 0, approximateModels: 0, accountSkins: 0, equipmentParts: 0 });

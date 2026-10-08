@@ -15,7 +15,7 @@ the camera image from them.
 | Terrain GPU draw commands | Bounded render-bundle LRU for visible terrain and shadow casters | Visible mesh set, retained buffers, pipeline or texture bindings |
 | Vertex ambient occlusion | Computed during meshing | Nearby geometry changes |
 | Native sky/block light | Packed per-section arrays | Authoritative server light packets or local edit propagation |
-| Colored local light and diffuse bounce | Bounded near-world 3D textures solved in a worker | Source blocks/light, a snapped camera band or quantized sun |
+| Colored local light and diffuse bounce | Bounded near-world textures, losslessly compressed sun-angle entries and persistent IndexedDB cache | Actual source blocks/light, material tables, source band or algorithm changes; a repeated sun angle can restore an existing result |
 | Local propagated light | Background 3×3-column solves; bounded cache | Source/opacity/emission revisions |
 | Distant terrain | Persisted 4/8/16m cells and retained regional meshes | Actual source columns/edits, near coverage or LOD selection |
 | Static directional shadows | Retained terrain depth | Sun-angle bucket, geometry inside the light frustum, coverage region, quality or atlas |
@@ -80,6 +80,23 @@ when a completed worker result changes. Unknown cells retain the scalar fallback
 and individual voxel loads prevent color interpolation through solid walls. The
 solver retains one bounded source mirror and one in-flight job. Sun-only changes
 reuse local light propagation, while rain attenuates bounce when shading.
+Repeated angles reuse exact half-float RGB bits. One source context retains at
+most 240 angles and 32 MiB of compressed RGB plus shared visibility. The persistent
+cache keeps shared local light/visibility once per source and at most 64 MiB,
+eight source contexts and 1,920 angle records. SHA-256 identifies the algorithm,
+material tables, coordinates, blocks, known cells and native light; time of day
+selects an angle within that source. Edits and pack changes select another source.
+The worker reads the next periodic angle ahead of time when available. A time
+command can request any stored angle without discarding correct entries.
+Quota denial, missing/corrupt entries and storage errors fall back to computation.
+Old world epochs cannot publish results after an asynchronous read.
+
+The full 48×32×48 synthetic-band CPU proof retains all 240 angles in 8.24 MiB instead
+of 135 MiB of raw bounce data and reproduces every half-float bit on the next cycle.
+This is one scene's compression result, not a universal ratio or hardware FPS
+measurement. Actual Chromium Worker/IndexedDB tests survive browser process
+restart, and renderer readbacks preserve exact HDR pixels after worker restart.
+RAM/decode, IndexedDB read/write and GPU timing remain separate measurements.
 This is an approximate bounce field: short occlusion rays and averaged material
 colors do not establish physical GI or original Photon image parity. Material
 bounce currently uses imported face colors without per-position biome adjustment.
@@ -102,6 +119,13 @@ One 2048² 32-bit shadow map uses 16 MiB. Precomputing 240 sun positions would u
 3.75 GiB before terrain, textures, entities and postprocessing, and edits would
 invalidate portions of that data. The implementation instead retains static and
 combined dynamic maps plus bounded light/terrain caches.
+Putting these maps on disk avoids retaining all of them in GPU memory, but adds
+read/decompression/upload work and an initial GPU readback/write cost. A private
+diagnostic, excluded from this checkpoint, compared actual shadow rendering with
+that complete restore path and found restoration slower on the software adapter;
+normal frames perform no diagnostic shadow readbacks. Hardware/storage
+caches affect those timings, so a warm IndexedDB test cannot establish cold NVMe
+latency on another computer.
 
 The complete imported 1.20.4 atlas uses approximately 32 MiB of GPU texture
 storage after entity, item, font, particle and map textures, with under 1 MiB

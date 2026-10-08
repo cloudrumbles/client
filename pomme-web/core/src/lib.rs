@@ -4,6 +4,8 @@
 
 use std::collections::{BTreeMap, HashMap};
 use std::sync::{Arc, Mutex, MutexGuard};
+mod sodium_cache;
+use sodium_cache::MeshSampleCache;
 
 pub const WIDTH: usize = 128;
 pub const HEIGHT: usize = 64;
@@ -294,6 +296,7 @@ struct World {
     revisions: Vec<u32>,
     revision: u32,
     mesh: Vec<f32>,
+    mesh_samples: MeshSampleCache,
     ray_hit: [i32; 7],
     stage: Box<[u16; SECTION_BLOCKS]>,
     float_stage: Vec<f32>,
@@ -393,6 +396,7 @@ impl World {
             revisions: vec![1; chunk_count],
             revision: 1,
             mesh: Vec::new(),
+            mesh_samples: MeshSampleCache::default(),
             ray_hit: [0; 7],
             stage: Box::new([0; SECTION_BLOCKS]),
             float_stage: vec![0.0; FLOAT_STAGE_CAPACITY],
@@ -1226,17 +1230,45 @@ impl World {
 
     #[inline]
     fn get_render_at(&self, p: I3) -> u16 {
-        self.visual_overrides
-            .get(&p)
-            .copied()
-            .unwrap_or_else(|| self.get_at(p))
+        if self.mesh_samples.active() {
+            self.sample_states(p).1
+        } else {
+            self.visual_overrides
+                .get(&p)
+                .copied()
+                .unwrap_or_else(|| self.get_at(p))
+        }
+    }
+
+    #[inline]
+    fn sample_states(&self, p: I3) -> (u16, u16) {
+        self.mesh_samples.states(p, || {
+            let physical = self.get_at(p);
+            (
+                physical,
+                self.visual_overrides.get(&p).copied().unwrap_or(physical),
+            )
+        })
     }
 
     fn light_at(&self, p: I3) -> (u8, u8) {
+        if self.mesh_samples.active() {
+            self.mesh_samples.light(p, || self.light_at_uncached(p))
+        } else {
+            self.light_at_uncached(p)
+        }
+    }
+
+    fn light_at_uncached(&self, p: I3) -> (u8, u8) {
         let Some((c, s, b)) = self.address(p[0], p[1], p[2]) else {
             return (self.skylight_default, 0);
         };
-        let emission = self.registry[self.get_at(p) as usize].emission;
+        let physical = if self.mesh_samples.active() {
+            self.sample_states(p).0
+        } else {
+            self.get_at(p)
+        };
+        let emission = self.registry[physical as usize].emission;
         let Some(light) = self.columns[c].lights[s].as_ref() else {
             return (self.skylight_default, emission);
         };
@@ -1320,6 +1352,11 @@ impl World {
     }
 
     fn mesh_chunk(&mut self, chunk: usize, water: bool) -> usize {
+        self.mesh_chunk_with_samples(chunk, water, true)
+    }
+
+    fn mesh_chunk_with_samples(&mut self, chunk: usize, water: bool, cache_samples: bool) -> usize {
+        self.mesh_samples.disable();
         self.mesh.clear();
         self.biome_sample_cache.clear();
         self.biome_tint_cache.clear();
@@ -1360,31 +1397,47 @@ impl World {
                     {
                         return None;
                     }
+                    let physical_uniform = section.all(|id| {
+                        if water {
+                            let fluid = self.registry[id as usize].fluid;
+                            let first = self.registry[section.get(0) as usize].fluid;
+                            if first.kind != 0 {
+                                fluid.kind == first.kind
+                            } else {
+                                self.is_fluid(id) && fluid.kind == 0
+                            }
+                        } else {
+                            self.is_opaque(id)
+                        }
+                    });
                     Some((
                         y,
-                        !has_override
-                            && section.all(|id| {
-                                if water {
-                                    let fluid = self.registry[id as usize].fluid;
-                                    let first = self.registry[section.get(0) as usize].fluid;
-                                    if first.kind != 0 {
-                                        fluid.kind == first.kind
-                                    } else {
-                                        self.is_fluid(id) && fluid.kind == 0
-                                    }
-                                } else {
-                                    self.is_opaque(id)
-                                }
-                            }),
+                        !has_override && physical_uniform,
+                        !physical_uniform,
+                        !self.models.is_empty()
+                            && (has_override
+                                || !section.all(|id| {
+                                    let flags = self.registry[id as usize].flags;
+                                    flags & CUSTOM_MODEL == 0
+                                        || flags & INVISIBLE != 0
+                                        || self.is_fluid(id) != water
+                                })),
                     ))
                 })
             })
             .collect();
-        for (y, uniform_occluder) in sections {
+        for (y, uniform_occluder, cache_worthwhile, has_models) in sections {
+            // Uniform physical sections already have a cheap boundary path.
+            // A visual hole must bypass uniform culling, but does not justify
+            // clearing the neighborhood cache for that otherwise uniform data.
+            if cache_samples && cache_worthwhile {
+                self.mesh_samples.reset([cx, y, cz]);
+            }
             self.mesh_region([cx, y, cz], [16, 16, 16], water, uniform_occluder);
-            if !self.models.is_empty() {
+            if has_models {
                 self.emit_models([cx, y, cz], water);
             }
+            self.mesh_samples.disable();
         }
         self.mesh.len() / VERTEX_FLOATS
     }
@@ -3289,6 +3342,141 @@ mod tests {
         assert!(world.mesh_chunk(0, true) > 0);
         world.set(2, 20, 2, AIR as u32);
         assert_eq!(world.mesh_chunk(0, true), 0);
+    }
+
+    #[test]
+    fn sodium_sample_cache_preserves_complete_meshes_across_native_mutations_and_huge_origins() {
+        fn check(world: &mut World, cx: i32, cz: i32, stage: &str) {
+            let column = world.column_index(cx, cz).unwrap();
+            for water in [false, true] {
+                world.mesh_chunk_with_samples(column, water, false);
+                let expected: Vec<_> = world.mesh.iter().map(|v| v.to_bits()).collect();
+                world.mesh_chunk_with_samples(column, water, true);
+                let actual: Vec<_> = world.mesh.iter().map(|v| v.to_bits()).collect();
+                assert_eq!(
+                    actual, expected,
+                    "{stage}: complete mesh at {cx},{cz}, fluid={water}"
+                );
+            }
+            assert!(
+                world
+                    .mesh_samples
+                    .states([cx * 16, world.min_y, cz * 16], || (7, 8))
+                    == (7, 8),
+                "samples must be inactive outside a mesh pass"
+            );
+        }
+        for (origin_cx, origin_cz, min_y) in [
+            (-1, -1, -32),
+            (134_217_700, -134_217_720, -2_147_483_632),
+            (-134_217_720, 134_217_700, 2_147_483_552),
+        ] {
+            assert!(World::valid_config(min_y, 32, origin_cx, origin_cz, 3, 3));
+            let mut world = World::configured(min_y, 32, origin_cx, origin_cz, 3, 3);
+            world.register(500, [0.6, 0.5, 0.4], SOLID | AO_OPAQUE);
+            world.register(501, [0.7, 0.9, 0.5], CUSTOM_MODEL | CUTOUT);
+            world.register(502, [0.4, 0.5, 0.8], FLUID | BLEND);
+            world.register(503, [0.8, 0.7, 0.6], SOLID | EMISSIVE);
+            world.register_fluid(501, 1, 4, 11, 12);
+            world.register_fluid(502, 1, 7, 11, 12);
+            let template: Vec<f32> = [
+                [0.125, 0.375, 0.125],
+                [0.125, 0.375, 0.875],
+                [0.875, 0.375, 0.875],
+            ]
+            .into_iter()
+            .flat_map(|p| {
+                p.into_iter().chain([
+                    0.0,
+                    1.0,
+                    0.0,
+                    0.7,
+                    0.9,
+                    0.5,
+                    1.0,
+                    0.25,
+                    0.75,
+                    13.0,
+                    (CUSTOM_MODEL | CUTOUT) as f32,
+                ])
+            })
+            .collect();
+            assert!(world.register_model(501, &template));
+            for cz in origin_cz..origin_cz + 3 {
+                for cx in origin_cx..origin_cx + 3 {
+                    for dy in 0..2 {
+                        let blocks: Vec<_> = (0..SECTION_BLOCKS)
+                            .map(|index| match (index * 17 + dy * 29) % 37 {
+                                0..=6 => 500,
+                                7 => 501,
+                                8..=10 => 502,
+                                11 => 503,
+                                _ => AIR,
+                            })
+                            .collect();
+                        let sy = min_y / 16 + dy as i32;
+                        assert_eq!(world.load_section(cx, sy, cz, &blocks), Some(true));
+                        world.load_light(
+                            cx,
+                            sy,
+                            cz,
+                            Some(&[0x93; LIGHT_BYTES]),
+                            Some(&[0x62; LIGHT_BYTES]),
+                        );
+                    }
+                }
+            }
+            let cx = origin_cx + 1;
+            let cz = origin_cz + 1;
+            let p = [cx * 16 + 15, min_y + 15, cz * 16 + 15];
+            check(
+                &mut world,
+                cx,
+                cz,
+                "initial native models and flowing fluids",
+            );
+            assert!(world.set_visual_override(p, AIR as u32));
+            assert!(world.set(p[0] + 1, p[1] + 1, p[2] + 1, 503));
+            world.load_light(
+                cx,
+                min_y / 16,
+                cz,
+                Some(&[0x12; LIGHT_BYTES]),
+                Some(&[0xfe; LIGHT_BYTES]),
+            );
+            check(
+                &mut world,
+                cx,
+                cz,
+                "visual hole, diagonal emission and new light channels",
+            );
+            assert!(world.set_visual_override(p, 501));
+            world.register_fluid(501, 1, 0, 14, 15);
+            world.register(500, [0.4, 0.5, 0.6], SOLID);
+            world.registry[503].emission = 4;
+            world.registry_changed();
+            check(
+                &mut world,
+                cx,
+                cz,
+                "visual native model and changed fluid/AO/emission registry",
+            );
+            assert!(world.set_visual_override(p, u32::MAX));
+            assert!(world.unload_column(cx + 1, cz + 1));
+            check(
+                &mut world,
+                cx,
+                cz,
+                "restored physical state and removed diagonal neighbor",
+            );
+            assert!(world.rebase(origin_cx + 1, origin_cz));
+            check(
+                &mut world,
+                cx,
+                cz,
+                "window rebase with retained source column",
+            );
+        }
     }
 
     #[test]

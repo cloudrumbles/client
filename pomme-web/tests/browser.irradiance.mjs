@@ -50,6 +50,7 @@ try {
         throw new Error('Stable cached-light frames rebuilt a worker volume, terrain mesh, or directional shadow.');
       cache.setBlock(6,3,7,3);await wait(()=>cache.stats().jobs===2);
       const blue=await draw(), blueCounts=dominance(blue), colorPixels=changed(red,blue);
+      const cacheAfterColor = cache.stats();
       if(colorPixels<1000||redCounts.red<1000||blueCounts.blue<1000)throw new Error(`Cached source color must alter real HDR pixels (${JSON.stringify({colorPixels,redCounts,blueCounts})}).`);
       const blueVolume=latest;
       renderer.setIrradianceVolume(null);
@@ -78,9 +79,30 @@ try {
       renderer.setIrradianceVolume(bounceVolume);
       const bouncedWall=await draw(wallFrame),bouncePixels=changed(plainWall,bouncedWall);
       if(bouncePixels<100)throw new Error(`Material-colored cached bounce must affect the actual GPU wall (${bouncePixels} pixels).`);
+      // A full source band is immutable across this time jump. Repeat an angle,
+      // then restart its real Worker to exercise persistent browser storage.
+      cache.configure({materials,minY:0,height:16,hasSkylight:true,generation:2});
+      const recurrence = { ...update, dayPhase: .25 };
+      let jobs = cache.stats().jobs; cache.update(recurrence); await wait(()=>cache.stats().jobs===jobs+1);
+      const angleVolume = { localData: latest.localData.slice(), bounceData: latest.bounceData.slice() };
+      const angleHDR = await draw(wallFrame);
+      jobs = cache.stats().jobs; cache.update({ ...recurrence, dayPhase: 61.5 / 240 }); await wait(()=>cache.stats().jobs===jobs+1);
+      jobs = cache.stats().jobs; cache.update(recurrence); await wait(()=>cache.stats().jobs===jobs+1);
+      const repeatedHDR = await draw(wallFrame);
+      if (!cache.stats().sunCacheHits || changed(angleHDR,repeatedHDR)!==0 || latest.bounceData.some((value,index)=>value!==angleVolume.bounceData[index])) throw new Error('Repeated sun angle did not reuse exact lighting/GPU pixels.');
+      const [{ IrradianceDiskCache }, { irradianceMaterialKey, irradianceSourceKey }] = await Promise.all([import('/src/irradiance-disk-cache.js'),import('/src/irradiance-source-key.js')]);
+      const verifier = new IrradianceDiskCache(), identity = await irradianceSourceKey(cache.snapshot(), await irradianceMaterialKey(cache.tables));
+      let stored = null;
+      for (let attempt=0;attempt<200&&!stored;attempt++) { stored=await verifier.get(identity,60);if(!stored)await new Promise(resolve=>setTimeout(resolve,10)); }
+      await verifier.close(); if(!stored)throw new Error('Real lighting Worker did not durably store the sun-angle result.');
+      cache.configure({materials,minY:0,height:16,hasSkylight:true,generation:3});
+      jobs = cache.stats().jobs; cache.update(recurrence); await wait(()=>cache.stats().jobs===jobs+1);
+      const diskHDR = await draw(wallFrame);
+      if (!cache.stats().diskCacheHits || changed(angleHDR,diskHDR)!==0 || latest.localData.some((value,index)=>value!==angleVolume.localData[index]) || latest.bounceData.some((value,index)=>value!==angleVolume.bounceData[index])) throw new Error('Worker reopen did not restore exact disk lighting/GPU pixels.');
+      const periodicCache={repeatedPixels:changed(angleHDR,repeatedHDR),diskPixels:changed(angleHDR,diskHDR),ramHits:cache.stats().sunCacheHits,diskHits:cache.stats().diskCacheHits,lastDiskReadMs:cache.stats().lastDiskReadMs,retainedSunBytes:cache.stats().sunCacheBytes};
       const stats=renderer.stats();if(stats.lastError)throw new Error(stats.lastError);
       if(vertices.some((value,i)=>i%14===13&&value!==nativeFlags))throw new Error('Cached lighting changed authoritative vertex light flags.');
-      return {colorPixels,bouncePixels,redCounts,blueCounts,stableWorkerUploads:[cacheBefore.volumeUploads,cache.stats().volumeUploads-1],
+      return {colorPixels,bouncePixels,redCounts,blueCounts,periodicCache,stableWorkerUploads:[cacheBefore.volumeUploads,cacheAfterColor.volumeUploads-1],
         stableMeshUploads:[before.meshUploadCount,stable.meshUploadCount],stableShadows:[before.shadowUpdates,stable.shadowUpdates],
         fallbackPixels:changed(baseline,restored),rebasePixels:changed(blue,rebased),sourceBytes:cache.stats().sourceBytes,snapshotBytes:cache.stats().snapshotBytes,
         outputBytes:cache.stats().outputBytes,irradianceStats:{enabled:stats.irradianceEnabled,bytes:stats.irradianceBytes,uploads:stats.irradianceUploads,uploadBytes:stats.irradianceUploadBytes},errors:failures,gpuError:stats.lastError,adapter:stats.adapterInfo};

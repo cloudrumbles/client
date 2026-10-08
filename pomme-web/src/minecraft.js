@@ -163,6 +163,7 @@ export class MinecraftSession {
       onError: (error) => this.event({ type: 'error', message: error.message }),
     });
     this.dimensionTypes = new Map();
+    this.clockStates = new Map();
     this.columns = new Map();
     this.entities = new Map();
     this.players = new Map();
@@ -213,7 +214,7 @@ export class MinecraftSession {
     this.disconnect();
     this.chatTypes.clear();
     this.recipeBook.clear();
-    this.columns.clear(); this.entities.clear(); this.players.clear(); this.windows.clear(); this.menus.clear(); this.itemTags.clear(); this.entityTags.clear(); this.recipes.clear(); this.recipeProperties.clear(); this.quickCraft = null; this.dimensionTypes.clear(); this.effects.clear();
+    this.columns.clear(); this.entities.clear(); this.players.clear(); this.windows.clear(); this.menus.clear(); this.itemTags.clear(); this.entityTags.clear(); this.recipes.clear(); this.recipeProperties.clear(); this.quickCraft = null; this.dimensionTypes.clear(); this.clockStates.clear(); this.effects.clear();
     this.hasPosition = false; this.sequence = 0; this.movementClock = 0;
     this.velocity = { x: 0, y: 0, z: 0 }; this.localVehicle = null;
     this.pendingRespawn = null; this.defaultSpawn = { x: 0, y: 0, z: 0 };
@@ -255,10 +256,34 @@ export class MinecraftSession {
   }
 
   handlePacket(name, data, packetState = 'play') {
+    let sourceClock = name === 'update_time' ? { dayTime: asLong(data.time), daylightCycle: this.adapter.modern ? data.tickDayTime !== false : asLong(data.time) >= 0n } : null;
+    if (name === 'update_time' && this.adapter.version === '26.1' && Array.isArray(data.clockUpdates)) {
+      if (data.clockUpdates.length > 4096) throw new Error('Native world clock update exceeds its registry bound.');
+      const updates = new Map();
+      for (const clock of data.clockUpdates) {
+        if (!Number.isInteger(clock.id) || clock.id < 0 || !Number.isFinite(clock.partialTick) || clock.partialTick < 0 || clock.partialTick >= 1 || !Number.isFinite(Math.fround(clock.rate))) throw new Error('Invalid native world clock state.');
+        const key = this.adapter.registryName('minecraft:world_clock', clock.id);
+        if (!key) { this.event({ type: 'error', message: `Missing native world clock registry entry ${clock.id}.` }); continue; }
+        if (updates.has(key)) throw new Error('Duplicate native world clock update.');
+        updates.set(key, { totalTicks: BigInt.asIntN(64, asLong(clock.totalTicks)), partialTick: Math.fround(clock.partialTick), rate: Math.fround(clock.rate), receivedAt: performance.now() });
+      }
+      if (new Set([...this.clockStates.keys(), ...updates.keys()]).size > 4096) throw new Error('Native world clock state exceeds its registry bound.');
+      for (const [key, clock] of updates) this.clockStates.set(key, clock);
+      const defaultClock = this.dimensionTypes.get(this.state.dimensionType)?.default_clock ?? 'minecraft:overworld';
+      const clock = this.clockStates.get(defaultClock);
+      sourceClock = { dayTime: clock?.totalTicks ?? 0n, daylightCycle: Boolean(clock?.rate), clockUpdates: [...updates].map(([name, value]) => ({ name, ...value })), defaultClock };
+      data = { ...data, time: sourceClock.dayTime };
+    }
     ({ name, data, state: packetState } = this.adapter.clientbound(name, data, packetState));
     switch (name) {
       case 'registry_data': {
         const codec = simplifyNbt(data.codec || data.registry || data);
+        const clocks = codec['minecraft:world_clock']?.value || codec['minecraft:world_clock']?.entries;
+        if (clocks) {
+          if (!Array.isArray(clocks) || clocks.length > 4096) throw new Error('Native world clock registry exceeds its bound.');
+          const names = new Set(clocks.map(entry => entry.name ?? entry.key));
+          for (const name of this.clockStates.keys()) if (!names.has(name)) this.clockStates.delete(name);
+        }
         const entries = codec['minecraft:dimension_type']?.value || codec['minecraft:dimension_type']?.entries || [];
         for (const entry of entries) this.dimensionTypes.set(entry.name, entry.element || entry.value);
         this.chatTypes.loadRegistry(codec);
@@ -278,7 +303,7 @@ export class MinecraftSession {
       case 'statistics': this.event({ type: 'statistics', entries: data.entries }); break;
       case 'login':
         if (packetState === 'configuration' || packetState === 'login') break;
-        this.setDimension(data.worldType, data.worldName, { entityId: data.entityId, gameMode: data.gameMode & 3, viewDistance: data.viewDistance, isHardcore: data.isHardcore, biomeSeed: asLong(data.hashedSeed) });
+        this.setDimension(data.worldType, data.worldName, { entityId: data.entityId, gameMode: data.gameMode & 3, viewDistance: data.viewDistance, isHardcore: data.isHardcore, isFlat: Boolean(data.worldState?.isFlat ?? data.isFlat), isDebug: Boolean(data.worldState?.isDebug ?? data.isDebug), biomeSeed: asLong(data.hashedSeed) });
         break;
       case 'respawn': {
         // ClientboundRespawnPacket KEEP_ATTRIBUTES=1, KEEP_ENTITY_DATA=2.
@@ -310,7 +335,7 @@ export class MinecraftSession {
         this.event({ type: 'close-window', windowId: oldWindow });
         this.effects.clear();
         const mode = data.gamemode & 3;
-        this.setDimension(data.dimension, data.worldName, { ...retained, gameMode: mode, biomeSeed: asLong(data.hashedSeed), windowId: 0, selectedSlot: 0, food: 20, saturation: 5, experience: 0, experienceLevel: 0, totalExperience: 0, equipment: [], canFly: mode === 1 || mode === 3, flying: mode === 3, invulnerable: mode === 1 || mode === 3, walkingSpeed: 0.1, flyingSpeed: 0.05, effects: [], attributes, preserveLevel, keepData: keep, respawnPosition });
+        this.setDimension(data.dimension, data.worldName, { ...retained, gameMode: mode, isFlat: Boolean(data.worldState?.isFlat ?? data.isFlat), isDebug: Boolean(data.worldState?.isDebug ?? data.isDebug), biomeSeed: asLong(data.hashedSeed), windowId: 0, selectedSlot: 0, food: 20, saturation: 5, experience: 0, experienceLevel: 0, totalExperience: 0, equipment: [], canFly: mode === 1 || mode === 3, flying: mode === 3, invulnerable: mode === 1 || mode === 3, walkingSpeed: 0.1, flyingSpeed: 0.05, effects: [], attributes, preserveLevel, keepData: keep, respawnPosition });
         this.pendingDig = null;
         break;
       }
@@ -375,7 +400,9 @@ export class MinecraftSession {
       case 'update_time': {
         const worldAge = asLong(data.age), raw = asLong(data.time);
         const timeOfDay = Number((raw < 0n ? -raw : raw) % 24000n);
-        this.callbacks.onTime?.({ worldAge, timeOfDay, daylightCycle: raw >= 0n });
+        const dayTime = this.adapter.modern ? sourceClock.dayTime : BigInt.asIntN(64, sourceClock.dayTime < 0n ? -sourceClock.dayTime : sourceClock.dayTime);
+        this.callbacks.onTime?.({ worldAge, timeOfDay, daylightCycle: sourceClock.daylightCycle, dayTime,
+          ...(sourceClock.clockUpdates ? { clockUpdates: sourceClock.clockUpdates, defaultClock: sourceClock.defaultClock } : {}) });
         break;
       }
       case 'update_health':
@@ -530,7 +557,8 @@ export class MinecraftSession {
           // 1.20.4 effect registry IDs are zero-based (Haste is 2).
           const names = ['speed', 'slowness', 'haste', 'mining_fatigue'];
           const definition = this.callbacks.registry?.effects?.find(effect => effect.id === data.effectId);
-          this.effects.set(data.effectId, { id: data.effectId, name: definition?.name?.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase() || names[data.effectId], amplifier: data.amplifier, duration: data.duration });
+          this.effects.set(data.effectId, { id: data.effectId, name: definition?.name?.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase() || names[data.effectId], amplifier: data.amplifier, duration: data.duration,
+            ...(this.adapter.modern ? { shouldBlend: Boolean(data.flags & 8) } : { factorData: data.factorCodec ?? null }) });
           this.changeState({ effects: [...this.effects.values()] });
         } else this.callbacks.onEntity?.({ type: 'effect', id: data.entityId, ...data });
         break;

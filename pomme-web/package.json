@@ -53,7 +53,19 @@
     "test:native-menu-ui": "node tests/native-menu-ui.browser.mjs",
     "test:inventory-items": "node authority/tests/inventory-items.browser.mjs",
     "test:entity-modern-models": "node tests/browser.entity-modern-models.mjs",
-    "test:conduit-beams": "node tests/browser.conduit-beams.mjs"
+    "test:conduit-beams": "node tests/browser.conduit-beams.mjs",
+    "test:environment-fog": "node tests/browser.environment-fog.mjs",
+    "test:environment-main": "node tests/browser.environment-main.mjs",
+    "test:actor-alpha": "node tests/browser.actor-alpha.mjs",
+    "test:entity-remaining-models": "node tests/browser.entity-remaining-models.mjs",
+    "test:local-world-items": "node tests/local-world-items.browser.mjs",
+    "test:local-world-items-main": "node tests/browser.local-world-items-main.mjs",
+    "test:source-generation": "node tests/browser.source-generation.mjs",
+    "test:source-generation-main": "node tests/browser.source-generation-main.mjs",
+    "test:irradiance-storage": "node tests/irradiance-disk-cache.browser.mjs",
+    "test:pcss": "node tests/browser.pcss.mjs",
+    "test:shadow-guard": "node tests/browser.shadow-guard.mjs",
+    "build:generation": "node generation/build.mjs"
   },
   "devDependencies": {
     "fake-indexeddb": "6.2.5",

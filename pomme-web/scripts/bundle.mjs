@@ -21,6 +21,10 @@ for (const required of ['public/core.wasm', 'authority/authority.wasm', 'data/1.
   catch { throw new Error(`Missing ${required}. Run npm run build before bundling.`); }
 }
 for (const entry of ['index.html', 'src', 'public', 'data', 'vendor', 'scripts', 'licenses', 'core', 'authority', 'tests', 'package.json', 'package-lock.json', 'README.md', 'LIGHTING.md', 'PARITY.md', '.gitignore']) await collect(entry);
+for (const entry of ['docs', 'generation']) {
+  try { await stat(resolve(root, entry)); } catch { continue; }
+  await collect(entry);
+}
 files['pomme-browser/LICENSE'] = new Uint8Array(await readFile(new URL('../../LICENSE', import.meta.url)));
 let commit = 'unknown', modified = null;
 try {

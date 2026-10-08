@@ -10,6 +10,8 @@ const integer = (value, min, max, name) => {
   return value;
 };
 const uuid = value => value === null || typeof value === 'string' && UUID.test(value);
+export const worldItemPositionValid = position => Array.isArray(position) && position.length === 3
+  && position.every(value => Number.isFinite(value) && value > MIN_COORD + ITEM_WIDTH / 2 && value < MAX_COORD - ITEM_HEIGHT);
 export function worldItemStackIdentity(stack, registry) {
   return inventory.nativeInventoryStackIdentity(stack, registry.items.find(item => item.id === stack?.itemId), registry.version.minecraftVersion);
 }
@@ -34,14 +36,15 @@ export function validateWorldItemsSnapshot(snapshot, registry) {
       || snapshot.items.length + snapshot.deferred.length > MAX_WORLD_ITEMS)) throw new Error('Invalid world item snapshot.');
   integer(snapshot.revision, 0, Number.MAX_SAFE_INTEGER - 1, 'revision');
   integer(snapshot.nextId, 1, 2147483647, 'next ID'); integer(snapshot.tick, 0, Number.MAX_SAFE_INTEGER - 1, 'tick');
+  if (snapshot.playerUuid !== undefined && (!uuid(snapshot.playerUuid) || snapshot.playerUuid === null)) throw new Error('Invalid world item player identity.');
+  if (snapshot.initialized !== undefined && typeof snapshot.initialized !== 'boolean') throw new Error('Invalid world item initialization marker.');
   const ids = new Set(), uuids = new Set(); let identityBytes = structuredBytes(snapshot, MAX_WORLD_ITEM_BYTES);
   for (const actor of snapshot.items) {
     integer(actor?.id, 1, snapshot.nextId - 1, 'ID'); integer(actor.revision, 0, Number.MAX_SAFE_INTEGER - 1, 'actor revision');
     if (!uuid(actor.uuid) || actor.uuid === null || ids.has(actor.id) || uuids.has(actor.uuid)) throw new Error('Duplicate or invalid world item identity.');
     ids.add(actor.id); uuids.add(actor.uuid);
-    if (!Array.isArray(actor.position) || actor.position.length !== 3 || actor.position.some(value => !Number.isFinite(value)
-      || value <= MIN_COORD + ITEM_WIDTH / 2 || value >= MAX_COORD - ITEM_HEIGHT)
-      || !Array.isArray(actor.velocity) || actor.velocity.length !== 3 || actor.velocity.some(value => !Number.isFinite(value) || Math.abs(value) > 10)) throw new Error('Invalid world item motion.');
+    if (!worldItemPositionValid(actor.position) || !Array.isArray(actor.velocity) || actor.velocity.length !== 3
+      || actor.velocity.some(value => !Number.isFinite(value) || Math.abs(value) > 10)) throw new Error('Invalid world item motion.');
     integer(actor.age, -32768, 32767, 'age'); integer(actor.pickupDelay, -32768, 32767, 'pickup delay');
     integer(actor.health, -32768, 32767, 'health'); integer(actor.tickCount, 0, Number.MAX_SAFE_INTEGER - 1, 'actor tick');
     if (!uuid(actor.target) || !uuid(actor.thrower) || typeof actor.noGravity !== 'boolean' || typeof actor.grounded !== 'boolean'
@@ -90,8 +93,9 @@ export function appendWorldItemDrops(snapshot, drops, context, registry) {
 }
 
 /** Original ItemEntity chooses the larger stack; ties choose the neighbor.
- * Sum must fit its native limit. The helper's64cap is native even for a modern
- * component-defined99limit, including native negative transfer above64. */
+ * Sum must fit its native limit. The helper's 64 cap is native even for a modern
+ * component-defined 99 limit, including negative and zero transfers above 64.
+ * A zero transfer still copies the target's minimum age and maximum delay. */
 export function mergeWorldItemPair(first, second, registry) {
   const eligible = actor => actor.pickupDelay !== 32767 && actor.age !== -32768 && actor.age < 6000
     && actor.stack.itemCount < worldItemStackLimit(actor.stack, registry);
@@ -100,7 +104,6 @@ export function mergeWorldItemPair(first, second, registry) {
     || first.stack.itemCount + second.stack.itemCount > worldItemStackLimit(second.stack, registry)) return null;
   const target = second.stack.itemCount < first.stack.itemCount ? first : second, source = target === first ? second : first;
   const moved = Math.min(Math.min(worldItemStackLimit(target.stack, registry), 64) - target.stack.itemCount, source.stack.itemCount);
-  if (!moved) return null;
   target.stack.itemCount += moved; source.stack.itemCount -= moved;
   target.pickupDelay = Math.max(target.pickupDelay, source.pickupDelay); target.age = Math.min(target.age, source.age);
   target.revision++; source.revision++;

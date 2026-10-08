@@ -19,6 +19,45 @@ impl Default for Drag {
         }
     }
 }
+
+// Ephemeral menu input is deliberately separate from saved inventory slots.
+// Durable reopen cancels QUICK_CRAFT; an aborted transaction must retain it.
+#[no_mangle]
+pub extern "C" fn inventory_transient_snapshot() -> u32 {
+    with_inventory(|inventory| {
+        inventory.output = vec![1, inventory.drag.status, inventory.drag.kind];
+        inventory.output.extend(inventory.drag.slots.map(u32::from));
+        inventory.output.len() as u32
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn inventory_transient_restore(count: u32) -> u32 {
+    with_inventory(|inventory| {
+        if count != 49 {
+            return 0;
+        }
+        let words = &inventory.staging[..count as usize];
+        if words[0] != 1
+            || words[1] > 1
+            || words[2] > 2
+            || words[3..].iter().any(|&word| word > 1)
+            || words[1] == 0 && words[2..].iter().any(|&word| word != 0)
+        {
+            return 0;
+        }
+        let mut slots = [false; 46];
+        for (slot, &word) in slots.iter_mut().zip(&words[3..]) {
+            *slot = word != 0;
+        }
+        inventory.drag = Drag {
+            status: words[1],
+            kind: words[2],
+            slots,
+        };
+        1
+    })
+}
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Slot {
     Result,

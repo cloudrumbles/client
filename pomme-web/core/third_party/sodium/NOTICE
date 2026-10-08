@@ -1,0 +1,21 @@
+Sodium array sample cache port
+
+Original project: https://github.com/CaffeineMC/sodium
+Source commit: 8aa723c69af6ce40255862df6c3bf8c6cca9d883
+Original authors: CaffeineMC and the Sodium contributors.
+Original source: common/src/main/java/net/caffeinemc/mods/sodium/client/model/light/data/ArrayLightDataCache.java
+Original license text: LICENSE.md (PolyForm Shield License 1.0.0).
+
+The pinned original source and its exact license text are preserved here.
+core/src/sodium_cache.rs ports its reusable twenty-cubed neighborhood, flat
+index, zero sentinel, lazy sampling and per-section reset lifecycle to Rust.
+The adaptation packs the client's physical/render block states and native
+light channels together in safe Cell storage, checks coordinates and retains
+its existing AO, emission, fluid, geometry and vertex ABI behavior.
+
+At the pinned commit, BlockRenderCache.init resets ArrayLightDataCache to the
+section origin before LevelSlice.copyData. LightDataAccess.compute packs native
+light and occlusion data once; smooth and flat light pipelines reuse those
+samples. This port applies that cache lifecycle to the browser client's WASM
+mesher. Its registry and light lookup remain the client's native data format;
+it does not import JVM or Fabric dependencies.

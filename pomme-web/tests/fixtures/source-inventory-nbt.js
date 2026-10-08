@@ -8,13 +8,15 @@ function payload(type, value) {
   if (type === 8) return string(value);
   if (type === 10) return concat([...Object.entries(value).map(([name, [childType, child]]) => concat([int(1, childType), string(name), payload(childType, child)])), int(1, 0)]);
   if (type === 9) return concat([int(1, value.type), int(4, value.entries.length), ...value.entries.map(entry => payload(value.type, entry))]);
+  if (type === 11) return concat([int(4, value.length), ...value.map(entry => int(4, entry))]);
   throw new Error('Unsupported generated source fixture tag.');
 }
-export function sourceInventoryFixture(version, { count = 10, selected = 2, deferred = false } = {}) {
+export function sourceInventoryFixture(version, { count = 10, selected = 2, deferred = false, playerUuid } = {}) {
   const legacy = version === '1.20.4';
   const item = (name, amount) => ({ id: [8, `minecraft:${name}`], [legacy ? 'Count' : 'count']: [legacy ? 1 : 3, amount] });
   const plank = { Slot: [1, selected], ...item('oak_planks', count), ...(legacy ? { tag: [10, { source: [8, 'Original-shaped source fixture'], seed: [4, 7n], byte: [1, 1], integer: [3, 1] }] } : { components: [10, deferred ? { 'minecraft:custom_data': [10, { seed: [4, 7n] }] } : { max_stack_size: [3, 16] }] }) };
   const entries = [plank], player = { SelectedItemSlot: [3, selected] };
+  if (playerUuid) player.UUID = [11, playerUuid];
   if (legacy) entries.push({ Slot: [1, 103], ...item('diamond_helmet', 1) }, { Slot: [1, -106], ...item('shield', 1) });
   else player.equipment = [10, { head: [10, item('diamond_helmet', 1)], offhand: [10, item('shield', 1)] }];
   player.Inventory = [9, { type: 10, entries }];

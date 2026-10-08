@@ -2,6 +2,7 @@ import { unzipSync, unzlibSync } from '../vendor/fflate.js';
 import { registryStates } from './anvil.js';
 import { copperStatueForm } from './copper-statue.js';
 import { hangingSignForm } from './hanging-sign.js';
+import { EnvironmentSources } from './environment-sources.js';
 
 export const MATERIAL_FLAGS = Object.freeze({ SOLID: 1, AO_OPAQUE: 2, FLUID: 4, EMISSIVE: 8, CUSTOM_MODEL: 16, CUTOUT: 32, BLEND: 64, INVISIBLE: 128, HEIGHT_IGNORED: 256 });
 
@@ -286,18 +287,22 @@ export async function loadResourcePack(input, { registry, tileSize = 16, maxPack
   if (!Number.isInteger(tileSize) || tileSize < 8 || tileSize > 256) throw new Error('Invalid atlas tile size');
   const inputs = Array.isArray(input) ? input : [input];
   if (!inputs.length || inputs.length > 64) throw new Error('Resource pack stacks require between one and 64 packs');
-  let inflated = 0, packedBytes = 0; const files = new Map(), fontSources = new Map(), soundNamespaces = new Map(), languages = new Map();
+  let inflated = 0, packedBytes = 0; const files = new Map(), fontSources = new Map(), soundNamespaces = new Map(), languages = new Map(), environmentSources = new EnvironmentSources();
   for (const source of inputs) {
     const bytes = source instanceof Uint8Array ? source : source instanceof ArrayBuffer ? new Uint8Array(source) : new Uint8Array(await source.arrayBuffer());
     if ((packedBytes += bytes.length) > maxPackBytes) throw new Error('Resource pack stack exceeds the file size limit');
     const archive = unzipSync(bytes, { filter(entry) {
-      const wanted = /(?:^|\/)assets\/[a-z0-9_.-]+\/(?:blockstates\/.*\.json|models\/.*\.json|font\/.*\.json|lang\/[a-z0-9_.-]+\.json|particles\/.*\.json|sounds\.json|sounds\/.*\.ogg|textures\/(?:(?:block|colormap|entity|font|item|particle|environment|map)\/.*|gui\/sprites\/map\/decorations\/[^/]+)\.png(?:\.mcmeta)?)$/.test(entry.name) || /(?:^|\/)data\/[a-z0-9_.-]+\/worldgen\/biome\/[a-z0-9_./-]+\.json$/.test(entry.name);
+      const wanted = /(?:^|\/)assets\/[a-z0-9_.-]+\/(?:blockstates\/.*\.json|models\/.*\.json|font\/.*\.json|lang\/[a-z0-9_.-]+\.json|particles\/.*\.json|sounds\.json|sounds\/.*\.ogg|textures\/(?:(?:block|colormap|entity|font|item|particle|environment|map)\/.*|gui\/sprites\/map\/decorations\/[^/]+)\.png(?:\.mcmeta)?)$/.test(entry.name) || /(?:^|\/)data\/[a-z0-9_.-]+\/(?:worldgen\/biome|dimension_type|timeline|tags\/timeline|tags\/worldgen\/biome)\/[a-z0-9_./-]+\.json$/.test(entry.name);
       if (!wanted) return false;
       if (entry.name.split('/').includes('..') || entry.originalSize > 32 * 1024 * 1024 || (inflated += entry.originalSize) > maxInflatedBytes) throw new Error('Resource archive exceeds its safe asset limits');
       return true;
     } });
     for (const [name, data] of Object.entries(archive)) {
       const start = name.indexOf('assets/') >= 0 ? name.indexOf('assets/') : name.indexOf('data/'), path = name.slice(start), sounds = /^assets\/([^/]+)\/sounds\.json$/.exec(path);
+      if (/^data\/[^/]+\/(?:dimension_type|timeline|tags\/timeline|tags\/worldgen\/biome)\/.+\.json$/.test(path)) {
+        let definition; try { definition = JSON.parse(encoder.decode(data)); } catch { throw new Error(`Invalid environment JSON: ${path}`); }
+        environmentSources.ingest(path, definition);
+      }
       if (sounds) {
         let definition; try { definition = JSON.parse(encoder.decode(data)); } catch { throw new Error(`Invalid asset JSON: ${path}`); }
         if (!definition || typeof definition !== 'object' || Array.isArray(definition)) throw new Error(`Invalid sound definition: ${path}`);
@@ -727,5 +732,5 @@ export async function loadResourcePack(input, { registry, tileSize = 16, maxPack
   }
   diagnostics.models = modelCache.size;
   diagnostics.uniqueMaterialModels = materialCache.size;
-  return { atlas: { pixelsRGBA, width, height, tileSize, padding: 1, tiles, tileByName, entityTiles, itemTiles, itemModels, blockModels, particleTiles, weatherTiles, particleFrames, fontGlyphs, animations, colormaps, biomeDefinitions }, materials, audioFiles, sounds, languages, diagnostics };
+  return { atlas: { pixelsRGBA, width, height, tileSize, padding: 1, tiles, tileByName, entityTiles, itemTiles, itemModels, blockModels, particleTiles, weatherTiles, particleFrames, fontGlyphs, animations, colormaps, biomeDefinitions, environmentSources }, materials, audioFiles, sounds, languages, diagnostics };
 }

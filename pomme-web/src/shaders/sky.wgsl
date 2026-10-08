@@ -25,7 +25,7 @@ struct SkyOutput {
     var color = environment_color(ray);
     if (frame.camera_forward.w < 0.5) {
         var output: SkyOutput;
-        output.color = vec4<f32>(color, 1.0);
+        output.color = vec4<f32>(native_sky_color(color), 1.0);
         output.reactive = vec4<f32>(0.0);
         return output;
     }
@@ -41,7 +41,7 @@ struct SkyOutput {
     // Tiny celestial features remain analytic so the bounded environment map
     // can be reused without blurring the sun, moon, or stars.
     var output: SkyOutput;
-    output.color = vec4<f32>(color, 1.0);
+    output.color = vec4<f32>(native_sky_color(color), 1.0);
     output.reactive = vec4<f32>(0.0);
     return output;
 }

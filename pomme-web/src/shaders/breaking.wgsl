@@ -10,6 +10,7 @@ struct BreakingVarying {
     @location(1) uv: vec2<f32>,
     @location(2) @interpolate(flat) tile: f32,
     @location(3) @interpolate(flat) fog: u32,
+    @location(4) fog_distances: vec2<f32>,
 };
 struct BreakingOutput {
     @location(0) color: vec4<f32>,
@@ -18,6 +19,7 @@ struct BreakingOutput {
 @vertex fn vs_breaking(input: BreakingInput) -> BreakingVarying {
     var output: BreakingVarying;
     output.clip = frame.view_projection * vec4<f32>(input.position, 1.0);
+    output.fog_distances = native_fog_distances(input.position);
     output.position = input.position; output.uv = input.uv; output.tile = input.tile; output.fog = u32(input.flags) & 1u;
     return output;
 }
@@ -28,7 +30,7 @@ struct BreakingOutput {
     if (texel.a < 0.1) { discard; }
     var output: BreakingOutput;
     var color = texel.rgb;
-    if (input.fog != 0u) { color = fog_color(input.position, color); }
+    if (input.fog != 0u) { color = fog_color_native(input.position, color, input.fog_distances); }
     output.color = vec4<f32>(color, texel.a); output.reactive = vec4<f32>(1.0,1.0,0.0,0.0);
     return output;
 }

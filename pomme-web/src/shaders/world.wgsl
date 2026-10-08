@@ -18,6 +18,7 @@ struct TerrainVarying {
     @location(5) @interpolate(flat) tile_id: f32,
     @location(6) @interpolate(flat) flags: f32,
     @location(7) lighting: vec2<f32>,
+    @location(8) fog_distances: vec2<f32>,
 };
 struct TerrainOutput {
     @location(0) color: vec4<f32>,
@@ -65,6 +66,7 @@ fn portal_color(tile_id: f32, position: vec3<f32>, metadata: vec4<f32>) -> vec3<
     output.face_uv = input.face_uv;
     output.tile_id = input.tile_id;
     output.flags = input.flags;
+    output.fog_distances = native_fog_distances(input.position);
     let flags = u32(input.flags);
     output.lighting = vec2<f32>(select(1.0, f32((flags >> 10u) & 15u) / 15.0, (flags & 512u) != 0u), f32((flags >> 14u) & 15u) / 15.0);
     return output;
@@ -104,13 +106,13 @@ fn portal_color(tile_id: f32, position: vec3<f32>, metadata: vec4<f32>) -> vec3<
     if ((material_flags & 16777216u) != 0u) {
         var fullbright: TerrainOutput;
         let actor_alpha = (material_flags & 234881024u) != 0u;
-        var color = fog_color(input.world_position, albedo);
+        var color = fog_color_material(input.world_position, albedo, input.fog_distances, material_flags);
         if ((material_flags & 33554432u) != 0u) {
             // Additive eyes fade into the existing scene. Adding the fog's
             // atmospheric color here would make transparent black glow.
-            color -= fog_color(input.world_position, vec3<f32>(0.0));
+            color -= fog_color_material(input.world_position, vec3<f32>(0.0), input.fog_distances, material_flags);
         }
-        fullbright.color = vec4<f32>(color, select(select(1.0, texel.a, actor_alpha), texel.a * input.ambient_occlusion, native_beam));
+        fullbright.color = vec4<f32>(color, select(select(1.0, texel.a * clamp(input.ambient_occlusion, 0.0, 1.0), actor_alpha), texel.a * input.ambient_occlusion, native_beam));
         fullbright.reactive = vec4<f32>(0.9, 0.0, 0.0, 0.0);
         return fullbright;
     }
@@ -121,15 +123,21 @@ fn portal_color(tile_id: f32, position: vec3<f32>, metadata: vec4<f32>) -> vec3<
         let sky_ambient = mix(vec3<f32>(0.055, 0.083, 0.15), vec3<f32>(0.31, 0.40, 0.51), day);
         let lightmap = sky_ambient * input.lighting.x + vec3<f32>(1.0, 0.67, 0.33) * pow(input.lighting.y, 1.5) * 0.85;
         var wind: TerrainOutput;
-        wind.color = vec4<f32>(fog_color(input.world_position, albedo * lightmap), texel.a);
+        wind.color = vec4<f32>(fog_color_material(input.world_position, albedo * lightmap, input.fog_distances, material_flags), texel.a * clamp(input.ambient_occlusion, 0.0, 1.0));
         wind.reactive = vec4<f32>(0.9, 0.0, 0.0, 0.0);
         return wind;
     }
     let diffuse = max(dot(normal, frame.light_direction_daylight.xyz), 0.0);
-    let visibility = terrain_shadow(input.world_position, normal);
+    let sky_light = input.lighting.x;
+    // Shadow visibility affects only this direct term. Avoid depth-map reads
+    // when its other native factors prove the entire contribution is zero.
+    // Daylight is not a gate: moonlight retains the existing 0.11 scale.
+    var visibility = 1.0;
+    if (diffuse > 0.0 && sky_light > 0.0 && frame.camera_forward.w > 0.0 && frame.weather_info.w > 0.0) {
+        visibility = terrain_shadow(input.world_position, normal);
+    }
     let particle = (material_flags & 4194304u) != 0u;
     let ao = select(clamp(input.ambient_occlusion, 0.18, 1.0), 1.0, particle);
-    let sky_light = input.lighting.x;
     let block_light = input.lighting.y;
     let sky_facing = normal.y * 0.5 + 0.5;
     let ambient = select(vec3<f32>(0.035, 0.014, 0.008), mix(vec3<f32>(0.055, 0.083, 0.15), vec3<f32>(0.31, 0.40, 0.51), day), frame.camera_forward.w > 0.5);
@@ -150,7 +158,7 @@ fn portal_color(tile_id: f32, position: vec3<f32>, metadata: vec4<f32>) -> vec3<
     let blended = (material_flags & 64u) != 0u;
     let alpha = select(select(1.0, texel.a * 0.45, blended), texel.a * clamp(input.ambient_occlusion, 0.0, 1.0), particle);
     if (alpha <= 0.001) { discard; }
-    output.color = vec4<f32>(fog_color(input.world_position, color), alpha);
+    output.color = vec4<f32>(fog_color_material(input.world_position, color, input.fog_distances, material_flags), alpha);
     let reactive = max(select(0.0, 1.0, (material_flags & 8388608u) != 0u), max(select(0.0, 0.9, (material_flags & 2097152u) != 0u), max(block_reactivity(input.tile_id), select(0.0, 0.8, blended))));
     output.reactive = vec4<f32>(reactive, 0.0, 0.0, 0.0);
     return output;

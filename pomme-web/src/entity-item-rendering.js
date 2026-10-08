@@ -38,7 +38,14 @@ export function drawEquippedItem(writer, context, mesh, arm, input, side) {
   if (!mesh.parts.length || !arm) return false;
   const pose = new HandPose(); pose.matrix = [...arm.matrix]; pose.position = [...arm.position];
   if (input.nativeYoungBody) { pose.matrix = pose.matrix.map(value => value * .5); pose.position = pose.position.map((value, axis) => value * .5 + (axis === 1 ? .0005 : 0)); }
-  pose.scale(1, -1, 1).rotate('x', -90).rotate('y', 180).translate(side / 16, .125, -.625);
+  pose.scale(1, -1, 1);
+  // CopperGolemModel.translateToHand adds its interaction-specific transform
+  // after the body/arm hierarchy, before the common ItemInHandLayer offset.
+  if (input.family === 'copper_golem') {
+    if (input.copperGolemState === 'idle') pose.rotate('y', side > 0 ? -90 : 90).translate(0, 0, .125);
+    else pose.scale(.55).translate(-.125, .3125, -.1875);
+  }
+  pose.rotate('x', -90).rotate('y', 180).translate(side / 16, .125, -.625);
   const display = mesh.display[side < 0 ? 'thirdperson_lefthand' : 'thirdperson_righthand'] || mesh.display.thirdperson_righthand || (mesh.block ? { rotation: [75, 45, 0], translation: [0, 2.5, 0], scale: [.375, .375, .375] } : { rotation: [0, -90, 55], translation: [0, 4, .5], scale: [.85, .85, .85] });
   emit(writer, context, applyItemDisplay(pose, display, side), mesh); return true;
 }

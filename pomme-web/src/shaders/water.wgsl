@@ -21,6 +21,7 @@ struct WaterVarying {
     @location(3) @interpolate(flat) tile_id: f32,
     @location(4) @interpolate(flat) flags: f32,
     @location(5) color: vec3<f32>,
+    @location(6) fog_distances: vec2<f32>,
 };
 
 struct WaterOutput {
@@ -133,6 +134,7 @@ fn water_screen_reflection(world_position: vec3<f32>, normal: vec3<f32>, directi
     var output: WaterVarying;
     output.clip_position = frame.view_projection * vec4<f32>(input.position, 1.0);
     output.world_position = input.position;
+    output.fog_distances = native_fog_distances(input.position);
     output.normal = input.normal;
     output.face_uv = input.face_uv;
     output.tile_id = input.tile_id;
@@ -149,7 +151,7 @@ fn water_screen_reflection(world_position: vec3<f32>, normal: vec3<f32>, directi
         let texel = block_texel(input.tile_id, input.face_uv + vec2<f32>(time * 0.012, time * 0.006));
         let ember = 0.94 + sin(input.world_position.x * 1.3 + input.world_position.z * 0.7 + time) * 0.06;
         var output: WaterOutput;
-        output.color = vec4<f32>(fog_color(input.world_position, input.color * texel.rgb * (2.3 * ember) + vec3<f32>(0.30, 0.055, 0.005)), 1.0);
+        output.color = vec4<f32>(fog_color_native(input.world_position, input.color * texel.rgb * (2.3 * ember) + vec3<f32>(0.30, 0.055, 0.005), input.fog_distances), 1.0);
         output.reactive = vec4<f32>(1.0, 0.0, 0.0, 0.0);
         return output;
     }
@@ -168,7 +170,7 @@ fn water_screen_reflection(world_position: vec3<f32>, normal: vec3<f32>, directi
     let reflection = mix(sky_reflection, terrain_reflection.rgb, terrain_reflection.a);
     let half_direction = normalize(view + frame.light_direction_daylight.xyz);
     let glint = pow(max(dot(normal, half_direction), 0.0), 420.0);
-    let shadow = terrain_shadow(input.world_position + vec3<f32>(0.0, 0.015, 0.0), normal);
+    let shadow = terrain_shadow_geometry(input.world_position + vec3<f32>(0.0, 0.015, 0.0), normal, normalize(input.normal));
     let sunlight = frame.light_color_day_phase.rgb * glint * mix(0.6, 8.0, frame.light_direction_daylight.w) * shadow * frame.weather_info.w;
     let uv = input.clip_position.xy / frame.screen_quality.xy;
     let bend = vec2<f32>(wave_x, -wave_z) * 0.014;
@@ -177,7 +179,7 @@ fn water_screen_reflection(world_position: vec3<f32>, normal: vec3<f32>, directi
     let transmitted = behind_water * vec3<f32>(0.55, 0.79, 0.83) + tint * 0.34;
     let water = mix(transmitted, reflection * 1.12, fresnel) + sunlight;
     var output: WaterOutput;
-    output.color = vec4<f32>(fog_color(input.world_position, water), 1.0);
+    output.color = vec4<f32>(fog_color_native(input.world_position, water, input.fog_distances), 1.0);
     // Waves, refraction, reflections, and glints change independently of the
     // static world. Temporal reconstruction must favor the current water pixel.
     output.reactive = vec4<f32>(1.0, 0.0, 0.0, 1.0);

@@ -45,9 +45,9 @@ export class LocalInventorySession {
   clickWindow(index, { button = 0, mode = 0, windowId = this.windowId } = {}) {
     if (!this.owner.current() || windowId !== this.windowId || !this.windows.has(windowId)) return false;
     if (!Number.isInteger(index) || index !== -999 && (index < 0 || index > 45) || !Number.isInteger(mode) || mode < 0 || mode > 6 || !Number.isInteger(button) || button < 0 || button > 40) return false;
-    if (mode === 4 || index === -999 && mode !== 5) { this.owner.status('World item drops are not available yet. Move this stack into a slot.'); return false; }
+    if (!this.owner.itemAdapter && (mode === 4 || index === -999 && mode !== 5)) { this.owner.status('World item drops are not available yet. Move this stack into a slot.'); return false; }
     if (windowId === 0 && index >= 5 && index <= 8) return false;
-    return this.owner.dispatch(() => this.owner.authority.menuClick(index, { mode, button, width: windowId === 1 ? 3 : 2, creative: true, allowDrops: false }));
+    return this.owner.dispatch(() => this.owner.menuClick(index, { mode, button, width: windowId === 1 ? 3 : 2, creative: true }));
   }
   setCreativeSlot(itemId, count, selected = this.state.selectedSlot) {
     if (!this.owner.current() || !this.items.has(itemId) || !Number.isInteger(selected) || selected < 0 || selected > 8 || !Number.isInteger(count) || count < 1 || count > 99) return false;
@@ -61,7 +61,7 @@ export class LocalInventorySession {
     if (!this.owner.current()) return false;
     if (!this.owner.canRun({ closingMenu: true })) return false;
     const closing = this.owner.run(async () => {
-      const state = await this.owner.authority.switchGrid(2, 2, { allowDrops: false });
+      const state = await this.owner.switchGrid(2);
       if (this.owner.current()) {
         this.windowId = 0; this.state.windowId = 0; this.menus.clear(); this.owner.gameplay?.state(this.state);
       }
@@ -85,12 +85,18 @@ export class LocalInventorySession {
   craftRecipe() { return false; }
   selectBundleItem() { return false; }
   respawn() { return false; }
-  dropItem() { return false; }
+  dropItem(entireStack = false) {
+    if (!this.owner.current() || !this.owner.itemAdapter) return false;
+    return this.owner.dispatch(() => {
+      const state = this.owner.authority.state;
+      return this.owner.menuClick(state.selected + (state.width === 3 ? 37 : 36), { mode: 4, button: entireStack ? 1 : 0, creative: true });
+    });
+  }
   swapHands() {
     if (!this.owner.current()) return false;
     return this.owner.dispatch(() => {
       const state = this.owner.authority.state;
-      return this.owner.authority.menuClick(state.selected + (state.width === 3 ? 37 : 36), { mode: 2, button: 40, creative: true, allowDrops: false });
+      return this.owner.menuClick(state.selected + (state.width === 3 ? 37 : 36), { mode: 2, button: 40, creative: true });
     });
   }
   dig() { return false; }

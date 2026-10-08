@@ -28,6 +28,7 @@ export class InventoryAuthority {
   async pickupWorldItem(args) { return (await this.transport.request('world-items-pickup', args)).value; }
   async dropWorldItems(args) { return (await this.transport.request('world-items-drop', args)).value; }
   async deliverWorldItems(args) { return (await this.transport.request('world-items-deliver', args)).value; }
+  async switchWorldItemsGrid(args) { return (await this.transport.request('world-items-grid', args)).value; }
   async save() { return (await this.transport.request('save')).value; }
   close(options) { return this.closePromise ??= this.transport.close(options); }
   destroy() { this.transport.destroy(); }

@@ -1,13 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import minecraftData from 'minecraft-data';
-import { EntityScene, buildEntityPreview } from '../src/entities.js';
+import { EntityScene, MeshWriter, buildEntityPreview } from '../src/entities.js';
 import { previewEntityData } from '../src/entity-preview.js';
 import { defaultPlayerSkin, normalizePlayerSkin, profileSkin, PlayerSkinCache } from '../src/entity-skins.js';
 import { bakedEntityModel, entityModelNames } from '../src/entity-models.js';
 import { rgbaPNG, textureProfile } from './entity-fixtures.mjs';
 import { advanceEntityAnimation } from '../src/entity-animation-state.js';
-import { droppedItemCopies } from '../src/entity-item-rendering.js';
+import { drawDroppedItem, droppedItemCopies } from '../src/entity-item-rendering.js';
 import { entityLightFlags, entityLightProbe } from '../src/entity-lighting.js';
 
 const data = minecraftData('1.20.4');
@@ -225,6 +225,35 @@ test('dropped and equipped items use actual source meshes, native copy threshold
   const equipped = uploads.at(-1).opaque, sword = equipped.filter((_, index) => equipped[Math.floor(index / 14) * 14 + 12] === 0); assert.equal(sword.length / 14, single); assert.equal(visual.stats.equipmentParts, 1);
   visual.consume({ type: 'animation', id: 2, animation: 0 }); visual.update(.45, [-31, -19, 52]); const swung = uploads.at(-1).opaque; assert.notDeepEqual(swung.slice(-sword.length), equipped.slice(-sword.length));
   for (let i = 0; i < swung.length; i += 14) assert.ok(Math.abs(Math.hypot(swung[i + 3], swung[i + 4], swung[i + 5]) - 1) < 1e-5);
+});
+
+test('local dropped item visuals preserve saved negative age and bob phase through updates and pause', () => {
+  const pixelsRGBA = new Uint8Array(16 * 16 * 4).fill(255);
+  const atlas = { width: 16, height: 16, pixelsRGBA, itemTiles: new Map([['minecraft:item/diamond_sword', 0]]),
+    tiles: [{ x: 0, y: 0, width: 16, height: 16 }], itemModels: new Map([['minecraft:diamond_sword', {
+      parent: 'item/handheld', textures: { layer0: 'item/diamond_sword' }, display: { ground: { scale: [.5, .5, .5] } },
+    }]]) };
+  const { scene: visual, uploads } = scene({ atlas }), slot = { present: true, itemId: data.itemsByName.diamond_sword.id, itemCount: 1 };
+  const actor = entity('item', 19, { x: 0, y: 0, z: 0, visualAgeSeconds: -32768 / 20, bobOffset: 1.7,
+    metadata: [{ key: data.entitiesByName.item.metadataKeys.indexOf('item'), value: slot }] });
+  visual.consume({ type: 'spawn', entity: actor }); visual.update(.1, [0, 1, 5]);
+  const expected = age => {
+    const writer = new MeshWriter(), mesh = visual.itemLibrary.get(slot, { displayContext: 'ground' });
+    drawDroppedItem(writer, { position: [0, 0, 0], rotation: [0, 0, 0], scale: 1 }, slot, mesh, { age, bob: actor.bobOffset });
+    for (let at = 13; at < writer.length; at += 14) writer.vertices[at] |= visual.entities.get(actor.id).lightFlags;
+    return writer.vertices.slice(0, writer.length);
+  };
+  assert.equal(visual.stats.nativeModels, 1); assert.equal(visual.stats.approximateModels, 0);
+  assert.deepEqual(uploads.at(-1).opaque, expected(actor.visualAgeSeconds + .05));
+  const paused = uploads.at(-1).opaque.slice(), pausedUploads = uploads.length; visual.update(2, [0, 1, 5]);
+  assert.deepEqual(uploads.at(-1).opaque, paused, 'local authority pause does not accumulate visual time');
+  assert.equal(uploads.length, pausedUploads, 'settled local phase reuses the uploaded native mesh');
+  visual.consume({ type: 'update', entity: { ...actor, visualAgeSeconds: -100 / 20 } }); visual.update(2.04, [0, 1, 5]);
+  assert.deepEqual(uploads.at(-1).opaque, expected(-5 + .04));
+  const remote = scene({ atlas }); delete actor.visualAgeSeconds; delete actor.bobOffset;
+  remote.scene.consume({ type: 'spawn', entity: actor }); remote.scene.update(.1, [0, 1, 5]);
+  assert.equal(remote.scene.entities.get(actor.id).visualAgeSeconds, undefined);
+  assert.notDeepEqual(remote.uploads.at(-1).opaque, paused, 'remote actors retain their ordinary unsynchronized phase');
 });
 
 test('native piglin geometry uses server dance, handedness, tags and the missing zombified ear', () => {
