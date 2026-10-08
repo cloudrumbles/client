@@ -1058,7 +1058,9 @@ impl Renderer {
         if let Some(bridge) = &self.shader_bridge {
             bridge.meshes(meshes);
         }
-        self.scene_publisher.resources.terrain += 1;
+        if !meshes.is_empty() {
+            self.scene_publisher.resources.terrain += 1;
+        }
         self.chunk_buffers.upload_batch(
             &self.ctx.device,
             &self.ctx.allocator,
