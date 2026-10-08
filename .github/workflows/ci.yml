@@ -81,6 +81,20 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: cargo test -p pomme-client --release --no-default-features --features shader-packs
 
+      - name: Execute Vulkan actor and compute fixtures
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get install -y mesa-vulkan-drivers vulkan-validationlayers
+          python3 tools/native/validate_vulkan_fixtures.py --output vulkan-fixture-results
+
+      - name: Preserve Vulkan fixture evidence
+        if: matrix.os == 'ubuntu-latest' && always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: vulkan-fixture-results
+          path: vulkan-fixture-results
+          if-no-files-found: ignore
+
       - name: Pin the steel revision
         if: matrix.os == 'ubuntu-latest'
         id: steel

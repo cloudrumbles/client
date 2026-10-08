@@ -179,35 +179,10 @@ fn quad(key: &str) -> Arc<MeshAsset> {
     })
 }
 fn read_depth(engine: &Engine, index: usize) -> Vec<f32> {
-    use pomme_shaderpack::vulkan::resource::Buffer;
-    use pyronyx::vk;
-    let image = engine.depth_snapshot(index).unwrap();
-    let buffer = Buffer::new(
-        &engine.gpu,
-        &vec![0; image.extent.width as usize * image.extent.height as usize * 4],
-        vk::BufferUsageFlags::TransferDst,
-    )
-    .unwrap();
     engine
-        .gpu
-        .submit(|cmd| {
-            image.transition(cmd, vk::ImageLayout::TransferSrcOptimal);
-            cmd.copy_image_to_buffer(
-                image.handle,
-                vk::ImageLayout::TransferSrcOptimal,
-                buffer.handle,
-                &[vk::BufferImageCopy {
-                    image_subresource: image.layers(),
-                    image_extent: image.extent,
-                    ..Default::default()
-                }],
-            );
-            image.transition(cmd, vk::ImageLayout::ShaderReadOnlyOptimal);
-            Ok(())
-        })
-        .unwrap();
-    buffer
-        .bytes()
+        .depth_snapshot(index)
+        .unwrap()
+        .readback()
         .unwrap()
         .as_chunks::<4>()
         .0
@@ -215,6 +190,7 @@ fn read_depth(engine: &Engine, index: usize) -> Vec<f32> {
         .map(|b| f32::from_le_bytes(*b))
         .collect()
 }
+
 fn draw(
     mesh: Arc<MeshAsset>,
     texture: Arc<TextureAsset>,

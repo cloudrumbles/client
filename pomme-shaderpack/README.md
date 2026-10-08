@@ -53,11 +53,13 @@ and saves a screenshot and window manifest. `--inspect` writes the resolved pack
 manifest without creating a GPU context. `POMME_CPP` can select a GNU-compatible
 preprocessor executable.
 
-The `SH_SKYLIGHT=false` override is recorded, not applied secretly. Original
-Photon's skylight compute program needs 36,860 bytes of shared memory; llvmpipe
-in this container reports 32,768 and rejects the linked program. Attempt the
-unmodified setting on the target driver separately. Custom images/SSBOs are not
-implemented, so the ultra colored-light profile is unsupported.
+The `SH_SKYLIGHT=false` override is recorded, not applied secretly. The separate
+OpenGL reference driver rejected the enabled program in an earlier software
+check. Its reported allocation must not be treated as a portable Vulkan memory
+requirement: original Photon SPIR-V contains 27,648 bytes of logical Workgroup
+payload, with driver allocation determined during pipeline creation/execution.
+Custom images/SSBOs are not implemented, so the ultra colored-light profile is
+unsupported.
 
 For optional vanilla fixture textures, use your own installed 1.21.11 client JAR:
 
@@ -85,7 +87,7 @@ cargo build -p pomme-client --no-default-features --features shader-packs --lock
   --assets-dir /path/to/assets --versions-dir /path/to/versions \
   --game-dir /path/to/test-game --quick-access-multiplayer 127.0.0.1:25577 \
   --shader-pack /tmp/photon --shader-profile low \
-  --shader-option SH_SKYLIGHT=false --shader-option SHADER_AO=0 \
+  --shader-option SHADER_AO=0 \
   --shader-width 640 --shader-height 360 --shader-frames 120 \
   --shader-output live-26.3
 ```
@@ -112,15 +114,44 @@ To execute the original pack graph on a Vulkan device without a display:
 
 ```sh
 ./target/release/pomme-pack-vulkan --pack /tmp/photon --profile low \
-  --option SH_SKYLIGHT=false --render --width 640 --height 360 \
+  --render --width 640 --height 360 \
   --frames 120 --output vulkan-photon
 ```
 
 Omit `--render` to export translated GLSL, SPIR-V and the resource ABI for
 inspection. This compiler output is diagnostic; execution/visual tests are also
-required. The Vulkan path rejects active compute, custom images/SSBOs and unknown
-active inputs until their corresponding execution contracts are implemented.
-`SH_SKYLIGHT=false` is an explicit, recorded setting for this path.
+required. The Vulkan path executes explicit fixed-group compute programs in
+setup, begin, shadowcomp, prepare, deferred and composite phases. Associated
+computes run before their fragment pass, including compute-only numbered slots.
+Formatted 2D `colorimg0..15` storage views alias the current `colortex` front;
+compute writes preserve the front and synchronize with subsequent graphics.
+Original Photon sky-light compute uses this generic ABI. Pipeline creation checks
+actual device workgroup, shared-memory and storage-format limits. There is no
+source replacement or Photon-specific compute implementation.
+
+Custom images/SSBOs, graphics-stage storage, indirect/render-relative dispatches
+and optional SPIR-V capabilities require further execution contracts and fail
+explicitly. Translated `.comp.glsl`, `.comp.spv` and `compute.json` exports record
+the actual ABI. Render reports include dispatch dimensions and reflected logical
+shared-memory payload; unknown driver allocation remains null. Target GPU
+performance and visual equivalence still require physical hardware validation.
+`--dump-colortex N` explicitly reads back the completed current color-buffer
+front into raw mip-zero bytes plus format/extent metadata. It is a synchronous
+diagnostic outside measured frames; ordinary rendering performs no readback.
+
+Run the real Vulkan regression with an installed validation layer and confirm
+the loader actually inserts it in the captured log:
+
+```sh
+VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation VK_LOADER_DEBUG=layer \
+  cargo test -p pomme-shaderpack --features vulkan --test compute_vulkan \
+  -- --ignored --nocapture
+```
+
+It checks sampler/storage aliasing, compute-only and compute-before-fragment
+ordering, setup persistence, changed world/time/weather inputs and replacement
+shader bytes. Software execution establishes correctness only; it does not
+qualify GTX 1650 Ti performance.
 
 The adapter retains block-state predicates, normals, tangent/handedness, mid-UV,
 color and separate light in auxiliary CPU meshing data; the existing 16-byte
@@ -135,6 +166,9 @@ need further work before performance qualification.
 ## Reproducible measurements
 
 ```sh
+python3 tools/native/benchmark_shaderpack.py --backend vulkan \
+  --pack /tmp/photon --preset photon-low-native \
+  --atlas /tmp/fixture-atlas.png --output vulkan-benchmarks
 python3 tools/native/benchmark_shaderpack.py \
   --pack /tmp/photon --preset photon-low-compat \
   --atlas /tmp/fixture-atlas.png --output native-benchmarks

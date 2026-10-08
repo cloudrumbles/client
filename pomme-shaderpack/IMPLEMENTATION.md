@@ -25,9 +25,19 @@ on the shared renderer, using the licensed Iris fallback table and per-draw
 light/material/pose uniforms. Pack settings govern Cow/Chest shadows; first-person
 hands do not cast world shadows. Other actors, empty-hand skin, weather geometry,
 particles and UI remain forward. This is not complete actor or Iris parity.
-See `pomme-client/ACTOR_PACK_STAGES.md` for exact coverage and checks. Compute, storage images/SSBOs, geometry shaders,
-all host uniforms/stage fallbacks, animated atlas parity and Iris visual parity
-remain unsupported. Unsupported active resources fail explicitly. Packed HDR can
+See `pomme-client/ACTOR_PACK_STAGES.md` for exact coverage and checks. The native
+Vulkan graph now executes original explicit-dispatch compute programs, including
+Photon's default sky-light compute, through shared typed uniforms, samplers and
+formatted 2D color-image bindings. Associated computes precede fragments;
+standalone slots remain present. Storage aliases preserve the current color-buffer
+front and synchronize writes before subsequent compute and graphics reads.
+Generic array-varying locations carry the original sky-light coefficients to
+their graphics consumer. Dispatch records and raw diagnostic readback accompany
+normal timestamp measurements.
+
+Custom images/SSBOs, graphics storage writes, geometry shaders, optional shader
+capabilities, all host uniforms/stage fallbacks, animated atlas parity and Iris
+visual parity remain open. Unsupported active resources fail explicitly. Packed HDR can
 use a wider RGBA16F target if the device cannot filter/blit that packed format;
 the substitution is reported. No shader effect is rewritten for Photon.
 
@@ -68,7 +78,7 @@ must remain unknown.
 ## Compatibility and integration limits
 
 This is a partial pack host. It does not provide full OptiFine/Iris parity:
-custom images/SSBOs, uniform arrays, geometry shaders, arbitrary compute workgroup
+custom images/SSBOs, geometry shaders, arbitrary compute workgroup
 expressions, all shader stages/fallback rules, block tags/modded
 registries and Minecraft-named custom texture resources remain unsupported.
 Unimplemented programs outside the host stage list are not executed. Unknown active

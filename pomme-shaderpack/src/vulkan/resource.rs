@@ -13,6 +13,7 @@ pub struct Gpu {
     pub allocator: Arc<Mutex<Allocator>>,
     pub queue: vk::Queue,
     pub pool: vk::CommandPool,
+    pub queue_family: u32,
     pub independent_blend: bool,
 }
 impl Gpu {
@@ -179,9 +180,41 @@ impl Image {
         blur: bool,
         clamp: bool,
     ) -> Result<Self> {
+        Self::allocate(gpu, extent, format, levels, render, blur, clamp, false)
+    }
+    /// Formatted storage images use the same underlying allocation as sampled
+    /// color buffers; the mip-zero attachment view is their storage view.
+    #[allow(clippy::too_many_arguments)]
+    pub fn new_storage(
+        gpu: &Gpu,
+        extent: vk::Extent3D,
+        format: vk::Format,
+        levels: u32,
+        render: bool,
+        blur: bool,
+        clamp: bool,
+    ) -> Result<Self> {
+        Self::allocate(gpu, extent, format, levels, render, blur, clamp, true)
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn allocate(
+        gpu: &Gpu,
+        extent: vk::Extent3D,
+        format: vk::Format,
+        levels: u32,
+        render: bool,
+        blur: bool,
+        clamp: bool,
+        storage: bool,
+    ) -> Result<Self> {
         let depth = format == vk::Format::D32Sfloat;
         let props = gpu.physical.get_format_properties(format);
         let required = vk::FormatFeatureFlags::SampledImage
+            | if storage {
+                vk::FormatFeatureFlags::StorageImage
+            } else {
+                vk::FormatFeatureFlags::empty()
+            }
             | if render {
                 if depth {
                     vk::FormatFeatureFlags::DepthStencilAttachment
@@ -198,6 +231,11 @@ impl Image {
         let usage = vk::ImageUsageFlags::Sampled
             | vk::ImageUsageFlags::TransferSrc
             | vk::ImageUsageFlags::TransferDst
+            | if storage {
+                vk::ImageUsageFlags::Storage
+            } else {
+                vk::ImageUsageFlags::empty()
+            }
             | if render {
                 if depth {
                     vk::ImageUsageFlags::DepthStencilAttachment
@@ -330,6 +368,11 @@ impl Image {
             self.sampler
         }
     }
+    /// A level-zero write invalidates the generated mip chain. A later pass
+    /// explicitly requesting mipmaps will regenerate it before sampling.
+    pub fn invalidate_mipmaps(&self) {
+        self.mipped.set(false);
+    }
     pub fn range(&self) -> vk::ImageSubresourceRange {
         vk::ImageSubresourceRange {
             aspect_mask: if self.depth {
@@ -416,6 +459,63 @@ impl Image {
             self.transition(cmd, vk::ImageLayout::ShaderReadOnlyOptimal);
             Ok(())
         })
+    }
+    /// Synchronous mip-zero inspection, used only by explicit diagnostics.
+    pub fn readback(&self) -> Result<Vec<u8>> {
+        let bytes_per_pixel = match self.format {
+            vk::Format::R8Unorm => 1,
+            vk::Format::R8G8Unorm | vk::Format::R16Unorm | vk::Format::R16Sfloat => 2,
+            vk::Format::R8G8B8A8Unorm
+            | vk::Format::A2B10G10R10UnormPack32
+            | vk::Format::B10G11R11UfloatPack32
+            | vk::Format::R16G16Sfloat
+            | vk::Format::R32Sfloat
+            | vk::Format::D32Sfloat => 4,
+            vk::Format::R16G16B16A16Unorm
+            | vk::Format::R16G16B16A16Sfloat
+            | vk::Format::R32G32Sfloat => 8,
+            vk::Format::R32G32B32A32Sfloat => 16,
+            other => anyhow::bail!("readback format is unsupported: {other:?}"),
+        };
+        let size = (self.extent.width as usize)
+            .checked_mul(self.extent.height as usize)
+            .and_then(|n| n.checked_mul(self.extent.depth as usize))
+            .and_then(|n| n.checked_mul(bytes_per_pixel))
+            .context("image readback size overflow")?;
+        let buffer = Buffer::new(&self.gpu, &vec![0; size], vk::BufferUsageFlags::TransferDst)?;
+        self.gpu.submit(|cmd| {
+            self.transition(cmd, vk::ImageLayout::TransferSrcOptimal);
+            cmd.copy_image_to_buffer(
+                self.handle,
+                vk::ImageLayout::TransferSrcOptimal,
+                buffer.handle,
+                &[vk::BufferImageCopy {
+                    image_subresource: self.layers(),
+                    image_extent: self.extent,
+                    ..Default::default()
+                }],
+            );
+            cmd.pipeline_barrier(
+                vk::PipelineStageFlags::Transfer,
+                vk::PipelineStageFlags::Host,
+                vk::DependencyFlags::empty(),
+                &[],
+                &[vk::BufferMemoryBarrier {
+                    src_access_mask: vk::AccessFlags::TransferWrite,
+                    dst_access_mask: vk::AccessFlags::HostRead,
+                    src_queue_family_index: vk::QUEUE_FAMILY_IGNORED,
+                    dst_queue_family_index: vk::QUEUE_FAMILY_IGNORED,
+                    buffer: buffer.handle,
+                    offset: 0,
+                    size: vk::WHOLE_SIZE,
+                    ..Default::default()
+                }],
+                &[],
+            );
+            self.transition(cmd, vk::ImageLayout::ShaderReadOnlyOptimal);
+            Ok(())
+        })?;
+        Ok(buffer.bytes()?[..size].to_vec())
     }
     pub fn copy_to(&self, cmd: &vk::CommandBuffer, dst: &Image) {
         self.transition(cmd, vk::ImageLayout::TransferSrcOptimal);

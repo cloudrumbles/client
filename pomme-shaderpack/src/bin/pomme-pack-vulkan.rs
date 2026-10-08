@@ -15,6 +15,9 @@ fn main() -> anyhow::Result<()> {
         minecraft_version: String,
         #[arg(long)]
         render: bool,
+        /// Save raw mip-zero current color-buffer bytes and format/extent.
+        #[arg(long, value_parser = clap::value_parser!(u8).range(0..=15))]
+        dump_colortex: Option<u8>,
         #[arg(long, default_value_t = 320)]
         width: u32,
         #[arg(long, default_value_t = 180)]
@@ -128,14 +131,29 @@ fn main() -> anyhow::Result<()> {
             let gpu = engine.gpu.clone();
             gpu.submit(|cmd| engine.record(cmd, 0, &input))?;
             if f >= a.warmup {
-                samples.push(serde_json::json!({"frame":f,"wall_ms":start.elapsed().as_secs_f64()*1000.,"passes":engine.timings(0)?,"input":{"camera":input.camera.to_array(),"world_time":input.world_time,"rain":input.rain,"world_revision":input.world_revision,"lighting_revision":input.lighting_revision,"material_revision":input.material_revision},"invalidations":engine.invalidations}));
+                samples.push(serde_json::json!({"frame":f,"wall_ms":start.elapsed().as_secs_f64()*1000.,"passes":engine.timings(0)?,"compute_dispatches":engine.compute_dispatches,"input":{"camera":input.camera.to_array(),"world_time":input.world_time,"rain":input.rain,"world_revision":input.world_revision,"lighting_revision":input.lighting_revision,"material_revision":input.material_revision},"invalidations":engine.invalidations}));
             }
         }
         engine.screenshot(&a.output.join("final.png"))?;
+        if let Some(index) = a.dump_colortex {
+            let image = engine.color_snapshot(index as usize).unwrap();
+            std::fs::write(
+                a.output.join(format!("colortex{index}.bin")),
+                image.readback()?,
+            )?;
+            std::fs::write(
+                a.output.join(format!("colortex{index}.json")),
+                serde_json::to_vec_pretty(
+                    &serde_json::json!({"index":index,"format":format!("{:?}",image.format),
+                    "extent":[image.extent.width,image.extent.height,image.extent.depth],
+                    "mip_level":0,"ordering":"raw Vulkan image coordinates, tightly packed","revision":pomme_shaderpack::BUILD_REVISION}),
+                )?,
+            )?;
+        }
         std::fs::write(
             a.output.join("vulkan.json"),
             serde_json::to_vec_pretty(
-                &serde_json::json!({"backend":"Vulkan","device":context.name,"scene":a.scene,"scenario":a.scenario,"warmup":a.warmup,"measurement":"serialized Vulkan graph, GPU timestamps and CPU command recording; excludes game/presentation","manifest":manifest,"width":a.width,"height":a.height,"samples":samples,"invalidations":engine.invalidations,"revision":pomme_shaderpack::BUILD_REVISION}),
+                &serde_json::json!({"backend":"Vulkan","device":context.name,"scene":a.scene,"scenario":a.scenario,"warmup":a.warmup,"measurement":"serialized Vulkan graph, GPU timestamps and CPU command recording; excludes game/presentation","manifest":manifest,"width":a.width,"height":a.height,"samples":samples,"compute_programs":engine.compute_manifest(),"invalidations":engine.invalidations,"revision":pomme_shaderpack::BUILD_REVISION}),
             )?,
         )?;
         return Ok(());
@@ -161,6 +179,29 @@ fn main() -> anyhow::Result<()> {
             )?;
         }
     }
+    let mut manifest = Vec::new();
+    for compute in c.compute_programs {
+        std::fs::write(
+            a.output.join(format!("{}.comp.glsl", compute.name)),
+            &compute.source,
+        )?;
+        std::fs::write(
+            a.output.join(format!("{}.comp.spv", compute.name)),
+            compute
+                .spirv
+                .iter()
+                .flat_map(|w| w.to_le_bytes())
+                .collect::<Vec<_>>(),
+        )?;
+        let pomme_shaderpack::compute::Dispatch::Fixed(groups) = compute.dispatch;
+        manifest.push(serde_json::json!({"program":compute.name,"base":compute.base,"groups":groups,"local_size":compute.local_size,
+            "shared_memory_logical_bytes":compute.shared_memory_bytes,"shared_memory_driver_allocation_bytes":null,
+            "spirv_capabilities":compute.capabilities,"samplers":compute.samplers,"images":compute.images}));
+    }
+    std::fs::write(
+        a.output.join("compute.json"),
+        serde_json::to_vec_pretty(&manifest)?,
+    )?;
     Ok(())
 }
 #[cfg(not(feature = "vulkan"))]

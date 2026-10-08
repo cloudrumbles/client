@@ -1,4 +1,16 @@
 {
+  "photon-low-native": {
+    "resolution": [1280, 720],
+    "profile": "low",
+    "options": [],
+    "purpose": "Vulkan original low profile with default sky compute; target GPU unqualified"
+  },
+  "photon-medium-native": {
+    "resolution": [1920, 1080],
+    "profile": "medium",
+    "options": [],
+    "purpose": "Vulkan original medium profile with default sky compute; target GPU unqualified"
+  },
   "photon-low-compat": {
     "resolution": [1280, 720],
     "profile": "low",
