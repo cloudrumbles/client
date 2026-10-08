@@ -1,0 +1,106 @@
+name: Browser client
+on:
+  push:
+    paths: ['pomme-web/**', '.github/workflows/browser.yml']
+  pull_request:
+    paths: ['pomme-web/**', '.github/workflows/browser.yml']
+permissions:
+  contents: read
+jobs:
+  wasm-webgpu:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pomme-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: pomme-web/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: clippy, rustfmt
+      - run: npm ci
+      - run: npm run build
+      - run: cargo fmt --check
+        working-directory: pomme-web/core
+      - run: cargo clippy --all-targets -- -D warnings
+        working-directory: pomme-web/core
+      - run: cargo fmt --check
+        working-directory: pomme-web/authority
+      - run: cargo clippy --all-targets -- -D warnings
+        working-directory: pomme-web/authority
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - name: Browser integration
+        run: |
+          npm run dev > /tmp/pomme-web-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:5173 > /dev/null; then break; fi
+            sleep 1
+          done
+          export CHROMIUM_PATH="$(node --input-type=module -e "import { chromium } from 'playwright'; console.log(chromium.executablePath())")"
+          export POMME_SOFTWARE_GPU=1
+          npm run test:browser
+          npm run test:renderer
+          npm run test:lighting
+          npm run test:minecraft
+          npm run test:gameplay
+          npm run test:effects
+          npm run test:entities
+          npm run test:server-packs
+          npm run test:maps
+          npm run test:first-person
+          npm run test:integration
+          npm run test:biomes
+          npm run test:dynamic-collision
+          npm run test:portals
+          npm run test:text
+          npm run test:bundles
+          npm run test:irradiance
+          npm run test:authority
+          npm run test:authority-inventory
+          npm run test:recipes
+          npm run test:text-ui
+          npm run test:inventory
+          npm run test:local-inventory
+          npm run test:import-authority
+          npm run test:fullbright
+          npm run test:actor-layers
+          npm run test:gpu-profile
+          npm run test:breaking-overlay
+          npm run test:breaking-renderer
+          npm run test:breaking-main
+          npm run test:shadow-casters
+          npm run test:source-inventory
+          npm run test:native-menu-ui
+          npm run test:inventory-items
+          npm run test:environment-fog
+          npm run test:actor-alpha
+          npm run test:pcss
+          npm run test:shadow-guard
+          npm run test:irradiance-storage
+          npm run test:source-generation
+          npm run test:source-generation-main
+          npm run test:local-world-items
+          for version in 1.20.4 1.21.11 26.1; do
+            POMME_MINECRAFT_VERSION="$version" npm run test:environment-main
+          done
+          for version in 1.20.4 1.21.11; do
+            POMME_MINECRAFT_VERSION="$version" npm run test:local-world-items-main
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-screenshots
+          path: pomme-web/test-results/
+      - run: npm run bundle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: browser-client
+          path: pomme-web/dist/pomme-browser.zip

@@ -1,0 +1,11 @@
+/core/target/
+/public/core.wasm
+/node_modules/
+/test-results/
+/data/
+/vendor/
+/dist/
+/authority/target/
+/authority/authority.wasm
+/authority/test-results/
+/logs/

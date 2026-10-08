@@ -14,6 +14,10 @@ server, renders the world through Vulkan, and handles physics, networking,
 audio, and UI without any Mojang code. The goal is a lightweight, performant
 alternative to the official Java client.
 
+The private shader-performance project targets native Rust/Vulkan and Photon-level
+rendering at 60 FPS on a GTX 1650 Ti. Its goal, current checkpoint and remaining
+work are documented in [NATIVE_RENDERING_GOAL.md](./NATIVE_RENDERING_GOAL.md).
+
 <p align="center">
   <img width="1920" height="1080" alt="pomme-launcher" src="https://github.com/user-attachments/assets/b8353f51-a23b-45c5-9f3d-457e498a5253" />
 </p>
@@ -49,6 +53,15 @@ the launcher. The launcher handles authentication, asset downloading,
 version management, and spawns the client with the appropriate flags.
 
 ## Building
+
+### Experimental browser client
+
+A Java 1.20.4, 1.21.11 and 26.1 WASM/WebGPU browser checkpoint is available in [pomme-web](./pomme-web).
+It connects through a local Java-server gateway, imports Anvil worlds and resource
+packs, and includes persistent distant terrain, cached lighting, temporal shaders
+and a hardware benchmark. Original Photon GLSL packs and Java rendering mods are
+not loaded directly. See its README for setup, supported gameplay and current
+parity limits; 60 FPS on a 1650 Ti still requires target-hardware measurements.
 
 Before building, you must have [just](https://github.com/casey/just) installed.
 The Rust toolchain is pinned in `rust-toolchain.toml`; rustup picks it up.

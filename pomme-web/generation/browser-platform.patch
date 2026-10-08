@@ -1,0 +1,272 @@
+--- a/pumpkin-util/src/random/legacy_rand.rs
++++ b/pumpkin-util/src/random/legacy_rand.rs
+@@ -95,7 +95,7 @@
+     }
+ }
+ 
+-#[derive(Clone)]
++#[derive(Clone, PartialEq, Eq, Hash)]
+ pub struct LegacySplitter {
+     seed: u64,
+ }
+--- a/pumpkin-util/src/random/mod.rs
++++ b/pumpkin-util/src/random/mod.rs
+@@ -37,7 +37,7 @@
+     Legacy(LegacyRand),
+ }
+ 
+-#[derive(Clone)]
++#[derive(Clone, PartialEq, Eq, Hash)]
+ #[enum_dispatch(RandomDeriverImpl)]
+ pub enum RandomDeriver {
+     Xoroshiro(XoroshiroSplitter),
+--- a/pumpkin-util/src/random/xoroshiro128.rs
++++ b/pumpkin-util/src/random/xoroshiro128.rs
+@@ -129,7 +129,7 @@
+     }
+ }
+ 
+-#[derive(Clone)]
++#[derive(Clone, PartialEq, Eq, Hash)]
+ pub struct XoroshiroSplitter {
+     lo: u64,
+     hi: u64,
+--- a/pumpkin-world/Cargo.toml
++++ b/pumpkin-world/Cargo.toml
+@@ -14,16 +14,7 @@
+ 
+ bytes.workspace = true
+ 
+-tokio = { workspace = true, features = [
+-    "macros",
+-    "rt-multi-thread",
+-    "sync",
+-    "io-std",
+-    "signal",
+-    "fs",
+-    "io-util",
+-    "time",
+-] }
++tokio = { workspace = true, features = ["macros", "rt", "sync", "io-util", "time"] }
+ uuid.workspace = true
+ thiserror.workspace = true
+ serde.workspace = true
+@@ -85,3 +76,6 @@
+ 
+ [features]
+ tokio_taskdump = []
++
++[target.'cfg(not(target_arch="wasm32"))'.dependencies]
++tokio={workspace=true,features=["rt-multi-thread","io-std","signal","fs"]}
+--- a/pumpkin-world/src/chunk/format/anvil.rs
++++ b/pumpkin-world/src/chunk/format/anvil.rs
+@@ -352,7 +352,7 @@
+     async fn write_indices(&self, path: &Path, indices: &[usize]) -> Result<(), std::io::Error> {
+         log::trace!("Writing in place: {}", path.display());
+ 
+-        let file = tokio::fs::OpenOptions::new()
++        let file = crate::platform_fs::OpenOptions::new()
+             .read(false)
+             .write(true)
+             .create(true)
+@@ -452,7 +452,7 @@
+         let temp_path = path.with_extension("tmp");
+         log::trace!("Writing tmp file to disk: {temp_path:?}");
+ 
+-        let file = tokio::fs::OpenOptions::new()
++        let file = crate::platform_fs::OpenOptions::new()
+             .read(false)
+             .write(true)
+             .create(true)
+@@ -494,7 +494,7 @@
+         write.flush().await?;
+         // The rename of the file works like an atomic operation ensuring
+         // that the data is not corrupted before the rename is completed
+-        tokio::fs::rename(temp_path, path).await?;
++        crate::platform_fs::rename(temp_path, path).await?;
+ 
+         log::trace!("Wrote file to Disk: {}", path.display());
+         Ok(())
+--- a/pumpkin-world/src/chunk/format/linear.rs
++++ b/pumpkin-world/src/chunk/format/linear.rs
+@@ -182,7 +182,7 @@
+         let temp_path = path.with_extension("tmp");
+         log::trace!("Writing tmp file to disk: {}", temp_path.display());
+ 
+-        let file = tokio::fs::OpenOptions::new()
++        let file = crate::platform_fs::OpenOptions::new()
+             .read(false)
+             .write(true)
+             .create(true)
+@@ -235,7 +235,7 @@
+ 
+         // The rename of the file works like an atomic operation ensuring
+         // that the data is not corrupted before the rename is completed
+-        tokio::fs::rename(temp_path, &path).await?;
++        crate::platform_fs::rename(temp_path, &path).await?;
+ 
+         log::trace!("Wrote file to Disk: {}", path.display());
+         Ok(())
+--- a/pumpkin-world/src/chunk/io/file_manager.rs
++++ b/pumpkin-world/src/chunk/io/file_manager.rs
+@@ -88,7 +88,7 @@
+ 
+     async fn read_from_disk(&self) -> Result<S, ChunkReadingError> {
+         trace!("Opening file from Disk: {}", self.path.display());
+-        let file = tokio::fs::OpenOptions::new()
++        let file = crate::platform_fs::OpenOptions::new()
+             .read(true)
+             .write(false)
+             .create(false)
+--- a/pumpkin-world/src/chunk/mod.rs
++++ b/pumpkin-world/src/chunk/mod.rs
+@@ -208,7 +208,7 @@
+             }
+         };
+ 
+-        let height_bit_bytes = adjust_height
++        let height_bit_bytes = (adjust_height as u64)
+             .wrapping_shl(64 - 9 - packed_array_bit_start_idx)
+             .to_ne_bytes();
+         let height = i64::from_ne_bytes(height_bit_bytes);
+--- a/pumpkin-world/src/chunk_system.rs
++++ b/pumpkin-world/src/chunk_system.rs
+@@ -1328,6 +1328,7 @@
+ }
+ 
+ impl GenerationSchedule {
++    #[cfg(not(target_arch = "wasm32"))]
+     pub fn create(
+         oi_read_thread_count: usize,
+         gen_thread_count: usize,
+@@ -1554,6 +1555,7 @@
+         true
+     }
+ 
++    #[cfg(not(target_arch = "wasm32"))]
+     async fn io_read_work(
+         recv: crossfire::MAsyncRx<ChunkPos>,
+         send: crossfire::MTx<(ChunkPos, RecvChunk)>,
+--- a/pumpkin-world/src/dimension.rs
++++ b/pumpkin-world/src/dimension.rs
+@@ -14,6 +14,7 @@
+ }
+ 
+ impl Dimension {
++    #[cfg(not(target_arch = "wasm32"))]
+     pub fn into_level(
+         &self,
+         level_config: &LevelConfig,
+--- a/pumpkin-world/src/generation/surface/mod.rs
++++ b/pumpkin-world/src/generation/surface/mod.rs
+@@ -418,7 +418,7 @@
+     true_at_and_below: YOffset,
+     false_at_and_above: YOffset,
+     #[serde(skip)]
+-    random_deriver: ThreadLocal<RefCell<LruCache<usize, RandomDeriver>>>,
++    random_deriver: ThreadLocal<RefCell<LruCache<RandomDeriver, RandomDeriver>>>,
+ }
+ 
+ impl VerticalGradientMaterialCondition {
+@@ -430,8 +430,8 @@
+             .false_at_and_above
+             .get_y(context.min_y as i16, context.height);
+ 
+-        let context_pointer: *const RandomDeriver = context.random_deriver;
+-        let key = context_pointer.addr();
++        // A new world can reuse a prior RandomDeriver allocation. Cache by its seed state.
++        let key = context.random_deriver.clone();
+ 
+         let mut cache = self
+             .random_deriver
+--- a/pumpkin-world/src/level.rs
++++ b/pumpkin-world/src/level.rs
+@@ -127,6 +127,7 @@
+ }
+ 
+ impl Level {
++    #[cfg(not(target_arch = "wasm32"))]
+     pub fn from_root_folder(
+         level_config: &LevelConfig,
+         root_folder: PathBuf,
+--- a/pumpkin-world/src/lib.rs
++++ b/pumpkin-world/src/lib.rs
+@@ -239,3 +239,5 @@
+         &mut surface_height_estimate_sampler,
+     );
+ }
++
++pub mod platform_fs;
+--- /dev/null
++++ b/pumpkin-world/src/platform_fs.rs
+@@ -0,0 +1,70 @@
++//! Scratch port: an explicit RAM filesystem for a single browser authority worker.
++//! Native storage remains Tokio; persistence to OPFS is a separate, unimplemented adapter.
++#[cfg(not(target_arch = "wasm32"))]
++pub use tokio::fs::*;
++#[cfg(target_arch = "wasm32")]
++mod ram {
++ use std::{collections::BTreeMap,io::{self,SeekFrom},path::{Path,PathBuf},pin::Pin,sync::{Arc,Mutex,MutexGuard,OnceLock},task::{Context,Poll}};
++ use tokio::io::{AsyncRead,AsyncSeek,AsyncWrite,ReadBuf};
++ type Data=Arc<Mutex<Vec<u8>>>;
++ static FILES:OnceLock<Mutex<BTreeMap<PathBuf,Data>>>=OnceLock::new();
++ fn lock<T>(value:&Mutex<T>)->MutexGuard<'_,T>{value.lock().unwrap_or_else(std::sync::PoisonError::into_inner)}
++ fn files()->MutexGuard<'static,BTreeMap<PathBuf,Data>>{lock(FILES.get_or_init(||Mutex::new(BTreeMap::new())))}
++ pub async fn read(path:impl AsRef<Path>)->io::Result<Vec<u8>> {
++  let data=files().get(path.as_ref()).cloned().ok_or(io::ErrorKind::NotFound)?;
++  let result=lock(&data).clone();Ok(result)
++ }
++ pub async fn write(path:impl AsRef<Path>,contents:impl AsRef<[u8]>)->io::Result<()> {
++  let data=files().entry(path.as_ref().to_owned()).or_insert_with(||Arc::new(Mutex::new(Vec::new()))).clone();
++  let mut bytes=lock(&data);bytes.clear();bytes.extend_from_slice(contents.as_ref());Ok(())
++ }
++ pub async fn rename(from:impl AsRef<Path>,to:impl AsRef<Path>)->io::Result<()> {
++  let mut map=files();let data=map.remove(from.as_ref()).ok_or(io::ErrorKind::NotFound)?;
++  map.insert(to.as_ref().to_owned(),data);Ok(())
++ }
++ pub struct File{data:Data,position:u64,append:bool,read:bool,write:bool}
++ pub struct Metadata(u64);impl Metadata{pub fn len(&self)->u64{self.0}}
++ impl File {
++  pub async fn metadata(&self)->io::Result<Metadata>{Ok(Metadata(lock(&self.data).len()as u64))}
++  pub async fn create(path:impl AsRef<Path>)->io::Result<Self>{OpenOptions::new().write(true).create(true).truncate(true).open(path).await}
++ }
++ #[derive(Default)]pub struct OpenOptions{read:bool,write:bool,create:bool,truncate:bool,append:bool}
++ impl OpenOptions {
++  pub fn new()->Self{Self::default()}
++  pub fn read(&mut self,value:bool)->&mut Self{self.read=value;self}
++  pub fn write(&mut self,value:bool)->&mut Self{self.write=value;self}
++  pub fn create(&mut self,value:bool)->&mut Self{self.create=value;self}
++  pub fn truncate(&mut self,value:bool)->&mut Self{self.truncate=value;self}
++  pub fn append(&mut self,value:bool)->&mut Self{self.append=value;self}
++  pub async fn open(&self,path:impl AsRef<Path>)->io::Result<File>{
++   if !self.write && !self.read{return Err(io::ErrorKind::PermissionDenied.into());}
++   let mut map=files();let data=match map.get(path.as_ref()){Some(data)=>Arc::clone(data),None if self.create=>{let data=Arc::new(Mutex::new(Vec::new()));map.insert(path.as_ref().to_owned(),Arc::clone(&data));data},None=>return Err(io::ErrorKind::NotFound.into())};
++   if self.truncate{lock(&data).clear();}Ok(File{data,position:0,append:self.append,read:self.read,write:self.write})
++  }
++ }
++ impl AsyncRead for File {
++  fn poll_read(mut self:Pin<&mut Self>,_:&mut Context<'_>,target:&mut ReadBuf<'_>)->Poll<io::Result<()>>{
++   if !self.read{return Poll::Ready(Err(io::ErrorKind::PermissionDenied.into()));}
++   let data=lock(&self.data);let start=usize::try_from(self.position).unwrap_or(usize::MAX).min(data.len());let count=target.remaining().min(data.len()-start);target.put_slice(&data[start..start+count]);drop(data);self.position+=count as u64;Poll::Ready(Ok(()))
++  }
++ }
++ impl AsyncWrite for File {
++  fn poll_write(mut self:Pin<&mut Self>,_:&mut Context<'_>,source:&[u8])->Poll<io::Result<usize>> {
++   if !self.write{return Poll::Ready(Err(io::ErrorKind::PermissionDenied.into()));}
++   let mut data=lock(&self.data);let start=if self.append{data.len()}else{match usize::try_from(self.position){Ok(value)=>value,Err(_)=>return Poll::Ready(Err(io::ErrorKind::InvalidInput.into()))}};
++   let Some(end)=start.checked_add(source.len())else{return Poll::Ready(Err(io::ErrorKind::InvalidInput.into()))};
++   if end>data.len(){data.resize(end,0);}data[start..end].copy_from_slice(source);drop(data);self.position=end as u64;Poll::Ready(Ok(source.len()))
++  }
++  fn poll_flush(self:Pin<&mut Self>,_:&mut Context<'_>)->Poll<io::Result<()>>{Poll::Ready(Ok(()))}
++  fn poll_shutdown(self:Pin<&mut Self>,_:&mut Context<'_>)->Poll<io::Result<()>>{Poll::Ready(Ok(()))}
++ }
++ impl AsyncSeek for File {
++  fn start_seek(mut self:Pin<&mut Self>,from:SeekFrom)->io::Result<()> {
++   let position=match from{SeekFrom::Start(value)=>i128::from(value),SeekFrom::Current(value)=>i128::from(self.position)+i128::from(value),SeekFrom::End(value)=>lock(&self.data).len()as i128+i128::from(value)};
++   self.position=u64::try_from(position).map_err(|_|io::Error::from(io::ErrorKind::InvalidInput))?;Ok(())
++  }
++  fn poll_complete(self:Pin<&mut Self>,_:&mut Context<'_>)->Poll<io::Result<u64>>{Poll::Ready(Ok(self.position))}
++ }
++}
++#[cfg(target_arch = "wasm32")]
++pub use ram::*;

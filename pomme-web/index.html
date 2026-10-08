@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#132638" />
+    <meta name="description" content="Pomme Minecraft browser client with a WebAssembly world and WebGPU rendering." />
+    <title>Pomme / browser</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <canvas id="world" aria-label="Interactive voxel world" tabindex="0"></canvas>
+
+    <header class="topbar">
+      <a class="wordmark" href="./" aria-label="Pomme browser home"><span class="wordmark-icon" aria-hidden="true"></span>Pomme <span class="wordmark-detail">/ browser</span></a>
+      <button id="settings-toggle" class="button button-quiet" type="button" aria-label="Open graphics settings" aria-expanded="false" aria-controls="settings"><svg aria-hidden="true" viewBox="0 0 20 20" fill="none"><path d="M4 3v14M10 3v14M16 3v14M2 7h4M8 13h4M14 8h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>Settings</button>
+    </header>
+
+    <button id="worlds-toggle" class="button button-quiet worlds-toggle" type="button" aria-controls="worlds" aria-expanded="false">Worlds &amp; servers</button>
+    <aside id="worlds" class="worlds-panel glass" hidden>
+      <h2>Worlds &amp; servers</h2>
+      <label class="file-label">Minecraft textures &amp; models<input id="resource-pack" type="file" accept=".zip,.jar" /></label>
+      <p id="pack-status" class="muted">Import your 1.20.4 client JAR or a resource pack.</p>
+      <label class="file-label">Java world files<input id="world-files" type="file" accept=".mca,.dat" multiple /></label>
+      <label class="file-label">Java world folder<input id="world-folder" type="file" webkitdirectory multiple /></label>
+      <p class="muted">Select a world folder to include saved ground items, or select region files and optionally level.dat. Imported worlds allow local building.</p>
+      <button id="resume-import" class="button button-secondary" type="button" hidden>Resume saved Java world</button>
+      <form id="browser-world-form">
+        <h3>Browser terrain</h3>
+        <p class="muted">Java 1.21.11 terrain runs in your browser. This preview generates biomes and terrain surfaces; trees, ores, carvers and completed structures are still being added. Load your 1.21.11 client JAR for textures, items and crafting.</p>
+        <div class="server-row"><label>World name<input id="browser-world-name" value="Browser world" maxlength="64" /></label><label>Seed<input id="browser-world-seed" value="1650" maxlength="21" required /></label></div>
+        <label>Dimension<select id="browser-world-dimension"><option value="minecraft:overworld">Overworld</option><option value="minecraft:the_nether">Nether</option><option value="minecraft:the_end">End</option></select></label>
+        <button class="button button-secondary" type="submit">Create terrain world</button>
+        <button id="resume-generated" class="button button-quiet" type="button" hidden>Resume saved browser terrain</button>
+        <p id="browser-world-status" class="muted" role="status">Terrain and local edits are saved on this device.</p>
+      </form>
+      <form id="singleplayer-form">
+        <h3>Singleplayer</h3>
+        <label>Local world service<input id="singleplayer-service" value="http://127.0.0.1:5175" type="url" required /></label>
+        <div class="server-row"><label>World name<input id="singleplayer-name" value="My world" maxlength="64" /></label><label>Seed<input id="singleplayer-seed" value="1650" /></label></div>
+        <label>Game mode<select id="singleplayer-mode"><option value="survival">Survival</option><option value="creative">Creative</option></select></label>
+        <button id="singleplayer-create" class="button button-secondary" type="button">Create world</button>
+        <button id="singleplayer-refresh" class="button button-quiet" type="button">Refresh worlds</button>
+        <label>Saved worlds<select id="singleplayer-world"><option value="">Refresh to list local worlds</option></select></label>
+        <button class="button button-primary" type="submit">Play selected world</button>
+        <button id="singleplayer-stop" class="button button-secondary" type="button" hidden>Save &amp; quit</button>
+        <p id="singleplayer-status" class="muted" role="status">Start the local world service with npm run singleplayer.</p>
+      </form>
+      <form id="server-form">
+        <label>Server address<input id="server-host" value="localhost" autocomplete="off" required /></label>
+        <div class="server-row"><label>Port<input id="server-port" type="number" min="1" max="65535" value="25565" required /></label><label>Username<input id="server-username" value="Player" maxlength="16" required /></label></div>
+        <label>Account<select id="server-auth"><option value="microsoft">Microsoft account</option><option value="offline">Offline / local server</option></select></label>
+        <label>Java version<select id="server-version"><option value="1.20.4">1.20.4</option><option value="1.21.11">1.21.11</option><option value="26.1">26.1</option></select></label>
+        <label>Server resource packs<select id="server-packs"><option value="prompt">Ask when requested</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select></label>
+        <label>Gateway URL<input id="server-gateway" value="ws://127.0.0.1:5174" required /></label>
+        <p class="muted">Start the local gateway with <code>npm run gateway</code>.</p>
+        <button id="connect" class="button button-primary" type="submit">Connect to server</button>
+        <button id="disconnect" class="button button-secondary" type="button" hidden>Disconnect</button>
+      </form>
+      <p id="connection-status" role="status"></p>
+      <div id="account-code" hidden><a id="account-link" target="_blank" rel="noopener">Sign in to Microsoft</a><p>Enter code <strong id="account-code-text"></strong></p></div>
+    </aside>
+
+    <aside id="settings" class="settings-panel glass" aria-labelledby="settings-heading" hidden>
+      <div class="settings-heading"><h2 id="settings-heading">Graphics &amp; sunlight</h2><span class="muted">Live controls</span></div>
+      <div class="setting-row">
+        <label for="quality">Shader quality</label>
+        <select id="quality"><option value="low">Low</option><option value="balanced" selected>Balanced</option><option value="high">High</option></select>
+      </div>
+      <div class="setting-range">
+        <label for="resolution">Render resolution <span class="setting-hint">50–100%</span></label>
+        <input id="resolution" type="range" min="0.5" max="1" step="0.01" value="0.85" aria-label="Render resolution scale" />
+      </div>
+      <label class="checkbox-row" for="adaptive"><span><strong>Adaptive resolution</strong><small>Adjust scale toward 60 fps</small></span><input id="adaptive" type="checkbox" checked /><span class="switch" aria-hidden="true"></span></label>
+      <div class="setting-divider"></div>
+      <label class="checkbox-row" for="cycle"><span><strong>Day &amp; night cycle</strong><small>Let the sun move through the sky</small></span><input id="cycle" type="checkbox" checked /><span class="switch" aria-hidden="true"></span></label>
+      <div class="setting-range">
+        <label for="sun">Time of day <span class="setting-hint">Sun position</span></label>
+        <input id="sun" type="range" min="0" max="1" step="0.001" value="0.22" aria-label="Time of day" />
+        <div class="range-endpoints" aria-hidden="true"><span>Dawn</span><span>Day</span><span>Night</span></div>
+      </div>
+      <div class="setting-divider"></div>
+      <button id="benchmark" class="button button-secondary benchmark-button" type="button">Benchmark 30 seconds</button>
+      <p id="benchmark-status" class="benchmark-status" aria-live="polite">Record frame times on your hardware.</p>
+      <button id="export-results" class="button button-quiet export-button" type="button">Export results</button>
+      <p class="settings-footnote">60 fps is a target. Your hardware, browser, and scene determine actual performance.</p>
+    </aside>
+
+    <div id="welcome" class="overlay" role="dialog" aria-modal="true" aria-labelledby="welcome-heading">
+      <section class="welcome-panel glass">
+        <div class="welcome-worldmark" aria-hidden="true"><span></span><span></span><span></span></div>
+        <p class="engine-note">WASM world · WebGPU rendering</p>
+        <h1 id="welcome-heading">Step into the world.</h1>
+        <p class="welcome-copy">Explore the demo, import a Java world, or connect to a Minecraft server.</p>
+        <button id="play" class="button button-primary play-button" type="button">Enter world <svg aria-hidden="true" viewBox="0 0 20 20" fill="none"><path d="m8 5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
+        <div class="controls-grid" aria-label="Keyboard and mouse controls">
+          <div><span class="control-keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span>Move</span></div>
+          <div><span class="control-keys"><kbd>Mouse</kbd></span><span>Look around</span></div>
+          <div><span class="control-keys"><kbd>Space</kbd></span><span>Jump</span></div>
+          <div><span class="control-keys"><kbd>Ctrl</kbd><kbd>Shift</kbd></span><span>Sprint / sneak</span></div>
+          <div><span class="control-keys"><kbd>Left click</kbd></span><span>Break block</span></div>
+          <div><span class="control-keys"><kbd>Right click</kbd></span><span>Place block</span></div>
+          <div><span class="control-keys"><kbd>1</kbd><span class="key-range">–</span><kbd>6</kbd></span><span>Select block</span></div>
+          <div><span class="control-keys"><kbd>Esc</kbd></span><span>Release cursor</span></div>
+        </div>
+        <p class="build-note">Java 1.20.4 browser engine. Keyboard and mouse required.</p>
+      </section>
+    </div>
+
+    <div id="pause" class="overlay" role="dialog" aria-modal="true" aria-labelledby="pause-heading" hidden>
+      <section class="pause-panel glass">
+        <p class="engine-note">Pomme / browser</p>
+        <h2 id="pause-heading">Take a moment.</h2>
+        <p>Your world is waiting. Adjust the graphics or jump back in.</p>
+        <button id="resume" class="button button-primary" type="button">Resume exploring</button>
+        <p class="pause-hint"><kbd>E</kbd> releases the cursor while exploring.</p>
+      </section>
+    </div>
+
+    <div id="error" class="error-panel glass" role="alert" hidden></div>
+    <div id="crosshair" aria-hidden="true"><span></span><span></span></div>
+
+    <div class="world-info" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span id="world-status">Preparing the world…</span></div>
+    <aside class="performance-strip glass" aria-label="Performance statistics">
+      <div class="performance-primary"><span id="fps">—</span><span>fps</span></div>
+      <dl>
+        <div><dt>Frame</dt><dd id="frame-time">— ms</dd></div>
+        <div><dt>GPU</dt><dd id="gpu-time">—</dd></div>
+        <div><dt>Geometry</dt><dd id="geometry">—</dd></div>
+        <div><dt>Sun cache</dt><dd id="shadow-cache">—</dd></div>
+        <div><dt>Scale</dt><dd id="render-scale">85%</dd></div>
+      </dl>
+    </aside>
+
+    <nav id="hotbar" class="hotbar" aria-label="Block selection">
+      <button class="hotbar-slot selected" data-block="1" type="button" aria-label="Select grass block, key 1" aria-pressed="true"><span class="slot-key">1</span><span class="block-preview grass" aria-hidden="true"><i class="face top"></i><i class="face front"></i><i class="face side"></i></span><span class="slot-name">Grass</span></button>
+      <button class="hotbar-slot" data-block="3" type="button" aria-label="Select stone block, key 2" aria-pressed="false"><span class="slot-key">2</span><span class="block-preview stone" aria-hidden="true"><i class="face top"></i><i class="face front"></i><i class="face side"></i></span><span class="slot-name">Stone</span></button>
+      <button class="hotbar-slot" data-block="4" type="button" aria-label="Select wood block, key 3" aria-pressed="false"><span class="slot-key">3</span><span class="block-preview wood" aria-hidden="true"><i class="face top"></i><i class="face front"></i><i class="face side"></i></span><span class="slot-name">Wood</span></button>
+      <button class="hotbar-slot" data-block="6" type="button" aria-label="Select sand block, key 4" aria-pressed="false"><span class="slot-key">4</span><span class="block-preview sand" aria-hidden="true"><i class="face top"></i><i class="face front"></i><i class="face side"></i></span><span class="slot-name">Sand</span></button>
+      <button class="hotbar-slot" data-block="5" type="button" aria-label="Select leaves block, key 5" aria-pressed="false"><span class="slot-key">5</span><span class="block-preview leaves" aria-hidden="true"><i class="face top"></i><i class="face front"></i><i class="face side"></i></span><span class="slot-name">Leaves</span></button>
+      <button class="hotbar-slot" data-block="8" type="button" aria-label="Select lamp block, key 6" aria-pressed="false"><span class="slot-key">6</span><span class="block-preview lamp" aria-hidden="true"><i class="face top"></i><i class="face front"></i><i class="face side"></i></span><span class="slot-name">Lamp</span></button>
+    </nav>
+    <div class="in-world-hint"><kbd>E</kbd> release cursor</div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

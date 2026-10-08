@@ -1,0 +1,76 @@
+import assert from 'node:assert/strict';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { chromium } from 'playwright';
+import { unzipSync, zipSync } from '../vendor/fflate.js';
+
+const encode = value => new TextEncoder().encode(JSON.stringify(value));
+let files = {}, nativeAssets = false;
+if (process.env.POMME_MINECRAFT_JAR) {
+  files = unzipSync(new Uint8Array(await readFile(process.env.POMME_MINECRAFT_JAR)), { filter: entry => /^assets\/minecraft\/lang\/en_us\.json$/.test(entry.name) });
+  nativeAssets = true;
+}
+files['assets/test/lang/en_us.json'] = encode({ 'test.message': 'Message %s', 'test.title': 'Title %s', 'test.score': 'Score', 'test.advancement': 'Advancement %s', 'test.description': 'Description %s', 'test.page': 'Book %s', 'test.sign': '%s!' });
+const archive = zipSync(files), errors = [];
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
+try {
+  const page = await browser.newPage({ viewport: { width: 1100, height: 760 } }); page.on('pageerror', error => errors.push(error.message));
+  await page.route('**/__text-ui-assets.zip', route => route.fulfill({ body: Buffer.from(archive), contentType: 'application/zip' }));
+  await page.goto(new URL('/src/text.js', process.env.POMME_URL ?? 'http://127.0.0.1:5173').href);
+  const result = await page.evaluate(async ({ nativeAssets }) => {
+    const { setLanguage } = await import('/src/text.js'), { loadResourcePack } = await import('/src/assets.js');
+    const { ServerGameplay } = await import('/src/gameplay.js'), { SignEditor } = await import('/src/sign-editor.js'), { MinecraftSession } = await import('/src/minecraft.js');
+    const registry = { blocks: [{ name: 'air', minStateId: 0, maxStateId: 0, boundingBox: 'empty' }], items: [{ id: 1, name: 'written_book', displayName: 'Written book', stackSize: 1 }], entities: [] };
+    const assets = await loadResourcePack(new Uint8Array(await (await fetch('/__text-ui-assets.zip')).arrayBuffer()), { registry }); setLanguage(assets.languages);
+    document.body.replaceChildren(); document.body.style.background = '#1d3849';
+    const check = (value, message) => { if (!value) throw new Error(message); }, packets = [];
+    const state = { status: 'playing', health: 20, food: 20, username: 'Alex', gameMode: 1, selectedSlot: 0, effects: [] };
+    const session = { state, packet(name, data) { packets.push({ name, data }); return true; }, closeWindow() {}, chat() { return true; }, dig() { return true; }, setFlying() {} };
+    const player = { position: [0, 64, 0], eye: [0, 65.62, 0], velocity: [0, 0, 0], target: () => null };
+    const gameplay = new ServerGameplay({ session, registry, player, world: { block_get: () => 0 } }); gameplay.state(state);
+    const styled = (key, color, flags = {}) => ({ translate: key, color, ...flags, with: [{ text: 'Alex', bold: true }] });
+    const hasStyle = (element, text, color, property, expected) => [...element.querySelectorAll('span')].some(span => span.textContent === text && getComputedStyle(span).color === color && (!property || getComputedStyle(span)[property] === expected));
+    gameplay.event({ type: 'chat', text: 'flat fallback', component: styled('test.message', 'green') });
+    check(hasStyle(gameplay.ui['chat-log'], 'Alex', 'rgb(85, 255, 85)', 'fontWeight', '700'), 'Chat must keep imported translation argument color and bold style.');
+    const wireSession = new MinecraftSession({ registry, onEvent: event => gameplay.event(event) });
+    wireSession.handlePacket('registry_data', { codec: { 'minecraft:chat_type': { value: [{ id: 2, name: 'minecraft:msg_command_incoming', element: { chat: { translation_key: nativeAssets ? 'commands.message.display.incoming' : 'test.message', parameters: ['sender', 'content'], style: { color: 'gray', italic: true } } } }] } } });
+    wireSession.handlePacket('profileless_chat', { type: 2, name: { text: 'Alex' }, message: { text: 'Secret' } });
+    const whisper = gameplay.ui['chat-log'].lastElementChild;
+    if (nativeAssets) check(whisper.textContent === 'Alex whispers to you: Secret', 'Native chat_type registry must select the actual imported whisper translation.');
+    check([...whisper.querySelectorAll('span')].some(span => getComputedStyle(span).color === 'rgb(170, 170, 170)' && getComputedStyle(span).fontStyle === 'italic'), 'Native whisper envelope must preserve registry gray/italic style.');
+    gameplay.event({ type: 'chat', text: 'flat fallback', component: styled('test.message', 'gold'), actionBar: true });
+    check(hasStyle(gameplay.ui.actionbar, 'Alex', 'rgb(255, 170, 0)', 'fontWeight', '700'), 'Action bar must preserve component styles.');
+    gameplay.event({ type: 'hud', name: 'set_title_text', data: { text: styled('test.title', 'red') } });
+    gameplay.event({ type: 'hud', name: 'set_title_subtitle', data: { text: { text: 'Subtitle', italic: true, color: 'aqua' } } });
+    check(hasStyle(gameplay.ui.title, 'Alex', 'rgb(255, 85, 85)', 'fontWeight', '700'), 'Title must keep component styles.');
+    check(hasStyle(gameplay.ui.subtitle, 'Subtitle', 'rgb(85, 255, 255)', 'fontStyle', 'italic'), 'Subtitle must keep italic style.');
+    gameplay.event({ type: 'hud', name: 'boss_bar', data: { action: 0, entityUUID: 'boss', title: { text: 'Styled boss', color: 'light_purple', underlined: true }, health: .5, color: 0 } });
+    check(hasStyle(gameplay.ui.bossbars, 'Styled boss', 'rgb(255, 85, 255)', 'textDecorationLine', 'underline'), 'Boss label must retain native decoration.');
+    gameplay.event({ type: 'hud', name: 'scoreboard_objective', data: { name: 'score', action: 0, displayText: { translate: 'test.score', color: 'aqua' } } });
+    gameplay.event({ type: 'hud', name: 'scoreboard_display_objective', data: { position: 1, name: 'score' } });
+    gameplay.event({ type: 'hud', name: 'teams', data: { mode: 0, team: 'red', formatting: 12, prefix: { text: '[R]', color: 'gold' }, suffix: { text: '!', underlined: true }, players: ['Alex'] } });
+    gameplay.event({ type: 'hud', name: 'scoreboard_score', data: { scoreName: 'score', itemName: 'Alex', value: 7, number_format: 1, styling: { color: 'green', bold: true } } });
+    check(hasStyle(gameplay.ui.scoreboard, '[R]', 'rgb(255, 170, 0)'), 'Scoreboard prefix must override the team color.');
+    check(hasStyle(gameplay.ui.scoreboard, 'Alex', 'rgb(255, 85, 85)'), 'Scoreboard name must inherit the team color.');
+    check(hasStyle(gameplay.ui.scoreboard, '7', 'rgb(85, 255, 85)', 'fontWeight', '700'), 'Native styled score numbers must retain their format.');
+    gameplay.event({ type: 'advancements', reset: true, advancementMapping: [{ key: 'root', value: { displayData: { title: styled('test.advancement', 'yellow'), description: styled('test.description', 'green', { italic: true }), frameType: 1, xCord: 0, yCord: 0, flags: { show_toast: true }, icon: { present: false } }, requirements: [['done']] } }], progressMapping: [] });
+    gameplay.openPanel('advancements');
+    check(hasStyle(gameplay.ui['progress-panel'], 'Alex', 'rgb(255, 255, 85)', 'fontWeight', '700'), 'Advancement title must preserve its component style.');
+    check([...gameplay.ui['progress-panel'].querySelectorAll('p span')].some(span => getComputedStyle(span).fontStyle === 'italic'), 'Advancement description must preserve italic text.');
+    gameplay.closePanel(false);
+    const editor = new SignEditor({ session, getEntity: () => ({ nbt: { front_text: { messages: [JSON.stringify(styled('test.sign', 'red')), '', '', ''], color: 'red', has_glowing_text: true } } }), getMaterial: () => ({ name: 'oak_sign' }) });
+    check(editor.open({ x: 0, y: 64, z: 0 }), 'Sign editor should open.'); check(editor.inputs[0].value === 'Alex!', 'Sign editor must translate component strings into native plain editable text.');
+    if (nativeAssets) check(editor.title.textContent === 'Edit Sign Message', 'Sign editor label must come from the imported native language.'); editor.close(false); editor.destroy();
+    const pages = [{ translate: 'test.page', color: 'green', with: [{ text: '<img src=x onerror=alert(1)>', bold: true }] }];
+    const slots = Array.from({ length: 46 }, () => ({ present: false })); slots[36] = { present: true, itemId: 1, itemCount: 1, nbtData: { title: 'Styled book', author: 'Alex', pages: pages.map(JSON.stringify) } };
+    gameplay.inventory({ windowId: 0, slots }); check(gameplay.openBook(0), 'Confirmed written book should open.');
+    const book = gameplay.ui['book-panel']; check(book.querySelector('.server-book-page').textContent === 'Book <img src=x onerror=alert(1)>', 'Written book must translate its component page.');
+    check(!book.querySelector('img'), 'Literal HTML in book text must create no HTML element.');
+    check(hasStyle(book, '<img src=x onerror=alert(1)>', 'rgb(85, 255, 85)', 'fontWeight', '700'), 'Book page must preserve native component styles.');
+    setLanguage(new Map([['en_us', { ...assets.languages.get('en_us'), 'test.message': 'Reloaded %s' }]])); gameplay.setAssets({});
+    check(gameplay.ui['chat-log'].firstElementChild.textContent === 'Reloaded Alex', 'Existing chat must use language changes after a pack reload.');
+    check(gameplay.ui.actionbar.textContent === 'Reloaded Alex', 'Existing action bar must use language changes after a pack reload.');
+    return { nativeAssets, chat: 'green/bold', nativeWhisper: 'chat_type registry translation and gray/italic style', actionbar: 'gold/bold', title: 'red/bold', subtitle: 'aqua/italic', boss: 'purple/underline', scoreboard: 'team/prefix/number styles', advancement: 'yellow/bold and green/italic', writtenBook: 'green/bold safe literal HTML', sign: 'translated plain editor/native label', packReload: 'existing chat and HUD translated again', nativePackets: packets.length };
+  }, { nativeAssets });
+  assert.deepEqual(errors, []); await mkdir('test-results', { recursive: true });
+  await page.screenshot({ path: 'test-results/text-ui-rendering.png' }); await writeFile('test-results/text-ui-rendering.json', JSON.stringify(result, null, 2)); console.log(JSON.stringify(result, null, 2));
+} finally { await browser.close(); }
