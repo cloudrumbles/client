@@ -1,0 +1,116 @@
+{
+  "workflow": "CI",
+  "event": "workflow_dispatch",
+  "run_id": 37786632158,
+  "url": "https://github.com/cloudrumbles/client/actions/runs/37786632158",
+  "source_revision": "e9f3e7a41b1aa61ace14ac80735e57d51af00fd8",
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2026-10-08T13:43:35Z",
+  "updated_at": "2026-10-08T14:13:56Z",
+  "passed_jobs": 8,
+  "jobs": [
+    {
+      "name": "client (ubuntu-latest)",
+      "databaseId": 113343884155,
+      "url": "https://github.com/cloudrumbles/client/actions/runs/37786632158/job/113343884155",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-08T13:45:39Z",
+      "completedAt": "2026-10-08T14:13:55Z"
+    },
+    {
+      "name": "launcher-frontend",
+      "databaseId": 113343884292,
+      "url": "https://github.com/cloudrumbles/client/actions/runs/37786632158/job/113343884292",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-08T13:45:39Z",
+      "completedAt": "2026-10-08T13:46:05Z"
+    },
+    {
+      "name": "launcher (ubuntu-latest)",
+      "databaseId": 113343884486,
+      "url": "https://github.com/cloudrumbles/client/actions/runs/37786632158/job/113343884486",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-08T13:45:40Z",
+      "completedAt": "2026-10-08T13:57:34Z"
+    },
+    {
+      "name": "pr-template",
+      "databaseId": 113343884498,
+      "url": "https://github.com/cloudrumbles/client/actions/runs/37786632158/job/113343884498",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-08T13:45:39Z",
+      "completedAt": "2026-10-08T13:45:46Z"
+    },
+    {
+      "name": "launcher (windows-latest)",
+      "databaseId": 113343884636,
+      "url": "https://github.com/cloudrumbles/client/actions/runs/37786632158/job/113343884636",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-08T13:45:39Z",
+      "completedAt": "2026-10-08T13:50:06Z"
+    },
+    {
+      "name": "launcher (macos-latest)",
+      "databaseId": 113343884679,
+      "url": "https://github.com/cloudrumbles/client/actions/runs/37786632158/job/113343884679",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-08T13:45:46Z",
+      "completedAt": "2026-10-08T13:46:53Z"
+    },
+    {
+      "name": "client (windows-latest)",
+      "databaseId": 113343884703,
+      "url": "https://github.com/cloudrumbles/client/actions/runs/37786632158/job/113343884703",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-08T13:45:41Z",
+      "completedAt": "2026-10-08T13:50:35Z"
+    },
+    {
+      "name": "client (macos-latest)",
+      "databaseId": 113343884735,
+      "url": "https://github.com/cloudrumbles/client/actions/runs/37786632158/job/113343884735",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-08T13:45:44Z",
+      "completedAt": "2026-10-08T13:50:55Z"
+    }
+  ],
+  "linux_qa_steps": [
+    {
+      "name": "Acquire fault driver selftests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Compile and test optional renderer fault injection",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Singleplayer",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "driver_selftests": {
+    "passed": 9,
+    "failed": 0
+  },
+  "renderer_fault_injection_client_tests": {
+    "passed": 767,
+    "failed": 0,
+    "ignored": 0
+  },
+  "renderer_fault_injection_release_clippy": "passed (-D warnings, all targets)",
+  "qa_log_file": "ci-qa.log",
+  "qa_log_sha256": "27acdf58ff18ff9018ad170a5f25d33039255d0a3523bbe2ccebd2368e5e777c",
+  "qa_log_note": "Selected original Linux job log lines: complete Python selftest step; Rust commands, build completion, capture regressions and final full-suite result. ANSI escapes removed."
+}

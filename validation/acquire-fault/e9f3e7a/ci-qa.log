@@ -1,0 +1,38 @@
+client (ubuntu-latest)	Acquire fault driver selftests	﻿2026-10-08T14:04:26.7658345Z ##[group]Run python3 -B -m unittest discover -s pomme-client/tests -p 'test_acquire_fault_integration.py' -v
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7672821Z python3 -B -m unittest discover -s pomme-client/tests -p 'test_acquire_fault_integration.py' -v
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7736596Z shell: /usr/bin/bash -e {0}
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7736875Z env:
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7737085Z   CARGO_TERM_COLOR: always
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7737351Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7737896Z   CARGO_HOME: /home/runner/.cargo
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7738156Z   CARGO_INCREMENTAL: 0
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7738376Z   CACHE_ON_FAILURE: true
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7738646Z   VULKAN_SDK: /home/runner/vulkan-sdk/1.4.341.0/x86_64
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7738958Z   VULKAN_VERSION: 1.4.341.0
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7739334Z   VK_LAYER_PATH: /home/runner/vulkan-sdk/1.4.341.0/x86_64/share/vulkan/explicit_layer.d
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7739845Z   LD_LIBRARY_PATH: /home/runner/vulkan-sdk/1.4.341.0/x86_64/lib:
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.7740178Z ##[endgroup]
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8814459Z test_complete_capture_checks_revision_and_exact_bound (test_acquire_fault_integration.CaptureCompletionTests.test_complete_capture_checks_revision_and_exact_bound) ... ok
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8818865Z test_files_existing_without_marker_are_incomplete (test_acquire_fault_integration.CaptureCompletionTests.test_files_existing_without_marker_are_incomplete) ... ok
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8826998Z test_full_length_corrupt_png_is_not_accepted (test_acquire_fault_integration.CaptureCompletionTests.test_full_length_corrupt_png_is_not_accepted) ... ok
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8839903Z test_partial_marker_and_json_wait_for_complete_write (test_acquire_fault_integration.CaptureCompletionTests.test_partial_marker_and_json_wait_for_complete_write) ... ok
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8853076Z test_partial_png_and_wrong_length_wait_for_complete_write (test_acquire_fault_integration.CaptureCompletionTests.test_partial_png_and_wrong_length_wait_for_complete_write) ... ok
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8857150Z test_failed_layer_overrides_insert_message (test_acquire_fault_integration.ValidationEvidenceTests.test_failed_layer_overrides_insert_message) ... ok
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8859616Z test_inserted_layer_proves_activation_and_counts_errors (test_acquire_fault_integration.ValidationEvidenceTests.test_inserted_layer_proves_activation_and_counts_errors) ... ok
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8862365Z test_missing_layer_request_cannot_claim_zero_errors (test_acquire_fault_integration.ValidationEvidenceTests.test_missing_layer_request_cannot_claim_zero_errors) ... ok
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8865582Z test_request_and_manifest_loading_are_not_activation (test_acquire_fault_integration.ValidationEvidenceTests.test_request_and_manifest_loading_are_not_activation) ... ok
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8866883Z 
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8867127Z ----------------------------------------------------------------------
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8867506Z Ran 9 tests in 0.006s
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8867652Z 
+client (ubuntu-latest)	Acquire fault driver selftests	2026-10-08T14:04:26.8867736Z OK
+client (ubuntu-latest)	Compile and test optional renderer fault injection	﻿2026-10-08T14:04:26.8999672Z ##[group]Run cargo clippy -p pomme-client --release --all-targets --no-default-features --features renderer-fault-injection -- -D warnings
+client (ubuntu-latest)	Compile and test optional renderer fault injection	2026-10-08T14:04:26.9000757Z cargo clippy -p pomme-client --release --all-targets --no-default-features --features renderer-fault-injection -- -D warnings
+client (ubuntu-latest)	Compile and test optional renderer fault injection	2026-10-08T14:04:26.9001586Z cargo test -p pomme-client --release --no-default-features --features renderer-fault-injection
+client (ubuntu-latest)	Compile and test optional renderer fault injection	2026-10-08T14:04:38.3776960Z     Finished `release` profile [optimized] target(s) in 11.41s
+client (ubuntu-latest)	Compile and test optional renderer fault injection	2026-10-08T14:05:29.6499348Z     Finished `release` profile [optimized] target(s) in 51.18s
+client (ubuntu-latest)	Compile and test optional renderer fault injection	2026-10-08T14:05:29.7990717Z test shaderpack::capture::tests::opt_in_capture_stops_at_bound_and_releases_data_after_successful_write ... ok
+client (ubuntu-latest)	Compile and test optional renderer fault injection	2026-10-08T14:05:29.7991787Z test shaderpack::capture::tests::out_of_date_before_first_submit_never_makes_queries_ready ... ok
+client (ubuntu-latest)	Compile and test optional renderer fault injection	2026-10-08T14:05:29.7992960Z test shaderpack::capture::tests::resize_reload_drains_only_submitted_fence_completed_samples ... ok
+client (ubuntu-latest)	Compile and test optional renderer fault injection	2026-10-08T14:05:29.8001288Z test shaderpack::capture::tests::ordinary_gameplay_retains_nothing_for_one_million_frames ... ok
+client (ubuntu-latest)	Compile and test optional renderer fault injection	2026-10-08T14:05:29.9476298Z test result: ok. 767 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s

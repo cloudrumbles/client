@@ -28,9 +28,13 @@ Use a fresh target directory or force the build-script timestamp when rebuilding
 multiple worktrees in one target.
 
 CI run [37786632158](https://github.com/cloudrumbles/client/actions/runs/37786632158)
-is at the same exact source head. At evidence publication it is in progress,
-with the Python selftest and optional feature checks explicitly configured.
-Their execution is not claimed passed until the workflow reports it.
+completed successfully at the same exact source head: all eight jobs passed.
+The [Linux client job](https://github.com/cloudrumbles/client/actions/runs/37786632158/job/113343884155)
+executed all nine driver selftests, release Clippy with warnings denied and all
+767 client tests with `renderer-fault-injection`, and the singleplayer check.
+`ci-final.json` records the verified final API metadata; `ci-qa.log` contains
+the relevant original job log lines and final test counts. The initial
+`provenance.json` retains its historical in-progress status at first publication.
 
 This qualifies the software Vulkan host lifecycle on llvmpipe, including the
 production prepare/cancel/recreate/submit path. The injected result precedes
@@ -56,7 +60,12 @@ s = validation_status({'VK_INSTANCE_LAYERS': 'VK_LAYER_KHRONOS_validation'},
 assert s['validation_status'] == 'verified' and s['validation_errors'] == 0
 for name, digest in json.loads((p / 'provenance.json').read_text())['files_sha256'].items():
     assert hashlib.sha256((p / name).read_bytes()).hexdigest() == digest, name
-print('Saved capture, trace, layer proof and file hashes verified')
+ci = json.loads((p / 'ci-final.json').read_text())
+assert ci['source_revision'] == c['revision']
+assert ci['status'] == 'completed' and ci['conclusion'] == 'success'
+assert ci['passed_jobs'] == 8 and all(j['conclusion'] == 'success' for j in ci['jobs'])
+assert hashlib.sha256((p / ci['qa_log_file']).read_bytes()).hexdigest() == ci['qa_log_sha256']
+print('Saved capture, trace, layer proof, file hashes and exact-head CI verified')
 PY
 ```
 
