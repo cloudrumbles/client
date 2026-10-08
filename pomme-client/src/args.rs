@@ -32,7 +32,9 @@ pub struct LaunchArgs {
     #[arg(long, default_value_t = 360)]
     pub shader_height: u32,
     #[cfg(feature = "shader-packs")]
-    #[arg(long)]
+    /// Capture exactly this many submitted pack frames, then stop retaining
+    /// diagnostics.
+    #[arg(long, value_parser = clap::value_parser!(u32).range(1..=10_000))]
     pub shader_frames: Option<u32>,
     #[cfg(feature = "shader-packs")]
     #[arg(long, default_value = "shaderpack-live-output")]

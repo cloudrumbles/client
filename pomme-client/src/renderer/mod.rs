@@ -1618,6 +1618,10 @@ impl Renderer {
         ) {
             Ok(image) => image,
             Err(vk::Error::OutOfDateKHR) => {
+                #[cfg(feature = "shader-packs")]
+                if let Some(bridge) = &mut self.shader_bridge {
+                    bridge.cancel_prepared(frame);
+                }
                 self.swapchain_dirty = true;
                 return Ok(());
             }
@@ -2204,6 +2208,10 @@ impl Renderer {
 
         self.ctx.device.reset_fences(&[fence])?;
         self.ctx.graphics_queue.submit(&[submit_info], fence)?;
+        #[cfg(feature = "shader-packs")]
+        if pack_active && let Some(bridge) = &mut self.shader_bridge {
+            bridge.submitted(frame);
+        }
 
         let present_info = vk::PresentInfoKHR {
             wait_semaphore_count: 1,

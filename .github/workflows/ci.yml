@@ -77,6 +77,10 @@ jobs:
           cargo clippy -p pomme-client -p pomme-shaderpack --release --all-targets --no-default-features --features pomme-client/shader-packs -- -D warnings
           cargo test -p pomme-shaderpack --release --features vulkan
 
+      - name: Execute shader-pack client regressions
+        if: matrix.os == 'ubuntu-latest'
+        run: cargo test -p pomme-client --release --no-default-features --features shader-packs
+
       - name: Pin the steel revision
         if: matrix.os == 'ubuntu-latest'
         id: steel
