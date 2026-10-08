@@ -26,6 +26,8 @@ pub struct Pack {
     pub dimension: String,
     pub minecraft_version: u32,
     pub block_materials: BTreeMap<String, i32>,
+    pub entity_materials: BTreeMap<String, i32>,
+    pub item_materials: BTreeMap<String, i32>,
     pub ignored_profile_options: Vec<String>,
     option_rules: Vec<OptionRule>,
 }
@@ -164,6 +166,8 @@ impl Pack {
             dimension: dimension.to_owned(),
             minecraft_version,
             block_materials: BTreeMap::new(),
+            entity_materials: BTreeMap::new(),
+            item_materials: BTreeMap::new(),
             ignored_profile_options: Vec::new(),
             option_rules: Vec::new(),
         };
@@ -325,9 +329,57 @@ impl Pack {
                 }
             }
         }
+        for kind in ["entity", "item"] {
+            if let Ok(text) = pack.text(&format!("{kind}.properties")) {
+                let text = text
+                    .lines()
+                    .filter(|line| {
+                        let line = line.trim();
+                        !line.starts_with('#')
+                            || ["#if", "#else", "#endif", "#define", "#undef"]
+                                .iter()
+                                .any(|p| line.starts_with(p))
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                let source = format!(
+                    "{}\n{prelude}\nPOMME_IDENTITIES_BEGIN\n{text}",
+                    pack.environment()
+                );
+                let output = cpp(&source)?;
+                let (_, output) = output
+                    .split_once("POMME_IDENTITIES_BEGIN")
+                    .context("material marker missing")?;
+                let map = if kind == "entity" {
+                    &mut pack.entity_materials
+                } else {
+                    &mut pack.item_materials
+                };
+                for (key, names) in parse_properties(output) {
+                    if let Some(id) = key.strip_prefix(&format!("{kind}.")) {
+                        let id: i32 = id.parse()?;
+                        for name in names.split_whitespace() {
+                            map.insert(name.strip_prefix("minecraft:").unwrap_or(name).into(), id);
+                        }
+                    }
+                }
+            }
+        }
         Ok(pack)
     }
 
+    pub fn entity_material_id(&self, name: &str) -> i32 {
+        self.entity_materials
+            .get(name.strip_prefix("minecraft:").unwrap_or(name))
+            .copied()
+            .unwrap_or(-1)
+    }
+    pub fn item_material_id(&self, name: &str) -> i32 {
+        self.item_materials
+            .get(name.strip_prefix("minecraft:").unwrap_or(name))
+            .copied()
+            .unwrap_or(-1)
+    }
     pub fn block_material_id(&self, descriptor: &str) -> i32 {
         let descriptor = descriptor.strip_prefix("minecraft:").unwrap_or(descriptor);
         let (name, props) = descriptor.split_once('[').unwrap_or((descriptor, ""));
@@ -573,6 +625,8 @@ mod tests {
             dimension: "world0".into(),
             minecraft_version: 12111,
             block_materials: BTreeMap::new(),
+            entity_materials: BTreeMap::new(),
+            item_materials: BTreeMap::new(),
             ignored_profile_options: Vec::new(),
             option_rules: Vec::new(),
         };

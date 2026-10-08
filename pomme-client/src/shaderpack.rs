@@ -213,6 +213,9 @@ impl Bridge {
     pub fn clear(&self) {
         self.shared.lock().unwrap().clear();
     }
+    pub fn native(&self) -> bool {
+        self.native.is_some()
+    }
     pub fn snapshot(&self) -> Arc<WorldSnapshot> {
         Arc::new(self.shared.lock().unwrap().snapshot())
     }
@@ -413,6 +416,7 @@ impl NativePack {
         format: pyronyx::vk::Format,
         scene: Option<&crate::renderer::scene::SceneSnapshot>,
     ) -> anyhow::Result<bool> {
+        let preparation_start = std::time::Instant::now();
         use pomme_shaderpack::pack::Pack;
         use pomme_shaderpack::vulkan::engine::Engine;
         use pomme_shaderpack::vulkan::present::Presenter;
@@ -436,7 +440,7 @@ impl NativePack {
             std::fs::write(
                 output.join("vulkan-live.json"),
                 serde_json::to_vec_pretty(
-                    &serde_json::json!({"backend":"Vulkan in native game window","device":unsafe{std::ffi::CStr::from_ptr(self.gpu.physical.get_properties().device_name.as_ptr())}.to_string_lossy(),"revision":pomme_shaderpack::BUILD_REVISION,"pack_hash":e.pack.digest,"options":e.pack.options,"size":self.size,"passes":e.pass_names(),"measurement":"Vulkan pack-pass timestamp queries; excludes forward actors, UI and presentation; not gameplay FPS","samples":self.capture.samples,"reloads":self.capture.reloads}),
+                    &serde_json::json!({"backend":"Vulkan in native game window","device":unsafe{std::ffi::CStr::from_ptr(self.gpu.physical.get_properties().device_name.as_ptr())}.to_string_lossy(),"revision":pomme_shaderpack::BUILD_REVISION,"pack_hash":e.pack.digest,"options":e.pack.options,"size":self.size,"passes":e.pass_names(),"measurement":"Vulkan pack-pass timestamp queries; includes lowered actors; excludes remaining forward actors, UI and presentation; not gameplay FPS","samples":self.capture.samples,"reloads":self.capture.reloads}),
                 )?,
             )?;
             self.capture.finish();
@@ -553,6 +557,13 @@ impl NativePack {
             e.replace_atlas(a.size, &a.pixels)?;
             self.atlas_revision = a.revision;
         }
+        e.prepare_geometry(
+            slot,
+            scene.and_then(|s| s.pack_geometry.as_ref()).map_or_else(
+                || Arc::new(pomme_shaderpack::geometry::FrameGeometry::default()),
+                |g| Arc::clone(&g.geometry),
+            ),
+        )?;
         let now = std::time::Instant::now();
         input.frame = self.frame;
         input.seconds = self.start.elapsed().as_secs_f32();
@@ -566,9 +577,18 @@ impl NativePack {
             serde_json::json!({"frame":self.frame,"world_time":input.world_time,"world_day":input.world_day,"rain":input.rain,"eye_in_water":input.eye_in_water,"world_revision":input.world_revision,"camera":input.camera.to_array(),"pack_hash":e.pack.digest,"history_invalidations":e.invalidations,"game":state.game}),
         );
         if let Some(sample) = self.capture.sample_mut(slot) {
+            sample["pack_preparation_ms"] = preparation_start
+                .elapsed()
+                .as_secs_f64()
+                .mul_add(1000., 0.)
+                .into();
+            sample["geometry_preparation"] = serde_json::to_value(&e.geometry_preparation)?;
             sample["renderer_path"] = serde_json::to_value(crate::renderer::scene::path())?;
             if let Some(scene) = scene {
                 sample["scene_snapshot"] = scene.evidence();
+                if let Some(g) = &scene.pack_geometry {
+                    sample["actor_lowering"] = g.evidence();
+                }
                 sample["scene_snapshot"]["pack_sections"] = state.section_count().into();
                 sample["scene_snapshot"]["pack_world_generation"] = state.generation.into();
             }
@@ -580,6 +600,7 @@ impl NativePack {
         e.record(cmd, slot, self.input.as_ref().unwrap())?;
         if let Some(s) = self.capture.sample_mut(slot) {
             s["history_invalidations"] = e.invalidations.into();
+            s["geometry_stages"] = serde_json::to_value(&e.geometry_stages)?;
         }
         self.presenter
             .as_ref()

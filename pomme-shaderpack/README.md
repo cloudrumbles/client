@@ -8,10 +8,10 @@ remains available for compatibility/reference tests.
 
 **This is a working single-window prototype, with compatibility and performance
 work remaining.** Actual chunk meshes, stitched resource atlas, block/sky light,
-camera, time, weather and climate drive the Vulkan pack graph. Existing native
-entities, held items, particles, weather geometry and UI draw afterwards with
-shared scene depth; those forward draws do not yet use the pack's corresponding
-geometry programs or contribute to its shadows/postprocessing. Full Iris visual
+camera, time, weather and climate drive the Vulkan pack graph. On `--renderer-path shared`, real Cow/Chest/held-item assets now enter their pack
+geometry stages, with pack-controlled actor shadows. Remaining native actor kinds,
+empty-hand skin, particles and weather draw afterwards with shared scene depth;
+HUD stays outside world postprocessing. See [actor scope](../pomme-client/ACTOR_PACK_STAGES.md). Full Iris visual
 parity, Voxy-style distant terrain and GTX 1650 Ti qualification remain open.
 See [implementation status](IMPLEMENTATION.md).
 
@@ -98,7 +98,10 @@ discards the unsubmitted pack state, consumes the acquired semaphore and rebuild
 the swapchain; native rendering resumes with an explicit error. F6 retries the
 selected pack. Internal pack resolution fits the
 requested shader width/height within the window aspect ratio; resize rebuilds
-its targets. `--shader-frames` captures pass evidence and leaves gameplay running.
+its targets. `--shader-frames N` (1–10,000) captures exactly N submitted pack frames, saves
+pass evidence, releases diagnostics and leaves gameplay running. Ordinary gameplay
+retains no frame/reload JSON. Only successfully submitted, fence-completed frames
+are eligible for timestamp reads, including after out-of-date acquisition/reload.
 F2 captures the complete native window, including UI and forward actors.
 
 For the separate GL reference viewport, add `--shader-reference-window`; R/P

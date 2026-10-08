@@ -3,6 +3,10 @@ pub mod camera;
 pub mod chunk;
 pub(crate) mod context;
 pub mod entity_model;
+#[cfg(feature = "shader-packs")]
+pub(crate) mod pack_geometry;
+#[cfg(feature = "shader-packs")]
+mod pack_scene;
 pub(crate) mod packing;
 pub mod pipelines;
 pub mod scene;
@@ -153,6 +157,8 @@ pub struct Renderer {
     scene_publisher: scene::ScenePublisher,
     #[cfg(feature = "shader-packs")]
     shader_bridge: Option<crate::shaderpack::Bridge>,
+    #[cfg(feature = "shader-packs")]
+    pack_actor_environment: pack_scene::ActorEnvironment,
     ctx: VulkanContext,
     swapchain: Swapchain,
     camera: Camera,
@@ -487,6 +493,8 @@ impl Renderer {
             scene_publisher: scene::ScenePublisher::default(),
             #[cfg(feature = "shader-packs")]
             shader_bridge,
+            #[cfg(feature = "shader-packs")]
+            pack_actor_environment: pack_scene::ActorEnvironment::default(),
             ctx,
             swapchain: swapchain_state,
             camera,
@@ -1038,7 +1046,22 @@ impl Renderer {
     /// per mesh that hit pool exhaustion, the section indices dropped (need
     /// re-mesh); empty on success.
     #[cfg(feature = "shader-packs")]
-    pub fn shader_environment(&mut self, game: &crate::app::phases::in_game::GameState) {
+    pub fn shader_environment(
+        &mut self,
+        game: &crate::app::phases::in_game::GameState,
+        entities: &[EntityRenderInfo],
+        blocks: &[BlockEntityRenderInfo],
+    ) {
+        if self.shader_bridge.as_ref().is_some_and(|b| b.native())
+            && scene::path() == scene::RendererPath::Shared
+        {
+            self.pack_actor_environment = pack_scene::ActorEnvironment::capture(
+                game,
+                entities,
+                blocks,
+                self.camera_render_position(),
+            );
+        }
         if let Some(bridge) = &mut self.shader_bridge {
             bridge.environment(game, self.camera.shader_view().0);
         }
@@ -1190,6 +1213,20 @@ impl Renderer {
                 has_3d_model,
             }
         });
+        let snapshot_start = std::time::Instant::now();
+        #[cfg(feature = "shader-packs")]
+        let pack_geometry =
+            (shared_path && self.shader_bridge.as_ref().is_some_and(|b| b.native())).then(|| {
+                Arc::new(self.lower_pack_scene(
+                    &frozen_camera,
+                    entities,
+                    block_entities,
+                    held_item.as_ref(),
+                    render_first_person_hand,
+                    swing_progress,
+                    use_anim,
+                ))
+            });
         let scene = shared_path.then(|| {
             let near_terrain = self
                 .scene_publisher
@@ -1217,6 +1254,9 @@ impl Renderer {
                 cloud_mode,
                 #[cfg(feature = "shader-packs")]
                 pack_world: self.shader_bridge.as_ref().map(|bridge| bridge.snapshot()),
+                #[cfg(feature = "shader-packs")]
+                pack_geometry,
+                preparation_ms: snapshot_start.elapsed().as_secs_f64() * 1000.,
             })
         });
         if let Some(snapshot) = &scene
@@ -1955,18 +1995,54 @@ impl Renderer {
                 // Entities aren't sent beyond the server's tracking range; a
                 // generous render-distance cap just trims anything stray.
                 let ent_cull_dist = (*render_distance * 16) as f32 + 16.0;
-                self.entity_renderer.draw(
-                    cmd,
-                    frame,
-                    entities,
-                    &ent_frustum,
-                    anchor,
-                    eye,
-                    ent_cull_dist,
-                );
-
-                self.block_entity_pipeline
-                    .draw(cmd, frame, anchor, block_entities);
+                #[cfg(feature = "shader-packs")]
+                let coverage = if pack_active {
+                    snapshot.and_then(|s| s.pack_geometry.as_deref())
+                } else {
+                    None
+                };
+                #[cfg(not(feature = "shader-packs"))]
+                let entity_skip: Option<&[bool]> = None;
+                #[cfg(feature = "shader-packs")]
+                let entity_skip = coverage.map(|g| g.entities.as_slice());
+                if let Some(skip) = entity_skip {
+                    self.entity_renderer.draw_filtered(
+                        cmd,
+                        frame,
+                        entities,
+                        &ent_frustum,
+                        anchor,
+                        eye,
+                        ent_cull_dist,
+                        Some(skip),
+                    );
+                } else {
+                    self.entity_renderer.draw(
+                        cmd,
+                        frame,
+                        entities,
+                        &ent_frustum,
+                        anchor,
+                        eye,
+                        ent_cull_dist,
+                    );
+                }
+                #[cfg(feature = "shader-packs")]
+                let block_skip = coverage.map(|g| g.blocks.as_slice());
+                #[cfg(not(feature = "shader-packs"))]
+                let block_skip: Option<&[bool]> = None;
+                if let Some(skip) = block_skip {
+                    self.block_entity_pipeline.draw_filtered(
+                        cmd,
+                        frame,
+                        anchor,
+                        block_entities,
+                        Some(skip),
+                    );
+                } else {
+                    self.block_entity_pipeline
+                        .draw(cmd, frame, anchor, block_entities);
+                }
 
                 self.item_entity_pipeline.draw(cmd, frame, item_entities);
 
@@ -2026,7 +2102,12 @@ impl Renderer {
                 };
                 cmd.clear_attachments(&[clear_attachment], &[clear_rect]);
 
+                #[cfg(feature = "shader-packs")]
+                let pack_hand = coverage.is_some_and(|g| g.hand);
+                #[cfg(not(feature = "shader-packs"))]
+                let pack_hand = false;
                 if *render_first_person_hand
+                    && !pack_hand
                     && camera.mode == camera::CameraMode::FirstPerson
                     && camera.top_down().is_none()
                 {

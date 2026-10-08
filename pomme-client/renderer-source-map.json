@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "inspected_utc": "2026-10-08",
   "sources": {
     "vitrail": {
@@ -268,6 +268,16 @@
         }
       ],
       "reuse_status": "inspected; no code ported or linked"
+    }
+  ],
+  "ports": [
+    {
+      "source": "iris",
+      "path": "common/src/main/java/net/irisshaders/iris/shaderpack/loading/ProgramId.java",
+      "destination": "pomme-shaderpack/src/stages.rs",
+      "change": "Fallback data port; Java API mapping and blend wrapper omitted, shadow OFF implemented generically by Vulkan shadow family.",
+      "license": "LGPL-3.0-only",
+      "notice": "pomme-shaderpack/third_party/iris/NOTICE"
     }
   ]
 }

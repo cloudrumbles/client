@@ -15,7 +15,7 @@ use super::pipelines::particle::ParticleQuad;
 use super::pipelines::sky::SkyState;
 use super::pipelines::weather::WeatherColumn;
 
-pub const CONTRACT_VERSION: u32 = 1;
+pub const CONTRACT_VERSION: u32 = 2;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, clap::ValueEnum, serde::Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -112,6 +112,9 @@ pub struct SceneSnapshot {
     pub cloud_mode: CloudMode,
     #[cfg(feature = "shader-packs")]
     pub pack_world: Option<Arc<pomme_shaderpack::live::WorldSnapshot>>,
+    #[cfg(feature = "shader-packs")]
+    pub pack_geometry: Option<Arc<super::pack_scene::PackScene>>,
+    pub preparation_ms: f64,
 }
 pub struct Hands {
     pub item: Option<HeldItemInfo>,
@@ -157,6 +160,7 @@ impl SceneSnapshot {
                 "clip": self.camera.clip_planes(),
                 "depth": "forward_zero_to_one",
             },
+            "snapshot_preparation_ms": self.preparation_ms,
             "world_time": self.sky.day_time,
             "rain": self.sky.rain(),
         })
@@ -221,6 +225,9 @@ mod tests {
             cloud_mode: CloudMode::Fancy,
             #[cfg(feature = "shader-packs")]
             pack_world: None,
+            #[cfg(feature = "shader-packs")]
+            pack_geometry: None,
+            preparation_ms: 0.,
         }
     }
     #[test]
