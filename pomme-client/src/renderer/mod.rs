@@ -1,3 +1,5 @@
+#[cfg(feature = "renderer-fault-injection")]
+mod acquire_fault;
 pub mod block_entity_model;
 pub mod camera;
 pub mod chunk;
@@ -150,6 +152,8 @@ pub struct RenderTimings {
 }
 
 pub struct Renderer {
+    #[cfg(feature = "renderer-fault-injection")]
+    acquire_fault: Option<acquire_fault::AcquireFault>,
     scene_publisher: scene::ScenePublisher,
     #[cfg(feature = "shader-packs")]
     shader_bridge: Option<crate::shaderpack::Bridge>,
@@ -484,6 +488,8 @@ impl Renderer {
         #[cfg(feature = "shader-packs")]
         let shader_bridge = crate::shaderpack::Bridge::start(_events, &atlas, &ctx);
         Ok(Self {
+            #[cfg(feature = "renderer-fault-injection")]
+            acquire_fault: acquire_fault::AcquireFault::from_env(),
             scene_publisher: scene::ScenePublisher::default(),
             #[cfg(feature = "shader-packs")]
             shader_bridge,
@@ -785,6 +791,10 @@ impl Renderer {
         }
 
         self.swapchain_dirty = false;
+        #[cfg(feature = "renderer-fault-injection")]
+        if let Some(fault) = &mut self.acquire_fault {
+            fault.recreated(self.width, self.height);
+        }
         Ok(())
     }
 
@@ -1610,12 +1620,26 @@ impl Renderer {
             .collect_ready(frame, &self.ctx.device, &self.ctx.allocator);
 
         let t_acquire = std::time::Instant::now();
-        let image = match self.ctx.device.acquire_next_image(
-            self.swapchain.handle,
-            u64::MAX,
-            image_available,
-            vk::Fence::null(),
-        ) {
+        #[cfg(feature = "renderer-fault-injection")]
+        let inject_out_of_date = self
+            .acquire_fault
+            .as_mut()
+            .is_some_and(|fault| fault.prepared(pack_active, frame));
+        #[cfg(not(feature = "renderer-fault-injection"))]
+        let inject_out_of_date = false;
+        // Inject before vkAcquireNextImageKHR: acquiring then replacing its
+        // result would strand an image and a signalled binary semaphore.
+        let acquired = if inject_out_of_date {
+            Err(vk::Error::OutOfDateKHR)
+        } else {
+            self.ctx.device.acquire_next_image(
+                self.swapchain.handle,
+                u64::MAX,
+                image_available,
+                vk::Fence::null(),
+            )
+        };
+        let image = match acquired {
             Ok(image) => image,
             Err(vk::Error::OutOfDateKHR) => {
                 #[cfg(feature = "shader-packs")]
@@ -1623,6 +1647,10 @@ impl Renderer {
                     bridge.cancel_prepared(frame);
                 }
                 self.swapchain_dirty = true;
+                #[cfg(feature = "renderer-fault-injection")]
+                if let Some(fault) = &mut self.acquire_fault {
+                    fault.cancelled(frame, inject_out_of_date);
+                }
                 return Ok(());
             }
             Err(e) => return Err(e.into()),
@@ -2211,6 +2239,14 @@ impl Renderer {
         #[cfg(feature = "shader-packs")]
         if pack_active && let Some(bridge) = &mut self.shader_bridge {
             bridge.submitted(frame);
+        }
+        #[cfg(feature = "renderer-fault-injection")]
+        if pack_active
+            && let Some(fault) = &mut self.acquire_fault
+            && fault.submitted(frame, self.width, self.height)
+        {
+            // Let the normal winit resize event dirty/recreate the swapchain.
+            let _ = window.request_inner_size(PhysicalSize::new(self.width + 16, self.height + 16));
         }
 
         let present_info = vk::PresentInfoKHR {
