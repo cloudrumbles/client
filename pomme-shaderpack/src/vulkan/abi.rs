@@ -322,6 +322,17 @@ fn translate(
     varyings: &BTreeMap<String, usize>,
     vertex: bool,
 ) -> Result<String> {
+    // Actor material storage is RGB, like the native vertex format. Keep the
+    // pack's vec4 declaration and Vulkan's default value for its missing W.
+    let actor_material = if vertex
+        && varying_re()?
+            .captures_iter(source)
+            .any(|c| matches!(&c[2], "attribute" | "in") && &c[3] == "vec4" && &c[4] == "mc_Entity")
+    {
+        "vec4(pomme_ActorMaterial,1.0)"
+    } else {
+        "pomme_ActorMaterial"
+    };
     let source = source
         .lines()
         .filter(|l| !l.trim().starts_with("#version") && !l.trim().starts_with("#extension"))
@@ -452,7 +463,8 @@ fn translate(
             "in vec4 pomme_EffectiveMaterial;",
             "in vec4 pomme_MeshMaterial;",
         );
-        header.push_str("#define pomme_EffectiveLight (pomme_ActorInputs?vec4(pomme_ActorLight,0,1):pomme_LightCoord)\n#define pomme_EffectiveColor (pomme_ActorInputs?pomme_ActorTint*pomme_Color:pomme_Color)\n#define pomme_EffectiveMaterial (pomme_ActorInputs?pomme_ActorMaterial:pomme_MeshMaterial)\n");
+        header.push_str("#define pomme_EffectiveLight (pomme_ActorInputs?vec4(pomme_ActorLight,0,1):pomme_LightCoord)\n#define pomme_EffectiveColor (pomme_ActorInputs?pomme_ActorTint*pomme_Color:pomme_Color)\n");
+        header.push_str(&format!("#define pomme_EffectiveMaterial (pomme_ActorInputs?{actor_material}:pomme_MeshMaterial)\n"));
         body = Regex::new(r"\bvoid\s+main\s*\(\s*\)")?
             .replace(&body, "void pomme_main()")
             .into_owned();
@@ -625,6 +637,53 @@ impl Abi {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn material_vec3_and_vec4_aliases_compile_with_all_components_used() {
+        let abi = Abi {
+            uniforms: vec![
+                Uniform {
+                    name: "pomme_ActorInputs".into(),
+                    ty: "bool".into(),
+                    count: 1,
+                    offset: 0,
+                    size: 16,
+                },
+                Uniform {
+                    name: "pomme_ActorMaterial".into(),
+                    ty: "vec3".into(),
+                    count: 1,
+                    offset: 16,
+                    size: 16,
+                },
+            ],
+            samplers: vec![],
+            uniform_size: 32,
+        };
+        let compiler = shaderc::Compiler::new().unwrap();
+        let mut options = shaderc::CompileOptions::new().unwrap();
+        options.set_target_env(
+            shaderc::TargetEnv::Vulkan,
+            shaderc::EnvVersion::Vulkan1_2 as u32,
+        );
+        for (ty, value) in [("vec3", "vec4(mc_Entity,1.0)"), ("vec4", "mc_Entity")] {
+            let source = translate(
+                &format!("#version 330 compatibility\nattribute {ty} mc_Entity;\nvoid main(){{gl_Position={value};}}"),
+                &abi,
+                &BTreeMap::new(),
+                true,
+            ).unwrap();
+            assert!(source.contains(&format!("layout(location=6) in {ty} pomme_MeshMaterial;")));
+            compiler
+                .compile_into_spirv(
+                    &source,
+                    shaderc::ShaderKind::Vertex,
+                    &format!("material-{ty}.vsh"),
+                    "main",
+                    Some(&options),
+                )
+                .unwrap_or_else(|error| panic!("{ty}: {error}"));
+        }
+    }
     #[test]
     fn compatibility_ftransform_compiles_for_vulkan() {
         let abi = Abi {

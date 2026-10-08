@@ -3,6 +3,7 @@
 //! of any particular pack. Actual Photon/live-world validation is separate.
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use glam::{DVec3, Mat4, Vec3};
 use pomme_shaderpack::geometry::*;
@@ -14,12 +15,138 @@ use pomme_shaderpack::vulkan::headless::Headless;
 struct Fixture(PathBuf);
 impl Fixture {
     fn new() -> Self {
-        let path = std::env::temp_dir().join(format!("pomme-actor-vk-{}", std::process::id()));
+        static NEXT: AtomicU64 = AtomicU64::new(0);
+        let path = std::env::temp_dir().join(format!(
+            "pomme-actor-vk-{}-{}",
+            std::process::id(),
+            NEXT.fetch_add(1, Ordering::Relaxed)
+        ));
         std::fs::create_dir_all(path.join("shaders")).unwrap();
         Self(path)
     }
     fn write(&self, name: &str, text: &str) {
         std::fs::write(self.0.join("shaders").join(name), text.replace(";", ";\n")).unwrap();
+    }
+}
+#[test]
+#[ignore = "requires real Vulkan driver; run with explicit validation on Mesa or target GPU"]
+fn material_vec3_and_vec4_use_actor_ids_and_mesh_default_fourth_component_on_gpu() {
+    let mut results = Vec::new();
+    let context = Headless::new().unwrap();
+    let evidence = std::env::var_os("POMME_ACTOR_EVIDENCE").map(PathBuf::from);
+    if let Some(path) = &evidence {
+        std::fs::create_dir_all(path).unwrap();
+    }
+    for ty in ["vec3", "vec4"] {
+        let fixture = Fixture::new();
+        let value = if ty == "vec3" {
+            "vec4(mc_Entity,1.0)"
+        } else {
+            "mc_Entity"
+        };
+        let vs = format!(
+            "#version 330 compatibility\nattribute {ty} mc_Entity;\nvarying vec4 material;\nvoid main(){{material={value};gl_Position=ftransform();}}\n"
+        );
+        // Every material component affects the raster result. In particular,
+        // vec4.w must be 1 for both the RGB vertex format and the actor uniform.
+        let fs = "#version 330 compatibility\n/* RENDERTARGETS: 0 */\nvarying vec4 material;\nvoid main(){gl_FragColor=vec4(material.x/100.0,material.y+material.z,material.w/2.0,1.0);}\n";
+        for stage in ["gbuffers_terrain", "gbuffers_entities"] {
+            fixture.write(&format!("{stage}.vsh"), &vs);
+            fixture.write(&format!("{stage}.fsh"), fs);
+        }
+        fixture.write("final.vsh", "#version 330 compatibility\nvarying vec2 uv;void main(){uv=gl_MultiTexCoord0.xy;gl_Position=vec4(gl_Vertex.xy*2.0-1.0,0,1);}\n");
+        fixture.write("final.fsh", "#version 330 compatibility\nvarying vec2 uv;uniform sampler2D colortex0;void main(){gl_FragColor=texture2D(colortex0,uv);}\n");
+        fixture.write("entity.properties", "entity.50=minecraft:cow\n");
+        fixture.write("block.properties", "block.75=minecraft:chest\n");
+        let pack = Pack::load(&fixture.0, "world0", None, &[]).unwrap();
+        let mesh = quad("material-quad");
+        let scene = Scene {
+            solid: mesh
+                .vertices
+                .iter()
+                .map(|v| Vertex {
+                    material: [0., 0.25, 0.25],
+                    ..*v
+                })
+                .collect(),
+            water: vec![],
+            camera: Vec3::new(0., 0., 4.),
+            target: Vec3::ZERO,
+            materials: vec!["minecraft:chest".into()],
+        };
+        let mut engine =
+            Engine::new((*context.gpu).clone(), pack, 64, 64, &scene, None, 1).unwrap();
+        let input = FrameInput::fixture(&scene, 0, 6000, 0.);
+        for actor in [false, true] {
+            let mut geometry = FrameGeometry::default();
+            if actor {
+                geometry.draws.push(draw(
+                    Arc::clone(&mesh),
+                    Arc::new(TextureAsset {
+                        key: "verified-fixture-white".into(),
+                        size: [1, 1],
+                        pixels: Arc::new(vec![255; 4]),
+                    }),
+                    MaterialIdentity::Entity("minecraft:cow".into()),
+                    Mat4::IDENTITY,
+                    DrawSpace::World {
+                        anchor: DVec3::ZERO,
+                    },
+                    [0, 15],
+                ));
+            }
+            engine.prepare_geometry(0, Arc::new(geometry)).unwrap();
+            engine
+                .gpu
+                .clone()
+                .submit(|cmd| engine.record(cmd, 0, &input))
+                .unwrap();
+            let branch = if actor { "actor" } else { "mesh" };
+            let name = format!("material-{ty}-{branch}.png");
+            let path = fixture.0.join(&name);
+            engine.screenshot(&path).unwrap();
+            let image = image::open(&path).unwrap().to_rgba8();
+            let pixel = image.get_pixel(32, 32).0;
+            let expected: [u8; 4] = if actor {
+                [128, 0, 128, 255]
+            } else {
+                [191, 128, 128, 255]
+            };
+            assert!(
+                pixel
+                    .iter()
+                    .zip(expected)
+                    .all(|(actual, expected)| actual.abs_diff(expected) <= 2),
+                "{ty}/{branch}: got {pixel:?}, expected {expected:?}"
+            );
+            if actor {
+                assert!(
+                    engine
+                        .geometry_stages
+                        .iter()
+                        .any(|s| s.requested == "gbuffers_entities"
+                            && s.draws == 1
+                            && s.material_ids == [50])
+                );
+            }
+            if let Some(dir) = &evidence {
+                std::fs::copy(&path, dir.join(name)).unwrap();
+            }
+            results.push(serde_json::json!({"type":ty,"branch":branch,"pixel":pixel,"expected":expected,"material_id":if actor {50} else {75}}));
+        }
+        if let Some(dir) = &evidence {
+            std::fs::write(dir.join(format!("material-{ty}.vsh")), vs).unwrap();
+            std::fs::write(dir.join(format!("material-{ty}.fsh")), fs).unwrap();
+        }
+    }
+    let result = serde_json::json!({"build_revision":pomme_shaderpack::BUILD_REVISION,"device":context.name,"cases":results,"target_gpu_tested":false});
+    println!("{}", serde_json::to_string_pretty(&result).unwrap());
+    if let Some(dir) = &evidence {
+        std::fs::write(
+            dir.join("material-gpu.json"),
+            serde_json::to_vec_pretty(&result).unwrap(),
+        )
+        .unwrap();
     }
 }
 impl Drop for Fixture {
