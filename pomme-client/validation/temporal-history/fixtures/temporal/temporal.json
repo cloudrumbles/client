@@ -1,0 +1,320 @@
+{
+  "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "revision": "3bfd77c68dfd4df0a1131e921138b440a722c1f5",
+  "samples": [
+    {
+      "compute_dispatches": [
+        {
+          "groups": [
+            8,
+            8,
+            1
+          ],
+          "local_size": [
+            1,
+            1,
+            1
+          ],
+          "program": "setup",
+          "storage_images": [
+            "colorimg1"
+          ]
+        },
+        {
+          "groups": [
+            8,
+            8,
+            1
+          ],
+          "local_size": [
+            1,
+            1,
+            1
+          ],
+          "program": "deferred1",
+          "storage_images": [
+            "colorimg1"
+          ]
+        }
+      ],
+      "expected_history_value": 0.15625,
+      "frame": 0,
+      "history_epoch": 0,
+      "invalidations": 1,
+      "lighting_revision": 0,
+      "pixel": [
+        40,
+        64,
+        0,
+        255
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 0,
+      "world_time": 6000
+    },
+    {
+      "compute_dispatches": [
+        {
+          "groups": [
+            8,
+            8,
+            1
+          ],
+          "local_size": [
+            1,
+            1,
+            1
+          ],
+          "program": "deferred1",
+          "storage_images": [
+            "colorimg1"
+          ]
+        }
+      ],
+      "expected_history_value": 0.1875,
+      "frame": 1,
+      "history_epoch": 0,
+      "invalidations": 1,
+      "lighting_revision": 0,
+      "pixel": [
+        48,
+        96,
+        0,
+        255
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 1,
+      "world_time": 6000
+    },
+    {
+      "compute_dispatches": [
+        {
+          "groups": [
+            8,
+            8,
+            1
+          ],
+          "local_size": [
+            1,
+            1,
+            1
+          ],
+          "program": "deferred1",
+          "storage_images": [
+            "colorimg1"
+          ]
+        }
+      ],
+      "expected_history_value": 0.21875,
+      "frame": 2,
+      "history_epoch": 0,
+      "invalidations": 1,
+      "lighting_revision": 1,
+      "pixel": [
+        56,
+        128,
+        0,
+        255
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 1,
+      "world_time": 6000
+    },
+    {
+      "compute_dispatches": [
+        {
+          "groups": [
+            8,
+            8,
+            1
+          ],
+          "local_size": [
+            1,
+            1,
+            1
+          ],
+          "program": "deferred1",
+          "storage_images": [
+            "colorimg1"
+          ]
+        }
+      ],
+      "expected_history_value": 0.25,
+      "frame": 3,
+      "history_epoch": 0,
+      "invalidations": 1,
+      "lighting_revision": 1,
+      "pixel": [
+        64,
+        191,
+        63,
+        255
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 1,
+      "world_time": 12000
+    },
+    {
+      "compute_dispatches": [
+        {
+          "groups": [
+            8,
+            8,
+            1
+          ],
+          "local_size": [
+            1,
+            1,
+            1
+          ],
+          "program": "deferred1",
+          "storage_images": [
+            "colorimg1"
+          ]
+        }
+      ],
+      "expected_history_value": 0.28125,
+      "frame": 4,
+      "history_epoch": 0,
+      "invalidations": 1,
+      "lighting_revision": 1,
+      "pixel": [
+        72,
+        191,
+        126,
+        255
+      ],
+      "rain": 0.25,
+      "world_day": 0,
+      "world_revision": 1,
+      "world_time": 12000
+    },
+    {
+      "compute_dispatches": [
+        {
+          "groups": [
+            8,
+            8,
+            1
+          ],
+          "local_size": [
+            1,
+            1,
+            1
+          ],
+          "program": "deferred1",
+          "storage_images": [
+            "colorimg1"
+          ]
+        }
+      ],
+      "expected_history_value": 0.3125,
+      "frame": 5,
+      "history_epoch": 0,
+      "invalidations": 1,
+      "lighting_revision": 1,
+      "pixel": [
+        80,
+        64,
+        128,
+        255
+      ],
+      "rain": 0.25,
+      "world_day": 1,
+      "world_revision": 1,
+      "world_time": 0
+    },
+    {
+      "compute_dispatches": [
+        {
+          "groups": [
+            8,
+            8,
+            1
+          ],
+          "local_size": [
+            1,
+            1,
+            1
+          ],
+          "program": "setup",
+          "storage_images": [
+            "colorimg1"
+          ]
+        },
+        {
+          "groups": [
+            8,
+            8,
+            1
+          ],
+          "local_size": [
+            1,
+            1,
+            1
+          ],
+          "program": "deferred1",
+          "storage_images": [
+            "colorimg1"
+          ]
+        }
+      ],
+      "expected_history_value": 0.15625,
+      "frame": 6,
+      "history_epoch": 1,
+      "invalidations": 2,
+      "lighting_revision": 1,
+      "pixel": [
+        40,
+        64,
+        64,
+        255
+      ],
+      "rain": 0.25,
+      "world_day": 1,
+      "world_revision": 1,
+      "world_time": 0
+    },
+    {
+      "compute_dispatches": [
+        {
+          "groups": [
+            8,
+            8,
+            1
+          ],
+          "local_size": [
+            1,
+            1,
+            1
+          ],
+          "program": "deferred1",
+          "storage_images": [
+            "colorimg1"
+          ]
+        }
+      ],
+      "expected_history_value": 0.1875,
+      "frame": 7,
+      "history_epoch": 1,
+      "invalidations": 2,
+      "lighting_revision": 1,
+      "pixel": [
+        48,
+        64,
+        64,
+        255
+      ],
+      "rain": 0.25,
+      "world_day": 1,
+      "world_revision": 1,
+      "world_time": 0
+    }
+  ],
+  "scenario": "content, lighting, time commands, day, weather preserve original retained storage and smooth; explicit epoch resets",
+  "target_gpu_tested": false
+}

@@ -1,0 +1,105 @@
+{
+  "source_revision": "3bfd77c68dfd4df0a1131e921138b440a722c1f5",
+  "base_revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f",
+  "branch": "native/pack-temporal-history",
+  "source_clean": true,
+  "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "target_gpu_tested": false,
+  "gpu_checks": {
+    "fixtures": [
+      {
+        "fixture": "actor_vulkan",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--release",
+          "-p",
+          "pomme-shaderpack",
+          "--features",
+          "vulkan",
+          "--test",
+          "actor_vulkan",
+          "--",
+          "--ignored",
+          "--nocapture"
+        ],
+        "exit_code": 0,
+        "validation_status": "verified",
+        "validation_errors": 0,
+        "passed": true,
+        "log": "/workspace/native-results/temporal-3bfd77c-fixtures/actor_vulkan.log"
+      },
+      {
+        "fixture": "compute_vulkan",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--release",
+          "-p",
+          "pomme-shaderpack",
+          "--features",
+          "vulkan",
+          "--test",
+          "compute_vulkan",
+          "--",
+          "--ignored",
+          "--nocapture"
+        ],
+        "exit_code": 0,
+        "validation_status": "verified",
+        "validation_errors": 0,
+        "passed": true,
+        "log": "/workspace/native-results/temporal-3bfd77c-fixtures/compute_vulkan.log"
+      },
+      {
+        "fixture": "temporal_vulkan",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--release",
+          "-p",
+          "pomme-shaderpack",
+          "--features",
+          "vulkan",
+          "--test",
+          "temporal_vulkan",
+          "--",
+          "--ignored",
+          "--nocapture"
+        ],
+        "exit_code": 0,
+        "validation_status": "verified",
+        "validation_errors": 0,
+        "passed": true,
+        "log": "/workspace/native-results/temporal-3bfd77c-fixtures/temporal_vulkan.log"
+      }
+    ]
+  },
+  "gpu_tests_passed": 4,
+  "gpu_tests_failed": 0,
+  "regular_suite": {
+    "passed": 35,
+    "failed": 0,
+    "expected_ignored": 8,
+    "log": "/workspace/native-results/temporal-development/unit-integration.log"
+  },
+  "actual_opengl_regression": {
+    "passed": 1,
+    "failed": 0,
+    "device": "llvmpipe OpenGL4.5 Compatibility Mesa25.0.7",
+    "log": "/workspace/native-results/temporal-development/opengl.log"
+  },
+  "strict_client_and_shaderpack_all_target_clippy": {
+    "passed": true,
+    "log": "/workspace/native-results/temporal-development/clippy.log"
+  },
+  "development_checks_note": "regular/GL/Clippy exercised this source before commit; final Vulkan source stamp verified clean and exact",
+  "remaining": [
+    "live native Photon captures and world/weather/lighting commands at this revision",
+    "physical GTX1650Ti visual/performance tests"
+  ],
+  "publishing": "no push and no PR; pending root review"
+}

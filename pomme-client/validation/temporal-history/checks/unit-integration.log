@@ -1,0 +1,102 @@
+   Compiling pomme-shaderpack v0.1.0 (/workspace/minecraft-client-temporal/pomme-shaderpack)
+    Finished `release` profile [optimized] target(s) in 6m 13s
+warning: the following packages contain code that will be rejected by a future version of Rust: glutin v0.32.3, glutin-winit v0.5.0, winit v0.30.13
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 2`
+     Running unittests src/lib.rs (/workspace/minecraft-client/target/release/build/pomme-shaderpack/f50de142c7e683cd/out/pomme_shaderpack-f50de142c7e683cd)
+
+running 36 tests
+test compute::tests::comments_cannot_change_dispatch_or_join_tokens ... ok
+test compute::tests::fixed_groups_and_real_local_axes_are_independent ... ok
+test compute::tests::original_pack_profile_discovers_preprocessed_dispatches ... ignored, requires an original pack directory; set POMME_COMPUTE_PACK
+test compute::tests::active_indirect_property_is_never_replaced_with_fixed_dispatch ... ok
+test compute::tests::stage_numeric_and_full_letter_order_match_execution_contract ... ok
+test compute::tests::unsupported_dispatch_forms_error_instead_of_changing_group_count ... ok
+test compute::tests::dispatch_is_read_after_real_include_and_branch_preprocessing ... ok
+test expression::tests::expressions_follow_frame_and_reset ... ok
+test compute::tests::unsupported_or_conflicting_local_sizes_error ... ok
+test expression::tests::missing_inputs_and_cycles_fail ... ok
+test live::tests::frame_lease_retains_geometry_materials_atlas_and_dimension_after_clear ... ok
+test compute::tests::selected_dimension_overrides_root_without_duplicate_or_library_dispatch ... ok
+test compute::tests::active_suffix_gap_and_unsupported_entrypoints_are_reported ... ok
+test pack::tests::boolean_option_preserves_next_line ... ok
+test pack::tests::paths_and_continuations ... ok
+test live::tests::live_and_leased_frames_separate_content_from_world_identity ... ok
+test runtime::tests::blend_factors_validate_and_preserve_separate_alpha ... ok
+test pack::tests::render_targets_keep_multidigit_indices ... ok
+test live::tests::empty_newer_sections_prevent_stale_mesh_resurrection ... ok
+test runtime::tests::history_survives_content_and_pack_owned_environment_changes ... ok
+test stages::tests::iris_fallback_contract_preserves_distinct_roots_and_actor_chains ... ok
+test runtime::tests::history_resets_for_identity_resources_and_camera_projection_cuts ... ok
+test vulkan::abi::tests::compile_external_compute_pack_without_source_substitution ... ignored, set POMME_TEST_SHADER_PACK and optional POMME_TEST_SHADER_PROFILE
+test runtime::tests::environment_uniforms_refresh_and_pack_smooth_observes_clock_commands ... ok
+test live::tests::unload_keeps_epoch_tombstone_until_world_clear ... ok
+test vulkan::abi::tests::compatibility_ftransform_compiles_for_vulkan ... ok
+test vulkan::abi::tests::integer_storage_images_preserve_access_and_memory_qualifiers ... ok
+test vulkan::abi::tests::graphics_storage_images_are_rejected_before_shader_compilation ... ok
+test vulkan::abi::tests::std140_matrix_padding_and_active_inputs ... ok
+test vulkan::abi::tests::storage_declarations_reject_unsupported_or_conflicting_abis ... ok
+test vulkan::abi::tests::material_vec3_and_vec4_aliases_compile_with_all_components_used ... ok
+test vulkan::engine::compute_order_tests::standalone_computes_and_suffixes_run_before_associated_fragments ... ok
+test vulkan::engine::compute_order_tests::timestamps_wrap_at_the_queue_counter_width ... ok
+test vulkan::abi::tests::varying_arrays_reserve_each_matrix_and_structure_location ... ok
+test vulkan::abi::tests::compute_compiles_with_shared_graphics_abi_and_reflects_live_resources ... ok
+test vulkan::abi::tests::compute_image_bindings_share_identity_and_preserve_each_programs_access ... ok
+
+test result: ok. 34 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 1.17s
+
+     Running unittests src/bin/pomme-pack-atlas.rs (/workspace/minecraft-client/target/release/build/pomme-shaderpack/01f2df1d61fac5ea/out/pomme_pack_atlas-01f2df1d61fac5ea)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/pomme-pack-vulkan.rs (/workspace/minecraft-client/target/release/build/pomme-shaderpack/47d5f1a12c4d918c/out/pomme_pack_vulkan-47d5f1a12c4d918c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (/workspace/minecraft-client/target/release/build/pomme-shaderpack/fe4fc3eb9c1dc40f/out/pomme_shaderpack-fe4fc3eb9c1dc40f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/actor_vulkan.rs (/workspace/minecraft-client/target/release/build/pomme-shaderpack/ce227a67d1c16188/out/actor_vulkan-ce227a67d1c16188)
+
+running 2 tests
+test actor_stages_use_real_texture_light_material_poses_and_fallbacks_with_bounded_uploads ... ignored, requires real Vulkan driver; run with explicit validation on Mesa or target GPU
+test material_vec3_and_vec4_use_actor_ids_and_mesh_default_fourth_component_on_gpu ... ignored, requires real Vulkan driver; run with explicit validation on Mesa or target GPU
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/compute_vulkan.rs (/workspace/minecraft-client/target/release/build/pomme-shaderpack/5860138ca0037653/out/compute_vulkan-5860138ca0037653)
+
+running 1 test
+test dispatch_preserves_current_front_and_raster_visibility_across_resets_and_replacement ... ignored, requires a real Vulkan driver; run with positively verified validation layer activation
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pack_inputs.rs (/workspace/minecraft-client/target/release/build/pomme-shaderpack/ca515c232b4f9746/out/pack_inputs-ca515c232b4f9746)
+
+running 2 tests
+test driver_execution_changes_with_pack_settings_and_rejects_failed_reload ... ignored, requires EGL desktop OpenGL 4.3 compatibility; run with --ignored on Mesa or hardware
+test directories_zips_profiles_and_materials_agree ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/temporal_vulkan.rs (/workspace/minecraft-client/target/release/build/pomme-shaderpack/4bb7a6afbf2cd930/out/temporal_vulkan-4bb7a6afbf2cd930)
+
+running 1 test
+test content_updates_preserve_retained_data_and_smoothing_until_explicit_epoch_reset ... ignored, requires a real Vulkan driver; run with positively verified validation layer activation
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests pomme_shaderpack
+
+running 1 test
+test /workspace/minecraft-client/target/release/build/pomme-shaderpack/f8b7e5e4789e8296/out/gl.rs - gl::Gl::load_with (line 3220) ... ignored
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+all doctests ran in 0.10s; merged doctests compilation took 0.10s

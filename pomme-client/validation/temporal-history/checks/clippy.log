@@ -1,0 +1,11 @@
+   Compiling pomme-shaderpack v0.1.0 (/workspace/minecraft-client-temporal/pomme-shaderpack)
+    Checking pomme-gpu-allocator v0.1.0 (/workspace/minecraft-client-temporal/pomme-gpu-allocator)
+    Checking azalea-block v0.16.0+mc26.2 (/workspace/minecraft-client-temporal/pomme-block)
+    Checking azalea-entity v0.16.0+mc26.2 (https://github.com/azalea-rs/azalea?branch=26.2#ffedf17c)
+   Compiling pomme-client v0.1.0 (/workspace/minecraft-client-temporal/pomme-client)
+    Checking azalea-world v0.16.0+mc26.2 (https://github.com/azalea-rs/azalea?branch=26.2#ffedf17c)
+    Checking azalea-protocol v0.16.0+mc26.2 (https://github.com/azalea-rs/azalea?branch=26.2#ffedf17c)
+    Checking pomme-protocol v0.1.0 (/workspace/minecraft-client-temporal/pomme-protocol)
+    Finished `release` profile [optimized] target(s) in 17.55s
+warning: the following packages contain code that will be rejected by a future version of Rust: glutin v0.32.3, glutin-winit v0.5.0, nix v0.31.3, winit v0.30.13
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 3`

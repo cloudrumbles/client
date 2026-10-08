@@ -1,0 +1,64 @@
+   Compiling pomme-shaderpack v0.1.0 (/workspace/minecraft-client-temporal/pomme-shaderpack)
+    Finished `release` profile [optimized] target(s) in 1.60s
+warning: the following packages contain code that will be rejected by a future version of Rust: glutin v0.32.3, glutin-winit v0.5.0, winit v0.30.13
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 2`
+     Running tests/temporal_vulkan.rs (/workspace/minecraft-client/target/release/build/pomme-shaderpack/4bb7a6afbf2cd930/out/temporal_vulkan-4bb7a6afbf2cd930)
+
+running 1 test
+[Vulkan Loader] LAYER:          Searching for implicit layer manifest files
+[Vulkan Loader] LAYER:             In following locations:
+[Vulkan Loader] LAYER:                /home/agent/.config/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /etc/xdg/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /etc/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /home/agent/.local/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /usr/local/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /usr/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:             Found no files
+[Vulkan Loader] LAYER:          Searching for explicit layer manifest files
+[Vulkan Loader] LAYER:             In following locations:
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d
+[Vulkan Loader] LAYER:             Found the following files:
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_MESA_overlay.json
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_INTEL_nullhw.json
+[Vulkan Loader] WARNING | LAYER: env var 'VK_INSTANCE_LAYERS' defined and adding layers "VK_LAYER_KHRONOS_validation"
+[Vulkan Loader] WARNING | LAYER: env var 'VK_INSTANCE_LAYERS' defined and adding layers "VK_LAYER_KHRONOS_validation"
+[Vulkan Loader] DEBUG | LAYER:  Loading layer library libVkLayer_khronos_validation.so
+[Vulkan Loader] INFO | LAYER:   Insert instance layer "VK_LAYER_KHRONOS_validation" (libVkLayer_khronos_validation.so)
+[Vulkan Loader] LAYER:          vkCreateInstance layer callstack setup to:
+[Vulkan Loader] LAYER:             <Application>
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             <Loader>
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             VK_LAYER_KHRONOS_validation
+[Vulkan Loader] LAYER:                     Type: Explicit
+[Vulkan Loader] LAYER:                     Enabled By: Environment Variable VK_INSTANCE_LAYERS
+[Vulkan Loader] LAYER:                     Manifest: /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                     Library:  libVkLayer_khronos_validation.so
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             <Drivers>
+[Vulkan Loader] INFO | LAYER:   Inserted device layer "VK_LAYER_KHRONOS_validation" (libVkLayer_khronos_validation.so)
+[Vulkan Loader] DRIVER:         vkCreateDevice layer callstack setup to:
+[Vulkan Loader] DRIVER:            <Application>
+[Vulkan Loader] DRIVER:              ||
+[Vulkan Loader] DRIVER:            <Loader>
+[Vulkan Loader] DRIVER:              ||
+[Vulkan Loader] LAYER:             VK_LAYER_KHRONOS_validation
+[Vulkan Loader] LAYER:                     Type: Explicit
+[Vulkan Loader] LAYER:                     Enabled By: Environment Variable VK_INSTANCE_LAYERS
+[Vulkan Loader] LAYER:                     Manifest: /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                     Library:  libVkLayer_khronos_validation.so
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] DRIVER:            <Device>
+[Vulkan Loader] DRIVER:                Using "llvmpipe (LLVM 19.1.7, 256 bits)" with driver: "libvulkan_lvp.so"
+Vulkan compiled gbuffers_terrain: 4 uniforms, 0 samplers
+Vulkan compiled gbuffers_block: 4 uniforms, 0 samplers
+Vulkan compiled gbuffers_water: 4 uniforms, 0 samplers
+Vulkan compiled gbuffers_block_translucent: 4 uniforms, 0 samplers
+Vulkan compiled final: 5 uniforms, 2 samplers
+TEMPORAL_FIXTURE {"device":"llvmpipe (LLVM 19.1.7, 256 bits)","revision":"3bfd77c68dfd4df0a1131e921138b440a722c1f5","samples":[{"compute_dispatches":[{"groups":[8,8,1],"local_size":[1,1,1],"program":"setup","storage_images":["colorimg1"]},{"groups":[8,8,1],"local_size":[1,1,1],"program":"deferred1","storage_images":["colorimg1"]}],"expected_history_value":0.15625,"frame":0,"history_epoch":0,"invalidations":1,"lighting_revision":0,"pixel":[40,64,0,255],"rain":0.0,"world_day":0,"world_revision":0,"world_time":6000},{"compute_dispatches":[{"groups":[8,8,1],"local_size":[1,1,1],"program":"deferred1","storage_images":["colorimg1"]}],"expected_history_value":0.1875,"frame":1,"history_epoch":0,"invalidations":1,"lighting_revision":0,"pixel":[48,96,0,255],"rain":0.0,"world_day":0,"world_revision":1,"world_time":6000},{"compute_dispatches":[{"groups":[8,8,1],"local_size":[1,1,1],"program":"deferred1","storage_images":["colorimg1"]}],"expected_history_value":0.21875,"frame":2,"history_epoch":0,"invalidations":1,"lighting_revision":1,"pixel":[56,128,0,255],"rain":0.0,"world_day":0,"world_revision":1,"world_time":6000},{"compute_dispatches":[{"groups":[8,8,1],"local_size":[1,1,1],"program":"deferred1","storage_images":["colorimg1"]}],"expected_history_value":0.25,"frame":3,"history_epoch":0,"invalidations":1,"lighting_revision":1,"pixel":[64,191,63,255],"rain":0.0,"world_day":0,"world_revision":1,"world_time":12000},{"compute_dispatches":[{"groups":[8,8,1],"local_size":[1,1,1],"program":"deferred1","storage_images":["colorimg1"]}],"expected_history_value":0.28125,"frame":4,"history_epoch":0,"invalidations":1,"lighting_revision":1,"pixel":[72,191,126,255],"rain":0.25,"world_day":0,"world_revision":1,"world_time":12000},{"compute_dispatches":[{"groups":[8,8,1],"local_size":[1,1,1],"program":"deferred1","storage_images":["colorimg1"]}],"expected_history_value":0.3125,"frame":5,"history_epoch":0,"invalidations":1,"lighting_revision":1,"pixel":[80,64,128,255],"rain":0.25,"world_day":1,"world_revision":1,"world_time":0},{"compute_dispatches":[{"groups":[8,8,1],"local_size":[1,1,1],"program":"setup","storage_images":["colorimg1"]},{"groups":[8,8,1],"local_size":[1,1,1],"program":"deferred1","storage_images":["colorimg1"]}],"expected_history_value":0.15625,"frame":6,"history_epoch":1,"invalidations":2,"lighting_revision":1,"pixel":[40,64,64,255],"rain":0.25,"world_day":1,"world_revision":1,"world_time":0},{"compute_dispatches":[{"groups":[8,8,1],"local_size":[1,1,1],"program":"deferred1","storage_images":["colorimg1"]}],"expected_history_value":0.1875,"frame":7,"history_epoch":1,"invalidations":2,"lighting_revision":1,"pixel":[48,64,64,255],"rain":0.25,"world_day":1,"world_revision":1,"world_time":0}],"scenario":"content, lighting, time commands, day, weather preserve original retained storage and smooth; explicit epoch resets","target_gpu_tested":false}
+[Vulkan Loader] DEBUG | LAYER:  Unloading layer library libVkLayer_khronos_validation.so
+test content_updates_preserve_retained_data_and_smoothing_until_explicit_epoch_reset ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+

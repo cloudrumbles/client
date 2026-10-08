@@ -1,0 +1,18 @@
+    Finished `release` profile [optimized] target(s) in 0.19s
+warning: the following packages contain code that will be rejected by a future version of Rust: glutin v0.32.3, glutin-winit v0.5.0, winit v0.30.13
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 2`
+     Running tests/pack_inputs.rs (/workspace/minecraft-client/target/release/build/pomme-shaderpack/ca515c232b4f9746/out/pack_inputs-ca515c232b4f9746)
+
+running 1 test
+OpenGL: llvmpipe (LLVM 19.1.7, 256 bits) (4.5 (Compatibility Profile) Mesa 25.0.7-2+deb13u1)
+linked gbuffers_terrain
+linked final
+OpenGL: llvmpipe (LLVM 19.1.7, 256 bits) (4.5 (Compatibility Profile) Mesa 25.0.7-2+deb13u1)
+linked gbuffers_terrain
+linked final
+OpenGL: llvmpipe (LLVM 19.1.7, 256 bits) (4.5 (Compatibility Profile) Mesa 25.0.7-2+deb13u1)
+linked gbuffers_terrain
+test driver_execution_changes_with_pack_settings_and_rejects_failed_reload ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.33s
+

@@ -1,0 +1,82 @@
+{
+  "source_revision": "3bfd77c68dfd4df0a1131e921138b440a722c1f5",
+  "base_revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f",
+  "pull_request": "https://github.com/cloudrumbles/client/pull/8",
+  "physical_target_gpu_tested": false,
+  "native_binary_sha256": "f8ed68245f9f5e942024338acfde1468e37e55b0db8353302711fd0f8f5b7590",
+  "native_capture": "120frames passed; exactcleanstamp, originalPhotonSHdispatch everyframe, confirmedKhronoslayer0errors",
+  "comparison": {
+    "before": {
+      "revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f",
+      "frames": 120,
+      "size": [
+        320,
+        180
+      ],
+      "camera": [
+        0.5,
+        67.62000274658203,
+        12.5
+      ],
+      "world_time": 6000,
+      "rain": 0.0,
+      "history_invalidations_total": 14,
+      "steady_range": [
+        20,
+        119
+      ],
+      "steady_history_invalidations": [
+        10,
+        14
+      ],
+      "steady_world_revision": [
+        336,
+        340
+      ],
+      "steady_unique_world_revisions": 5
+    },
+    "after": {
+      "revision": "3bfd77c68dfd4df0a1131e921138b440a722c1f5",
+      "frames": 120,
+      "size": [
+        320,
+        180
+      ],
+      "camera": [
+        0.5,
+        67.62000274658203,
+        12.5
+      ],
+      "world_time": 6000,
+      "rain": 0.0,
+      "history_invalidations_total": 11,
+      "steady_range": [
+        20,
+        119
+      ],
+      "steady_history_invalidations": [
+        11,
+        11
+      ],
+      "steady_world_revision": [
+        294,
+        295
+      ],
+      "steady_unique_world_revisions": 2
+    },
+    "same_scene_camera_time_pack_options": true,
+    "interpretation": "After startup frame20, old head clears history for each of4 content edits; new head preserves history for an observed content edit. Startup camera/projection cuts remain. Live edit counts/order differ, so no performance/statistical claim. Both exacthead final native-window screenshots are smooth; earlier262 checker screenshot causal attribution remains inference. Full cloud/Iris parity is unqualified.",
+    "target_hardware_tested": false
+  },
+  "ci": {
+    "run_id": 37800239677,
+    "url": "https://github.com/cloudrumbles/client/actions/runs/37800239677",
+    "status": "in_progress"
+  },
+  "remaining": [
+    "protocolnative time/weather/edits capture",
+    "finalfullCI",
+    "fulloriginalPhotoncloud/Irisparity",
+    "physicalGTX1650Ti quality/performance"
+  ]
+}

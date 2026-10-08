@@ -1,0 +1,73 @@
+{
+  "fixtures": [
+    {
+      "fixture": "actor_vulkan",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--release",
+        "-p",
+        "pomme-shaderpack",
+        "--features",
+        "vulkan",
+        "--test",
+        "actor_vulkan",
+        "--",
+        "--ignored",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "validation_status": "verified",
+      "validation_errors": 0,
+      "passed": true,
+      "log": "/workspace/native-results/temporal-3bfd77c-fixtures/actor_vulkan.log"
+    },
+    {
+      "fixture": "compute_vulkan",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--release",
+        "-p",
+        "pomme-shaderpack",
+        "--features",
+        "vulkan",
+        "--test",
+        "compute_vulkan",
+        "--",
+        "--ignored",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "validation_status": "verified",
+      "validation_errors": 0,
+      "passed": true,
+      "log": "/workspace/native-results/temporal-3bfd77c-fixtures/compute_vulkan.log"
+    },
+    {
+      "fixture": "temporal_vulkan",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--release",
+        "-p",
+        "pomme-shaderpack",
+        "--features",
+        "vulkan",
+        "--test",
+        "temporal_vulkan",
+        "--",
+        "--ignored",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "validation_status": "verified",
+      "validation_errors": 0,
+      "passed": true,
+      "log": "/workspace/native-results/temporal-3bfd77c-fixtures/temporal_vulkan.log"
+    }
+  ]
+}
