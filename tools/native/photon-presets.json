@@ -1,0 +1,20 @@
+{
+  "photon-low-compat": {
+    "resolution": [1280, 720],
+    "profile": "low",
+    "options": ["SH_SKYLIGHT=false", "SHADER_AO=0"],
+    "purpose": "Provisional low-cost compatibility baseline; target GPU unqualified"
+  },
+  "photon-medium-compat": {
+    "resolution": [1920, 1080],
+    "profile": "medium",
+    "options": ["SH_SKYLIGHT=false", "SHADER_AO=1"],
+    "purpose": "Provisional visual/performance comparison; target GPU unqualified"
+  },
+  "photon-high-compat": {
+    "resolution": [1920, 1080],
+    "profile": "high",
+    "options": ["SH_SKYLIGHT=false", "SHADER_AO=2"],
+    "purpose": "Quality comparison; excludes custom-image/SSBO features; target GPU unqualified"
+  }
+}

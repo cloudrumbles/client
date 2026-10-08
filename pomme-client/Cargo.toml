@@ -6,6 +6,8 @@ license = "GPL-3.0-or-later"
 
 [features]
 default = ["singleplayer"]
+# Experimental secondary original-pack viewport following the existing live world.
+shader-packs = ["dep:pomme-shaderpack", "pomme-shaderpack/vulkan", "dep:anyhow"]
 # Embeds SteelMC as the integrated server. Off, the world screens still list and
 # edit saves but nothing can open one.
 singleplayer = ["dep:pomme-singleplayer"]
@@ -17,6 +19,8 @@ ttf-fonts = ["dep:freetype-rs"]
 shaderc = "0.10"
 
 [dependencies]
+anyhow = { version = "1", optional = true }
+pomme-shaderpack = { path = "../pomme-shaderpack", optional = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

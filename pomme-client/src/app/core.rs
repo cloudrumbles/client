@@ -2060,8 +2060,8 @@ impl AppCore {
                     day_time,
                 } => {
                     game.sky_state.game_time = game_time;
-                    if let Some(dt) = day_time {
-                        game.sky_state.day_time = dt;
+                    if let Some((ticks, phase, rate)) = day_time {
+                        game.sky_state.set_clock(ticks, phase, rate);
                     }
                 }
                 NetworkEvent::WeatherUpdate { event, param } => {

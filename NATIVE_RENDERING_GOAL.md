@@ -3,8 +3,12 @@
 ## Goal and platform
 
 Build on Pomme's existing native Rust/Vulkan Minecraft client to deliver
-Photon-level lighting and shaders at **at least 60 FPS on an NVIDIA GeForce
-GTX 1650 Ti**. Native Rust and Vulkan are the chosen direction. Browser delivery,
+actual, replaceable Photon shader-pack rendering, with **60 FPS on an NVIDIA
+GeForce GTX 1650 Ti as an unverified target**. Native Rust is the required
+direction. The existing gameplay renderer uses Vulkan; the new compatibility
+validation host uses OpenGL to execute original pack GLSL directly. The final
+renderer direction remains native Rust/Vulkan; the optional GL viewport is a
+compatibility/reference harness, not an architectural replacement. Browser delivery,
 WASM and WebGPU are no longer requirements. This is a private project; source
 adaptations should retain their exact upstream revision and attribution.
 
@@ -40,8 +44,13 @@ These changes are browser research and implementation. They do not modify the
 native Vulkan renderer, execute the original Photon shaderpack, load the Java
 performance mods, or establish complete Minecraft or Photon image parity.
 Software WebGPU checks establish bounded correctness; **the 1650 Ti / 60 FPS
-target has not been measured**. The native worktree and implementation were not
-started before this checkpoint was requested.
+target has not been measured**. A distinct native branch now adds original-pack execution in
+[pomme-shaderpack](pomme-shaderpack/README.md) and Vulkan indirect-feature fixes.
+The pack runtime now executes original Photon in the main Vulkan game window,
+with a separate optional GL reference host, using the existing client lifecycle. Minecraft 26.3 is the primary end-to-end target;
+1.21.11 remains an older-version regression. Actors/UI share that window, with forward actor shading still outside the pack
+graph. Full shader integration and persistent distant terrain remain unfinished.
+See its [status and limits](pomme-shaderpack/IMPLEMENTATION.md).
 
 ## Native implementation plan
 
@@ -109,7 +118,10 @@ browser scope remains in [PARITY.md](pomme-web/PARITY.md), lighting/cache behavi
 in [LIGHTING.md](pomme-web/LIGHTING.md), and source/effect boundaries in the
 [Photon effect audit](pomme-web/docs/photon-effect-audit.md).
 
-Native Photon compatibility, native Voxy integration, optional Vulkan mesh/task
-paths, target GPU profiling and 60 FPS qualification remain future work.
-Development is paused after committing and submitting this checkpoint, as
-requested.
+Full native Photon compatibility, native Voxy integration, optional Vulkan
+mesh/task paths, target GPU profiling and 60 FPS qualification remain work.
+Voxy-style distant terrain is required, with reuse/port of actual Voxy code as
+the default. Preserve nearby detail, persistent multiresolution received/imported
+world data, streaming and edit/light/dimension invalidation; test seams, transitions,
+fog, transparency and pack interaction. Never fabricate unexplored multiplayer
+terrain. Distance/quality presets require measured memory and frame-time evidence.

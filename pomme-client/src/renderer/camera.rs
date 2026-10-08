@@ -508,6 +508,20 @@ impl Camera {
         }
     }
 
+    #[cfg(feature = "shader-packs")]
+    pub fn shader_view(&self) -> (Vec3, Vec3, Vec3) {
+        let (forward, up) = self.view_basis();
+        let position = self.position.as_vec3() + self.third_person_offset();
+        (position, position + forward, up)
+    }
+    #[cfg(feature = "shader-packs")]
+    pub fn shader_clip_planes(&self) -> [f32; 2] {
+        [NEAR, self.depth_far]
+    }
+    #[cfg(feature = "shader-packs")]
+    pub fn shader_view_effect(&self) -> Mat4 {
+        self.view_effect_matrix()
+    }
     pub fn fov_degrees(&self) -> f32 {
         self.fov_radians(self.render_partial_tick).to_degrees()
     }
@@ -662,6 +676,32 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "shader-packs")]
+    #[test]
+    fn shader_projection_matches_forward_depth_and_view_effects() {
+        let mut camera = Camera::new(16.0 / 9.0);
+        camera.set_render_distance(3);
+        camera.set_hurt(8, 90.0, 1.0);
+        let (eye, target, up) = camera.shader_view();
+        let [near, far] = camera.shader_clip_planes();
+        assert_eq!(far, MIN_FAR);
+        let mut projection = proj::directx::perspective(
+            camera.fov_degrees().to_radians(),
+            camera.aspect_ratio,
+            near,
+            far,
+        );
+        projection.y_axis.y *= -1.;
+        let pack = projection
+            * camera.shader_view_effect()
+            * view::look_at_mat4(eye, target, up)
+            * Mat4::from_translation(camera.position.as_vec3());
+        assert_mat4_close(
+            pack,
+            camera.view_projection(),
+            "pack and forward draws must share their depth and view effects",
+        );
+    }
     #[test]
     fn view_basis_stays_finite_and_upright_at_pitch_limits() {
         let mut camera = Camera::new(16.0 / 9.0);

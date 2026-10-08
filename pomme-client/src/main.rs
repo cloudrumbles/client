@@ -23,6 +23,8 @@ mod physics;
 mod player;
 mod renderer;
 mod resource_pack;
+#[cfg(feature = "shader-packs")]
+mod shaderpack;
 mod singleplayer;
 #[cfg(test)]
 mod test_util;
@@ -108,6 +110,9 @@ fn main() {
         std::process::exit(1);
     }
     data_dirs.ensure_game_dir().ok();
+    #[cfg(feature = "shader-packs")]
+    shaderpack::configure(&args, version);
+
     tracing::info!("Installation directory: {}", data_dirs.game_dir.display());
 
     // A single connection needs only a few async workers; the default runtime

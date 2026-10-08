@@ -1,0 +1,7551 @@
+{
+  "backend": "Vulkan in native game window",
+  "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "measurement": "Vulkan pack-pass timestamp queries; excludes forward actors, UI and presentation; not gameplay FPS",
+  "options": {
+    "AIR_FOG_COLORED_LIGHT_SHAFTS": "false",
+    "BLOCK_ENTITY_SHADOWS": "false",
+    "COLORED_LIGHTS": "false",
+    "ENTITY_SHADOWS": "false",
+    "ENVIRONMENT_REFLECTIONS": "false",
+    "INFO": "0",
+    "SHADER_AO": "0",
+    "SHADOW_COLOR": "false",
+    "SHADOW_PCF": "true",
+    "SHADOW_SSRT": "false",
+    "SHADOW_VPS": "false",
+    "SH_SKYLIGHT": "false",
+    "VL": "false",
+    "WATER_CAUSTICS": "false",
+    "WATER_PARALLAX": "false",
+    "shadowMapResolution": "1024"
+  },
+  "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+  "passes": [
+    "prepare",
+    "shadow",
+    "gbuffers_terrain",
+    "deferred",
+    "deferred1",
+    "deferred2",
+    "deferred3",
+    "deferred4",
+    "gbuffers_water",
+    "composite",
+    "composite1",
+    "composite4",
+    "composite5",
+    "composite6",
+    "composite7",
+    "composite8",
+    "composite9",
+    "composite10",
+    "composite11",
+    "composite12",
+    "composite13",
+    "composite14",
+    "composite15",
+    "composite16",
+    "composite17",
+    "composite18",
+    "composite19",
+    "composite21",
+    "composite22",
+    "final"
+  ],
+  "reloads": [
+    {
+      "dimension": "world0",
+      "frame": 0,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "path": "/workspace/photon-reference"
+    }
+  ],
+  "revision": "a6b6eb888859b7a2d74ce2a4b2c8501675b4de1c+dirty",
+  "samples": [
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 0,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 47,
+        "tick": 1,
+        "tracked_entities": 6
+      },
+      "history_invalidations": 0,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 34.959665,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.320132,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 19.297776,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 31.026401,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 32.522941,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 9.944603,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.508958,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 20.15561,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 11.910549,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.042455,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 9.665733,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 10.842012,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.149212,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.434965,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.11751,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.186084,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.296229,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.013564,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 4.830848,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.921724,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.102636,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.095691,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.730128,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.683708,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.954369,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.806522,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.160955,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.672022,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.82425,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.179428,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 3,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 1,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 3,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 1,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.001048,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 92.388048,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 54.679316,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 13.739538,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.439085,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.608727,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.455349,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 7.690173,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.957134,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.193061,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.430224,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.343642,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.553733,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.237382,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.165358,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.32574,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.150787,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.138804,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.435474,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.015733,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.198246,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.206851,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.173752,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.117336,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.168323,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.257127,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.444933,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.68918,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.212339,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.473946,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 35,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 2,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 5,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 2,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 23.932334,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 101.636685,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 66.0823,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 15.252778,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 20.861897,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.685964,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.43555,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 7.520638,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.836628,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.17956,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.250103,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.449497,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.454453,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.220802,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.151748,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.115479,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.238173,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.162865,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.431178,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.936208,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.942387,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.120091,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.104657,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.116616,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.137556,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.192349,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.23716,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.512004,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.158738,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.178492,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 44,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 3,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 7,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 3,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 19.08119,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 101.41395,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 78.524954,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 15.885435,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 22.091247,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.741246,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.459752,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.912303,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.860669,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.171178,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.407489,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.617228,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.463567,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.23276,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.152765,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.102729,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.098408,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.097497,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.370577,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.006203,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.062408,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.248974,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.134903,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.088804,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.13323,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.197577,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.947028,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.624923,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.247743,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.205082,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 55,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 4,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 9,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 4,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.164527,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 92.43194,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 67.527984,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 14.174723,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.350878,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.000302,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.55208,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 7.433858,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.829637,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.231338,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.238509,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 4.401739,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.690187,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.234122,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.273732,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.130826,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.153872,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.122123,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.45232,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.956898,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.160405,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.266972,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.202294,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.11309,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.155564,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.291699,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.583411,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.976311,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.251048,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.157921,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 61,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 5,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 11,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 5,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.590488,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 91.804301,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 68.741043,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.169195,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.699808,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.170577,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.534263,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 7.046805,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.833163,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.294442,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.328772,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.937551,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.762446,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.278949,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.251087,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.183977,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.204227,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.163095,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.513873,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.07087,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.020314,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.258469,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.169955,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.128754,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.155474,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.231057,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.318283,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.497802,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.214773,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.247415,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 70,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 6,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 13,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 6,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.231032,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 103.404688,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 71.473577,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 13.430474,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 19.926276,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.869084,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.557553,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 7.105634,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.836938,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.262039,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.251836,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.640018,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.679402,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.258589,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.31928,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.155694,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.135874,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.122695,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.418439,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.874345,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.184136,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.258994,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.167687,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.13638,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.166671,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.266175,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.202212,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.601594,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.27613,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.128587,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 78,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 7,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 15,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 7,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.20894,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 136.384536,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 89.354873,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.261731,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 22.301732,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.769699,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.252022,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 11.458599,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.035537,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.303356,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.111287,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 4.360176,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.804931,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.287102,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.212058,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.159851,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.148203,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.14023,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.588254,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.199534,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.331532,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.252149,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.152329,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.13979,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.198528,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.270087,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.500015,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.796241,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.264447,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.675833,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 93,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 8,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 17,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 8,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 19.405994,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 143.944934,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 100.781048,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 13.958978,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 19.492694,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.523384,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.68456,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 7.193095,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.800724,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.238559,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.587966,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 4.652966,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.844675,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.258038,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.208724,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.19918,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.176705,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.191002,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.457302,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.955708,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.043619,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.238378,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.189806,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.124337,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.161703,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.230917,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.447106,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.516129,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.008391,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.221351,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 100,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 9,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 19,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 9,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.244664,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 110.508315,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 114.113749,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 12.718954,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.591911,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.388251,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.740183,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.858682,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.730869,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.220371,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.878926,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.808076,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.447888,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.186821,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.138478,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.144848,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.118448,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.092299,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.333471,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.822327,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.858651,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.161433,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.095674,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.115593,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.116345,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.182345,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.109378,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.458713,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.319751,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.266123,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 105,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 10,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 21,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 10,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 15.903983,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 142.206961,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 115.016527,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 12.485472,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.212495,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.178265,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.438509,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.77714,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.769387,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.151918,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.998545,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.032489,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.528234,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.199641,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.127091,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.100912,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.190346,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.136005,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.387742,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.979623,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.972753,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.223566,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.125128,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.114312,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.183206,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.217326,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.300406,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.610181,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.142454,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.342148,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 105,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 11,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 23,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 10,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.328165,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 116.06637,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 124.482431,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 15.116328,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 21.041348,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.006761,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.575145,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 9.103668,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.96444,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.185239,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.264308,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 4.501549,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.570547,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.288104,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.274122,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.124787,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.101283,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.111818,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.47202,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.151181,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.192743,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.13326,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.09289,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.123696,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.13272,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.287632,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.538253,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.874469,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.203045,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.572505,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 105,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 12,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 25,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 10,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 19.154085,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 128.198167,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 125.751167,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 14.799642,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.66401,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.506448,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.657409,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.82438,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.809247,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.154052,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.185586,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.241244,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.420282,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.189014,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.195334,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.101402,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.094622,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.091247,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.414503,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.845872,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.879803,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.170326,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.094723,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.105228,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.128183,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.180461,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.070009,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.351402,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.139449,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.096629,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 106,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 13,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 27,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 11,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 15.96569,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 115.642969,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 235.268249,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 12.231444,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.578392,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.248781,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.456496,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.80406,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.781284,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.190427,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.031494,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.252139,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.480843,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.268494,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.183886,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.129445,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.121983,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.123035,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.395245,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.74209,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.882101,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.143987,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.105458,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.145469,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.147842,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.244707,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.149469,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.376128,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.177067,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.153684,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 106,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 14,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 29,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 11,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 15.88689,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 122.265811,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 111.453626,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 12.342861,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.206818,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.163953,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.377027,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.463567,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.780193,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.185178,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.114494,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.165044,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.526571,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.266912,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.125138,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.101693,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.121252,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.093741,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.344127,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.817469,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.849177,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.117527,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.172089,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.104517,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.115814,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.232029,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.149688,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.374427,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.171978,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.143419,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 106,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 15,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 31,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 11,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.663752,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 145.866497,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 107.120102,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 12.666072,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.51039,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.024617,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.52518,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 9.210196,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.935116,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.184538,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.012268,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 4.247666,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.601384,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.235695,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.151247,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.117547,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.100191,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.103214,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.449395,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.080245,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.205332,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.131738,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.092558,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.124638,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.136235,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.248444,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.463169,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.879025,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.181984,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.554557,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 106,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 16,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 33,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 11,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.103273,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 136.366346,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 110.788767,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 12.251353,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.883488,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.08848,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.37954,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.444038,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.736988,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.143726,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.137113,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.395796,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.493141,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.271709,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.142284,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.097916,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.147532,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.105159,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.405029,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.039563,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.873282,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.115764,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.096374,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.103136,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.11976,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.184978,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.060614,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.440977,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.14637,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.280405,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 106,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 17,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 35,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 11,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.826342,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 114.830994,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 113.293043,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 12.364849,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.674846,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.32818,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.384878,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.642275,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.849478,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.149855,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.403654,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.188613,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.429606,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.201884,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.15984,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.109214,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.094402,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.091448,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.329906,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.755145,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.860614,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.163836,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.103025,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.11291,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.137727,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.20592,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.073313,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.355659,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.147371,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.102097,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 106,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 18,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 37,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 11,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.6446,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 119.309188,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 123.097903,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 12.542746,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.429773,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.755283,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.550312,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 9.539236,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.165342,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.186746,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.075904,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 4.298317,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.608115,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.277862,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.138273,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.117387,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.105663,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.121458,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.447643,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.146574,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.218987,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.147478,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.094396,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.131828,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.426998,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.234753,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.466199,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.978444,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.232455,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.533345,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 106,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 19,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 39,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 11,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 21.569582,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 127.196555,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 116.332652,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 12.359902,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.955674,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.303703,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.468995,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.757319,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.830559,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.183356,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.140908,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.23236,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.537788,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.208924,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.144277,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.131118,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.1267,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.124918,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.375044,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.91158,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.887745,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.143255,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.111317,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.127492,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.144517,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.231488,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.1039,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.611332,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.23218,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.148807,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 106,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 20,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 41,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 11,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 22.091107,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 175.689738,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 113.493844,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 13.796822,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.183023,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.151885,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.416686,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.361134,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.694143,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.148463,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.999847,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.203977,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.479921,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.181844,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.118773,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.098694,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.1928,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.096375,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.346761,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.750168,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.932331,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.116756,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.090286,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.09962,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.118708,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.177237,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.062467,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.565984,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.173601,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.102718,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 106,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 21,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 43,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 11,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.104672,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 115.394101,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 111.944656,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 12.047972,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.648809,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.464565,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.381393,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.176866,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.820854,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.144387,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.915439,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.957807,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.444318,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.190967,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.174192,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.105389,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.107862,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.091487,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.356977,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.737949,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.83163,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.135904,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.096615,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.147021,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.125008,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.184868,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.10384,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.373615,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.145609,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.096278,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 22,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 45,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.458995,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 123.483987,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 112.711258,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 15.492992,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 21.010983,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.600454,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.510318,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 9.481214,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.813853,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.163306,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.431564,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.613117,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.675836,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.198298,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.33593,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.164938,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.097502,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.094532,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.333271,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.881645,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.899723,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.125559,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.15609,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.098422,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.137317,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.207041,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.220605,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.561287,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.482095,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.340275,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 23,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 47,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 21.75033,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 116.94053,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 120.906979,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 14.529584,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.656157,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.343203,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.660633,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 7.680953,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.958861,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.189234,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.205956,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.633653,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.449025,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.233241,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.146931,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.1366,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.115269,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.149084,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.466131,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.887173,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.998981,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.153091,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.102639,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.12978,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.145579,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.214132,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.224851,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.534157,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.179289,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.154145,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 24,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 49,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 19.463325,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 130.518945,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 119.108961,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 14.965899,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 20.626574,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.511271,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.324638,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 9.838366,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.160019,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.217717,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.423188,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.801826,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.53249,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.224638,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.199841,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.135343,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.148413,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.129325,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.454543,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.847624,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.956648,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.143415,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.193401,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.131738,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.16601,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.220181,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.470681,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.553956,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.400062,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.17092,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 25,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 51,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 21.882307,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 143.163475,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 117.212664,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 12.681538,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 25.277488,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.405838,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.476045,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.926916,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.810168,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.233411,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.098124,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.559873,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.65133,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.26622,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.151969,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.129164,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.523217,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.167636,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.446327,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.912923,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.959803,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.214122,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.111237,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.130206,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.167837,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.256255,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.207391,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.370741,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.640438,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.22044,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 26,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 53,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.926744,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 127.369957,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 133.491271,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 13.943536,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.955554,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.257679,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.477769,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 8.138417,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.045723,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.22992,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.095596,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.169785,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.513703,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.190036,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.125248,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.09961,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.125599,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.096605,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.340923,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.882707,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.866042,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.113181,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.094191,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.09295,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.123706,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.463327,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.113674,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.317131,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.157622,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.097705,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 27,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 55,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 15.952371,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 132.440176,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 119.249797,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 13.193408,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.886579,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.335952,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.540143,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.612362,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.825621,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.393071,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.096272,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.554164,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.451499,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.321072,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.131418,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.150156,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.098378,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.088333,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.369535,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.880274,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.066944,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.186551,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.125168,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.137317,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.147812,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.213361,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.092873,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.514157,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.235324,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.386875,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 28,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 57,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 15.963609,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 125.073238,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 114.653011,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.787346,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 26.716476,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.843015,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.566502,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 9.138631,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.982272,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.175414,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.994207,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 4.312119,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.588149,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.255134,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.152289,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.133891,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.158128,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.118769,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.468714,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.08393,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.191202,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.131838,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.092254,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.121768,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.138779,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.24606,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.515188,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.069983,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.191658,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.586205,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 29,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 59,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.897362,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 146.585285,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 114.458854,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 14.677284,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 26.390036,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.148064,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.729431,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 9.584417,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.885431,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.232389,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.02203,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.574255,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.503927,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.244859,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.132319,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.100972,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.11697,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.092363,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.47848,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.877539,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.89748,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.171418,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.122674,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.137467,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.142494,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.212119,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.11034,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.759295,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.185319,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.17728,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 30,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 61,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 25.758536,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 145.237779,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 132.053479,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 13.127279,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 26.505755,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.77363,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.462596,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 11.058227,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.061561,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.280307,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.106111,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.762152,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.850303,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.268353,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.158619,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.130486,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.119069,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.128934,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.415154,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.805942,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.248487,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.144417,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.128353,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.203757,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.165884,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.320227,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.701663,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.663521,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.198979,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.609414,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 31,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 63,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 24.525927,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 142.301078,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 114.411904,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 12.092763,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 20.236818,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.09439,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.432129,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.358411,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.842207,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.20664,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.323374,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.422416,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.554984,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.222535,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.153281,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.128583,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.140531,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.130927,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.439932,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.980164,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.886342,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.141132,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.139139,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.100351,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.143696,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.247402,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.140255,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.139667,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.190026,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.149498,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 32,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 65,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.181371,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 129.556846,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 114.151591,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 13.13488,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 19.610798,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.140829,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.681615,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 8.083614,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.866614,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.189515,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.164755,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.170177,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.461774,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.242825,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.145709,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.125069,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.122243,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.122555,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.403737,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.839402,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.945101,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.158849,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.139009,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.105358,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.148784,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.271789,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.392213,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.534558,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.172309,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.228788,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 33,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 67,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.773681,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 124.901155,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 139.224301,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.77001,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 26.336961,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.017086,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.58548,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 9.519534,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.086694,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.213621,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.223397,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 4.67537,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.638901,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.263105,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.136956,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.118639,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.101963,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.163977,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.444208,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.149028,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.226123,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.254293,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.097726,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.124818,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.143065,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.217818,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.513315,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.10121,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.201944,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.560105,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 34,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 69,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 21.647029,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 126.309402,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 126.494301,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 14.061698,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 19.001171,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.509574,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.483577,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 7.043601,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.07726,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.301603,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.431967,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 5.400749,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.74523,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.350347,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.276456,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.150786,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.171568,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.178349,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.542075,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.025952,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.108867,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.265489,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.229535,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.1927,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.184197,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.262635,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.617872,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.784512,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.264057,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.24396,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 35,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 71,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.679328,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 120.615861,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 120.330762,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 14.245144,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.327011,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.324524,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.483928,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.780923,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.815676,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.21897,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.449191,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.93799,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.669957,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.249695,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.267272,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.177847,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.133571,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.119941,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.447022,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.950288,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.993683,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.221243,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.235234,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.13333,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.165669,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.22615,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.250811,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.612504,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.221933,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.251091,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 36,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 73,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 17.790534,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 125.616609,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 120.67259,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 16.270905,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.741088,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.556268,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.564809,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 7.667927,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.836628,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.330061,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.801497,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 4.149868,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.655746,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.2994,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.223556,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.132059,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.103155,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.182935,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.493622,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.983042,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.02783,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.183536,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.158598,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.125008,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.15919,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.272489,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.409399,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.265539,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.297387,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.470251,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 37,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 75,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.614027,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 119.011744,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 117.95849,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 14.679678,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.165458,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.613329,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.496491,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 7.224866,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.054776,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.247351,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.39151,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.267061,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.613673,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.197046,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.141122,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.131378,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.106119,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.101012,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.402846,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.986082,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.880925,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.235474,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.118998,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.117376,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.171768,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.227772,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.092403,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.614037,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.204216,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.410761,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 38,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 77,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 15.796903,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 142.909494,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 116.278269,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.220091,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 25.463809,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.182935,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.66501,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 9.55939,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.015036,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.265139,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.437898,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 4.442348,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.5788,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.263817,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.154893,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.119169,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.100331,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.111457,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.467764,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.108626,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.200194,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.145689,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.099689,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.122735,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.140611,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.242675,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.613906,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.848489,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.193932,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.558303,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        8.5,
+        67.62000274658203,
+        12.5
+      ],
+      "eye_in_water": false,
+      "frame": 39,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [
+          [
+            36,
+            "Stone",
+            64
+          ],
+          [
+            37,
+            "Torch",
+            8
+          ]
+        ],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 79,
+        "tracked_entities": 10
+      },
+      "history_invalidations": 12,
+      "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+      "passes": [
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 21.593842,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 128.902467,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 116.000111,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 14.239761,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 18.178477,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.466038,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.455154,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 6.543387,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.91152,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.237637,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 2.210203,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 3.077536,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.442836,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.184257,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.152759,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.10598,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.095543,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.091748,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.352901,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.73838,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.043249,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.121042,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.165483,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.198173,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.129735,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.184007,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.09389,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.62671,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 0.260852,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.0,
+          "gpu_ms": 1.191571,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "world_day": 0,
+      "world_revision": 107,
+      "world_time": 6000
+    }
+  ],
+  "size": [
+    320,
+    179
+  ]
+}

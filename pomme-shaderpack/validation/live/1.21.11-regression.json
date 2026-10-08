@@ -1,0 +1,7373 @@
+{
+  "backend": "OpenGL compatibility",
+  "camera": [
+    14.5,
+    67.62000274658203,
+    3.5
+  ],
+  "capabilities": {
+    "extensions": [
+      "GL_3DFX_texture_compression_FXT1",
+      "GL_AMD_conservative_depth",
+      "GL_AMD_draw_buffers_blend",
+      "GL_AMD_multi_draw_indirect",
+      "GL_AMD_pinned_memory",
+      "GL_AMD_query_buffer_object",
+      "GL_AMD_seamless_cubemap_per_texture",
+      "GL_AMD_shader_stencil_export",
+      "GL_AMD_shader_trinary_minmax",
+      "GL_AMD_texture_texture4",
+      "GL_AMD_vertex_shader_layer",
+      "GL_AMD_vertex_shader_viewport_index",
+      "GL_ANGLE_texture_compression_dxt3",
+      "GL_ANGLE_texture_compression_dxt5",
+      "GL_APPLE_packed_pixels",
+      "GL_ARB_ES2_compatibility",
+      "GL_ARB_ES3_1_compatibility",
+      "GL_ARB_ES3_2_compatibility",
+      "GL_ARB_ES3_compatibility",
+      "GL_ARB_arrays_of_arrays",
+      "GL_ARB_base_instance",
+      "GL_ARB_blend_func_extended",
+      "GL_ARB_buffer_storage",
+      "GL_ARB_clear_buffer_object",
+      "GL_ARB_clear_texture",
+      "GL_ARB_clip_control",
+      "GL_ARB_color_buffer_float",
+      "GL_ARB_compatibility",
+      "GL_ARB_compressed_texture_pixel_storage",
+      "GL_ARB_compute_shader",
+      "GL_ARB_conditional_render_inverted",
+      "GL_ARB_conservative_depth",
+      "GL_ARB_copy_buffer",
+      "GL_ARB_copy_image",
+      "GL_ARB_cull_distance",
+      "GL_ARB_debug_output",
+      "GL_ARB_depth_buffer_float",
+      "GL_ARB_depth_clamp",
+      "GL_ARB_depth_texture",
+      "GL_ARB_derivative_control",
+      "GL_ARB_direct_state_access",
+      "GL_ARB_draw_buffers",
+      "GL_ARB_draw_buffers_blend",
+      "GL_ARB_draw_elements_base_vertex",
+      "GL_ARB_draw_indirect",
+      "GL_ARB_draw_instanced",
+      "GL_ARB_enhanced_layouts",
+      "GL_ARB_explicit_attrib_location",
+      "GL_ARB_explicit_uniform_location",
+      "GL_ARB_fragment_coord_conventions",
+      "GL_ARB_fragment_layer_viewport",
+      "GL_ARB_fragment_program",
+      "GL_ARB_fragment_program_shadow",
+      "GL_ARB_fragment_shader",
+      "GL_ARB_framebuffer_no_attachments",
+      "GL_ARB_framebuffer_object",
+      "GL_ARB_framebuffer_sRGB",
+      "GL_ARB_get_program_binary",
+      "GL_ARB_get_texture_sub_image",
+      "GL_ARB_gl_spirv",
+      "GL_ARB_gpu_shader5",
+      "GL_ARB_gpu_shader_fp64",
+      "GL_ARB_gpu_shader_int64",
+      "GL_ARB_half_float_pixel",
+      "GL_ARB_half_float_vertex",
+      "GL_ARB_indirect_parameters",
+      "GL_ARB_instanced_arrays",
+      "GL_ARB_internalformat_query",
+      "GL_ARB_internalformat_query2",
+      "GL_ARB_invalidate_subdata",
+      "GL_ARB_map_buffer_alignment",
+      "GL_ARB_map_buffer_range",
+      "GL_ARB_multi_bind",
+      "GL_ARB_multi_draw_indirect",
+      "GL_ARB_multisample",
+      "GL_ARB_multitexture",
+      "GL_ARB_occlusion_query",
+      "GL_ARB_occlusion_query2",
+      "GL_ARB_parallel_shader_compile",
+      "GL_ARB_pipeline_statistics_query",
+      "GL_ARB_pixel_buffer_object",
+      "GL_ARB_point_parameters",
+      "GL_ARB_point_sprite",
+      "GL_ARB_polygon_offset_clamp",
+      "GL_ARB_post_depth_coverage",
+      "GL_ARB_program_interface_query",
+      "GL_ARB_provoking_vertex",
+      "GL_ARB_query_buffer_object",
+      "GL_ARB_robust_buffer_access_behavior",
+      "GL_ARB_robustness",
+      "GL_ARB_sample_shading",
+      "GL_ARB_sampler_objects",
+      "GL_ARB_seamless_cube_map",
+      "GL_ARB_seamless_cubemap_per_texture",
+      "GL_ARB_separate_shader_objects",
+      "GL_ARB_shader_atomic_counter_ops",
+      "GL_ARB_shader_atomic_counters",
+      "GL_ARB_shader_ballot",
+      "GL_ARB_shader_bit_encoding",
+      "GL_ARB_shader_clock",
+      "GL_ARB_shader_draw_parameters",
+      "GL_ARB_shader_group_vote",
+      "GL_ARB_shader_image_load_store",
+      "GL_ARB_shader_image_size",
+      "GL_ARB_shader_objects",
+      "GL_ARB_shader_precision",
+      "GL_ARB_shader_stencil_export",
+      "GL_ARB_shader_storage_buffer_object",
+      "GL_ARB_shader_subroutine",
+      "GL_ARB_shader_texture_image_samples",
+      "GL_ARB_shader_texture_lod",
+      "GL_ARB_shader_viewport_layer_array",
+      "GL_ARB_shading_language_100",
+      "GL_ARB_shading_language_420pack",
+      "GL_ARB_shading_language_include",
+      "GL_ARB_shading_language_packing",
+      "GL_ARB_shadow",
+      "GL_ARB_spirv_extensions",
+      "GL_ARB_stencil_texturing",
+      "GL_ARB_sync",
+      "GL_ARB_tessellation_shader",
+      "GL_ARB_texture_barrier",
+      "GL_ARB_texture_border_clamp",
+      "GL_ARB_texture_buffer_object",
+      "GL_ARB_texture_buffer_object_rgb32",
+      "GL_ARB_texture_buffer_range",
+      "GL_ARB_texture_compression",
+      "GL_ARB_texture_compression_bptc",
+      "GL_ARB_texture_compression_rgtc",
+      "GL_ARB_texture_cube_map",
+      "GL_ARB_texture_cube_map_array",
+      "GL_ARB_texture_env_add",
+      "GL_ARB_texture_env_combine",
+      "GL_ARB_texture_env_crossbar",
+      "GL_ARB_texture_env_dot3",
+      "GL_ARB_texture_filter_anisotropic",
+      "GL_ARB_texture_filter_minmax",
+      "GL_ARB_texture_float",
+      "GL_ARB_texture_gather",
+      "GL_ARB_texture_mirror_clamp_to_edge",
+      "GL_ARB_texture_mirrored_repeat",
+      "GL_ARB_texture_multisample",
+      "GL_ARB_texture_non_power_of_two",
+      "GL_ARB_texture_query_levels",
+      "GL_ARB_texture_query_lod",
+      "GL_ARB_texture_rectangle",
+      "GL_ARB_texture_rg",
+      "GL_ARB_texture_rgb10_a2ui",
+      "GL_ARB_texture_stencil8",
+      "GL_ARB_texture_storage",
+      "GL_ARB_texture_storage_multisample",
+      "GL_ARB_texture_swizzle",
+      "GL_ARB_texture_view",
+      "GL_ARB_timer_query",
+      "GL_ARB_transform_feedback2",
+      "GL_ARB_transform_feedback3",
+      "GL_ARB_transform_feedback_instanced",
+      "GL_ARB_transform_feedback_overflow_query",
+      "GL_ARB_transpose_matrix",
+      "GL_ARB_uniform_buffer_object",
+      "GL_ARB_vertex_array_bgra",
+      "GL_ARB_vertex_array_object",
+      "GL_ARB_vertex_attrib_64bit",
+      "GL_ARB_vertex_attrib_binding",
+      "GL_ARB_vertex_buffer_object",
+      "GL_ARB_vertex_program",
+      "GL_ARB_vertex_shader",
+      "GL_ARB_vertex_type_10f_11f_11f_rev",
+      "GL_ARB_vertex_type_2_10_10_10_rev",
+      "GL_ARB_viewport_array",
+      "GL_ARB_window_pos",
+      "GL_ARM_shader_framebuffer_fetch_depth_stencil",
+      "GL_ATI_blend_equation_separate",
+      "GL_ATI_draw_buffers",
+      "GL_ATI_fragment_shader",
+      "GL_ATI_meminfo",
+      "GL_ATI_separate_stencil",
+      "GL_ATI_texture_compression_3dc",
+      "GL_ATI_texture_env_combine3",
+      "GL_ATI_texture_float",
+      "GL_ATI_texture_mirror_once",
+      "GL_EXT_EGL_image_storage",
+      "GL_EXT_EGL_image_storage_compression",
+      "GL_EXT_EGL_sync",
+      "GL_EXT_abgr",
+      "GL_EXT_bgra",
+      "GL_EXT_blend_color",
+      "GL_EXT_blend_equation_separate",
+      "GL_EXT_blend_func_separate",
+      "GL_EXT_blend_minmax",
+      "GL_EXT_blend_subtract",
+      "GL_EXT_compiled_vertex_array",
+      "GL_EXT_copy_texture",
+      "GL_EXT_debug_label",
+      "GL_EXT_direct_state_access",
+      "GL_EXT_draw_buffers2",
+      "GL_EXT_draw_instanced",
+      "GL_EXT_draw_range_elements",
+      "GL_EXT_fog_coord",
+      "GL_EXT_framebuffer_blit",
+      "GL_EXT_framebuffer_multisample",
+      "GL_EXT_framebuffer_multisample_blit_scaled",
+      "GL_EXT_framebuffer_object",
+      "GL_EXT_framebuffer_sRGB",
+      "GL_EXT_gpu_program_parameters",
+      "GL_EXT_gpu_shader4",
+      "GL_EXT_memory_object",
+      "GL_EXT_memory_object_fd",
+      "GL_EXT_multi_draw_arrays",
+      "GL_EXT_packed_depth_stencil",
+      "GL_EXT_packed_float",
+      "GL_EXT_packed_pixels",
+      "GL_EXT_pixel_buffer_object",
+      "GL_EXT_point_parameters",
+      "GL_EXT_polygon_offset_clamp",
+      "GL_EXT_provoking_vertex",
+      "GL_EXT_rescale_normal",
+      "GL_EXT_secondary_color",
+      "GL_EXT_separate_specular_color",
+      "GL_EXT_shader_framebuffer_fetch",
+      "GL_EXT_shader_framebuffer_fetch_non_coherent",
+      "GL_EXT_shader_image_load_formatted",
+      "GL_EXT_shader_integer_mix",
+      "GL_EXT_shadow_funcs",
+      "GL_EXT_stencil_two_side",
+      "GL_EXT_stencil_wrap",
+      "GL_EXT_subtexture",
+      "GL_EXT_texture",
+      "GL_EXT_texture3D",
+      "GL_EXT_texture_array",
+      "GL_EXT_texture_buffer_object",
+      "GL_EXT_texture_compression_dxt1",
+      "GL_EXT_texture_compression_latc",
+      "GL_EXT_texture_compression_rgtc",
+      "GL_EXT_texture_compression_s3tc",
+      "GL_EXT_texture_cube_map",
+      "GL_EXT_texture_edge_clamp",
+      "GL_EXT_texture_env_add",
+      "GL_EXT_texture_env_combine",
+      "GL_EXT_texture_env_dot3",
+      "GL_EXT_texture_filter_anisotropic",
+      "GL_EXT_texture_filter_minmax",
+      "GL_EXT_texture_integer",
+      "GL_EXT_texture_lod_bias",
+      "GL_EXT_texture_mirror_clamp",
+      "GL_EXT_texture_object",
+      "GL_EXT_texture_rectangle",
+      "GL_EXT_texture_sRGB",
+      "GL_EXT_texture_sRGB_R8",
+      "GL_EXT_texture_sRGB_RG8",
+      "GL_EXT_texture_sRGB_decode",
+      "GL_EXT_texture_shadow_lod",
+      "GL_EXT_texture_shared_exponent",
+      "GL_EXT_texture_snorm",
+      "GL_EXT_texture_storage",
+      "GL_EXT_texture_swizzle",
+      "GL_EXT_timer_query",
+      "GL_EXT_transform_feedback",
+      "GL_EXT_vertex_array",
+      "GL_EXT_vertex_array_bgra",
+      "GL_EXT_vertex_attrib_64bit",
+      "GL_IBM_multimode_draw_arrays",
+      "GL_IBM_rasterpos_clip",
+      "GL_IBM_texture_mirrored_repeat",
+      "GL_INGR_blend_func_separate",
+      "GL_INTEL_shader_atomic_float_minmax",
+      "GL_KHR_blend_equation_advanced",
+      "GL_KHR_blend_equation_advanced_coherent",
+      "GL_KHR_context_flush_control",
+      "GL_KHR_debug",
+      "GL_KHR_no_error",
+      "GL_KHR_parallel_shader_compile",
+      "GL_KHR_robust_buffer_access_behavior",
+      "GL_KHR_robustness",
+      "GL_KHR_texture_compression_astc_ldr",
+      "GL_KHR_texture_compression_astc_sliced_3d",
+      "GL_MESA_framebuffer_flip_y",
+      "GL_MESA_pack_invert",
+      "GL_MESA_shader_integer_functions",
+      "GL_MESA_texture_signed_rgba",
+      "GL_MESA_window_pos",
+      "GL_NVX_gpu_memory_info",
+      "GL_NV_ES1_1_compatibility",
+      "GL_NV_alpha_to_coverage_dither_control",
+      "GL_NV_blend_square",
+      "GL_NV_conditional_render",
+      "GL_NV_copy_depth_to_color",
+      "GL_NV_copy_image",
+      "GL_NV_depth_clamp",
+      "GL_NV_fog_distance",
+      "GL_NV_half_float",
+      "GL_NV_light_max_exponent",
+      "GL_NV_packed_depth_stencil",
+      "GL_NV_primitive_restart",
+      "GL_NV_shader_atomic_float",
+      "GL_NV_texgen_reflection",
+      "GL_NV_texture_barrier",
+      "GL_NV_texture_env_combine4",
+      "GL_NV_texture_rectangle",
+      "GL_OES_EGL_image",
+      "GL_OES_read_format",
+      "GL_OVR_multiview",
+      "GL_OVR_multiview2",
+      "GL_S3_s3tc",
+      "GL_SGIS_generate_mipmap",
+      "GL_SGIS_texture_border_clamp",
+      "GL_SGIS_texture_edge_clamp",
+      "GL_SGIS_texture_lod",
+      "GL_SUN_multi_draw_arrays"
+    ],
+    "glsl": "4.50",
+    "max_compute_shared_memory": 32768,
+    "max_draw_buffers": 8,
+    "max_texture_size": 16384,
+    "max_texture_units": 192,
+    "nv_mesh_shader": false,
+    "nv_representative_fragment_test": false,
+    "nv_vertex_buffer_unified_memory": false,
+    "nvidium_missing_extensions": [
+      "GL_NV_mesh_shader",
+      "GL_NV_uniform_buffer_unified_memory",
+      "GL_NV_vertex_buffer_unified_memory",
+      "GL_NV_representative_fragment_test",
+      "GL_ARB_sparse_buffer",
+      "GL_NV_bindless_multi_draw_indirect"
+    ],
+    "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "vendor": "Mesa",
+    "version": "4.5 (Compatibility Profile) Mesa 25.0.7-2+deb13u1"
+  },
+  "dimension": "world0",
+  "eye_brightness": [
+    0.0,
+    240.0
+  ],
+  "measurement": "serialized pack viewport frames; GPU timer readback; excludes main Vulkan rendering; not gameplay-FPS qualification",
+  "minecraft_version": 12111,
+  "options": {
+    "AIR_FOG_COLORED_LIGHT_SHAFTS": "false",
+    "BLOCK_ENTITY_SHADOWS": "false",
+    "COLORED_LIGHTS": "false",
+    "ENTITY_SHADOWS": "false",
+    "ENVIRONMENT_REFLECTIONS": "false",
+    "INFO": "0",
+    "SHADER_AO": "0",
+    "SHADOW_COLOR": "false",
+    "SHADOW_PCF": "true",
+    "SHADOW_SSRT": "false",
+    "SHADOW_VPS": "false",
+    "SH_SKYLIGHT": "false",
+    "VL": "false",
+    "WATER_CAUSTICS": "false",
+    "WATER_PARALLAX": "false",
+    "shadowMapResolution": "1024"
+  },
+  "pack_sha256": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+  "passes": [
+    "prepare",
+    "shadow",
+    "gbuffers_terrain",
+    "deferred",
+    "deferred1",
+    "deferred2",
+    "deferred3",
+    "deferred4",
+    "gbuffers_water",
+    "composite",
+    "composite1",
+    "composite4",
+    "composite5",
+    "composite6",
+    "composite7",
+    "composite8",
+    "composite9",
+    "composite10",
+    "composite11",
+    "composite12",
+    "composite13",
+    "composite14",
+    "composite15",
+    "composite16",
+    "composite17",
+    "composite18",
+    "composite19",
+    "composite21",
+    "composite22",
+    "final"
+  ],
+  "presented_frames": 40,
+  "rain": 0.0,
+  "rainfall": 0.4000000059604645,
+  "reloads": [],
+  "runtime_revision": "7d876fee05c4b59970f03053064fe47464e17674",
+  "samples": [
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 0,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 61,
+        "tick": 3,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 2,
+      "passes": [
+        {
+          "cpu_submit_ms": 47.331639,
+          "gpu_ms": 36.372738,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 36.291964,
+          "gpu_ms": 19.211282,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 13.157271,
+          "gpu_ms": 8.217805,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 33.336659,
+          "gpu_ms": 50.483838,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 42.168586,
+          "gpu_ms": 293.326408,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 267.449814,
+          "gpu_ms": 23.608743,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 10.131261,
+          "gpu_ms": 4.130259,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 29.615789,
+          "gpu_ms": 49.090818,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.08332500000000001,
+          "gpu_ms": 0.482115,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 44.804729,
+          "gpu_ms": 24.218065,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 1.967909,
+          "gpu_ms": 12.137833,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 18.258209,
+          "gpu_ms": 23.776802,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 18.719113,
+          "gpu_ms": 6.556542,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.832405,
+          "gpu_ms": 1.762715,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 1.6071760000000002,
+          "gpu_ms": 1.226113,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.8817550000000001,
+          "gpu_ms": 0.847329,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.916277,
+          "gpu_ms": 1.009447,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.8978499999999999,
+          "gpu_ms": 0.880939,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 3.6370180000000003,
+          "gpu_ms": 7.156725,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 4.677151,
+          "gpu_ms": 9.749392,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 7.925565000000001,
+          "gpu_ms": 7.852365,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.890429,
+          "gpu_ms": 1.006893,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.817589,
+          "gpu_ms": 0.823443,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.720033,
+          "gpu_ms": 0.757709,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.77169,
+          "gpu_ms": 0.836247,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.8958170000000001,
+          "gpu_ms": 1.158076,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 1.67577,
+          "gpu_ms": 5.139523,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.981599,
+          "gpu_ms": 5.257509,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 28.131913,
+          "gpu_ms": 24.462126,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.969928,
+          "gpu_ms": 5.302957,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 634.538033,
+      "world_revision": 5,
+      "world_time": 7055
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 1,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 5,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 3,
+      "passes": [
+        {
+          "cpu_submit_ms": 16.065162,
+          "gpu_ms": 23.237325,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 92.816782,
+          "gpu_ms": 76.399309,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 32.122893,
+          "gpu_ms": 28.35945,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.336486,
+          "gpu_ms": 14.338457,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 14.602253000000001,
+          "gpu_ms": 174.087603,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 170.82562900000002,
+          "gpu_ms": 9.757099,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 8.00195,
+          "gpu_ms": 2.124163,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 4.7664860000000004,
+          "gpu_ms": 20.250951,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.044607999999999995,
+          "gpu_ms": 0.271303,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 17.408186999999998,
+          "gpu_ms": 0.958151,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 1.899726,
+          "gpu_ms": 10.44617,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 35.508734,
+          "gpu_ms": 38.139108,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 12.352741,
+          "gpu_ms": 2.316092,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.409008,
+          "gpu_ms": 0.644314,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.934185,
+          "gpu_ms": 0.680042,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.315905,
+          "gpu_ms": 0.272415,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.5302669999999999,
+          "gpu_ms": 0.507092,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.155734,
+          "gpu_ms": 0.149655,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.580082,
+          "gpu_ms": 1.787577,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.3410259999999998,
+          "gpu_ms": 2.889539,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.285069,
+          "gpu_ms": 4.017124,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.5253099999999997,
+          "gpu_ms": 0.353151,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.624869,
+          "gpu_ms": 0.781996,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.29389200000000004,
+          "gpu_ms": 0.153075,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.49268100000000004,
+          "gpu_ms": 0.596732,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.25926,
+          "gpu_ms": 0.533823,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 1.002808,
+          "gpu_ms": 4.601323,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.130019000000001,
+          "gpu_ms": 4.684758,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.687788,
+          "gpu_ms": 1.12386,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.581034,
+          "gpu_ms": 4.078316,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 437.00102200000003,
+      "world_revision": 59,
+      "world_time": 7057
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 2,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 7,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 4,
+      "passes": [
+        {
+          "cpu_submit_ms": 22.172394,
+          "gpu_ms": 17.414722,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 115.680063,
+          "gpu_ms": 98.967999,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 52.121365000000004,
+          "gpu_ms": 52.718948,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 1.0732739999999998,
+          "gpu_ms": 11.571226,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 11.763666,
+          "gpu_ms": 157.059123,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 154.743832,
+          "gpu_ms": 13.029278,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 8.190744,
+          "gpu_ms": 1.422519,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 5.910266,
+          "gpu_ms": 22.127707,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.06429699999999999,
+          "gpu_ms": 0.074663,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 17.419078000000003,
+          "gpu_ms": 0.6785,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.539761,
+          "gpu_ms": 22.600318,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 24.305922,
+          "gpu_ms": 25.767348,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 11.46748,
+          "gpu_ms": 1.747917,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.4727640000000002,
+          "gpu_ms": 0.582626,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.541143,
+          "gpu_ms": 0.28941,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.278644,
+          "gpu_ms": 0.217282,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.158338,
+          "gpu_ms": 0.13587,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.09987,
+          "gpu_ms": 0.092539,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.1065,
+          "gpu_ms": 1.312604,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.333205,
+          "gpu_ms": 2.903296,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.9377269999999998,
+          "gpu_ms": 3.375224,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.3293760000000003,
+          "gpu_ms": 0.174842,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.11032600000000001,
+          "gpu_ms": 0.115985,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.11288000000000001,
+          "gpu_ms": 0.135874,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.12754100000000002,
+          "gpu_ms": 0.199565,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.185179,
+          "gpu_ms": 0.46913,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.484849,
+          "gpu_ms": 4.092878,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.112653,
+          "gpu_ms": 4.601668,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.604853,
+          "gpu_ms": 1.950207,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 1.4043409999999998,
+          "gpu_ms": 4.220239,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 452.648161,
+      "world_revision": 110,
+      "world_time": 7075
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 3,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 9,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 5,
+      "passes": [
+        {
+          "cpu_submit_ms": 8.479168,
+          "gpu_ms": 24.995363,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 153.41929100000002,
+          "gpu_ms": 134.594554,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 81.94272199999999,
+          "gpu_ms": 79.005857,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.481614,
+          "gpu_ms": 14.482938,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 15.214514,
+          "gpu_ms": 159.995788,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 155.133148,
+          "gpu_ms": 10.462244,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 10.037849999999999,
+          "gpu_ms": 2.924342,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.254403,
+          "gpu_ms": 17.341412,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.052749,
+          "gpu_ms": 0.261648,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 15.307644,
+          "gpu_ms": 0.715896,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.421734,
+          "gpu_ms": 6.746087,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 7.620106,
+          "gpu_ms": 10.38614,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.469966999999999,
+          "gpu_ms": 1.659319,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.2578610000000001,
+          "gpu_ms": 0.527868,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.39523400000000003,
+          "gpu_ms": 0.23944,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.21596500000000002,
+          "gpu_ms": 0.173406,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.116345,
+          "gpu_ms": 0.107798,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.09136699999999999,
+          "gpu_ms": 0.095989,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.09730699999999999,
+          "gpu_ms": 1.088256,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.109628,
+          "gpu_ms": 2.438626,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.431155,
+          "gpu_ms": 4.009077,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.963059,
+          "gpu_ms": 2.619959,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 2.553559,
+          "gpu_ms": 0.152044,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.169345,
+          "gpu_ms": 0.184458,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.11734599999999999,
+          "gpu_ms": 0.171914,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 18.883119,
+          "gpu_ms": 19.215338,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.547423,
+          "gpu_ms": 3.945812,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.922007,
+          "gpu_ms": 4.096273,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.060224000000001,
+          "gpu_ms": 0.731965,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.203936,
+          "gpu_ms": 3.743849,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 505.97790799999996,
+      "world_revision": 148,
+      "world_time": 7077
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 4,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 11,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 6,
+      "passes": [
+        {
+          "cpu_submit_ms": 10.581983999999999,
+          "gpu_ms": 26.502699,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 152.36752,
+          "gpu_ms": 126.829425,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 80.843991,
+          "gpu_ms": 80.758157,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.424298,
+          "gpu_ms": 11.471301,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 11.656434,
+          "gpu_ms": 154.454152,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 151.892886,
+          "gpu_ms": 10.29663,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 7.925685,
+          "gpu_ms": 1.551527,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.190356,
+          "gpu_ms": 16.502199,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.044327,
+          "gpu_ms": 0.113125,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 14.535954,
+          "gpu_ms": 0.531364,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.337868,
+          "gpu_ms": 6.127072,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 6.949798,
+          "gpu_ms": 9.794485,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 8.95365,
+          "gpu_ms": 1.491687,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.2763989999999998,
+          "gpu_ms": 0.510958,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.426431,
+          "gpu_ms": 0.224467,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.17590499999999998,
+          "gpu_ms": 0.157496,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.124337,
+          "gpu_ms": 0.105224,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.09045600000000001,
+          "gpu_ms": 0.090401,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.088033,
+          "gpu_ms": 1.113399,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.1352470000000001,
+          "gpu_ms": 2.779819,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.796203,
+          "gpu_ms": 3.057227,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 2.982413,
+          "gpu_ms": 0.173656,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.12388699999999998,
+          "gpu_ms": 0.123615,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.10904399999999999,
+          "gpu_ms": 0.146451,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.12812199999999999,
+          "gpu_ms": 0.165754,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.159851,
+          "gpu_ms": 0.436471,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.49039699999999997,
+          "gpu_ms": 3.801099,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.832242,
+          "gpu_ms": 4.035733,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.014185,
+          "gpu_ms": 0.497919,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.33053699999999997,
+          "gpu_ms": 3.550203,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 472.501383,
+      "world_revision": 214,
+      "world_time": 7095
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 5,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 13,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 7,
+      "passes": [
+        {
+          "cpu_submit_ms": 8.022771,
+          "gpu_ms": 18.59139,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 196.305847,
+          "gpu_ms": 182.227471,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 84.99745,
+          "gpu_ms": 81.27556,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.404929,
+          "gpu_ms": 13.047125,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 13.361107,
+          "gpu_ms": 111.278947,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 107.75753300000001,
+          "gpu_ms": 13.625069,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 8.32792,
+          "gpu_ms": 1.740842,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 4.089609,
+          "gpu_ms": 18.955548,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.057427,
+          "gpu_ms": 0.146075,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 16.450871999999997,
+          "gpu_ms": 0.959533,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.829697,
+          "gpu_ms": 7.485129,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.848844,
+          "gpu_ms": 11.909745,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 10.681237999999999,
+          "gpu_ms": 2.176247,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.5606769999999999,
+          "gpu_ms": 0.719146,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.735966,
+          "gpu_ms": 0.494814,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.310387,
+          "gpu_ms": 0.28929,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.349556,
+          "gpu_ms": 0.306031,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.163536,
+          "gpu_ms": 0.174337,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.191518,
+          "gpu_ms": 1.448182,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.621699,
+          "gpu_ms": 3.003961,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.029614,
+          "gpu_ms": 3.736423,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.6504879999999997,
+          "gpu_ms": 0.488725,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.323126,
+          "gpu_ms": 0.330046,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.231127,
+          "gpu_ms": 0.224137,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.224006,
+          "gpu_ms": 0.293161,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.324168,
+          "gpu_ms": 0.622065,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.675235,
+          "gpu_ms": 4.126639,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.063589,
+          "gpu_ms": 4.34699,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.276429,
+          "gpu_ms": 0.665525,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.252415,
+          "gpu_ms": 3.982062,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 490.41882599999997,
+      "world_revision": 351,
+      "world_time": 7115
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 6,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 15,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 8,
+      "passes": [
+        {
+          "cpu_submit_ms": 7.9841940000000005,
+          "gpu_ms": 14.576304,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 157.42403199999998,
+          "gpu_ms": 143.916599,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 79.09574699999999,
+          "gpu_ms": 78.97755,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.34004199999999996,
+          "gpu_ms": 13.960228,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 14.304094999999998,
+          "gpu_ms": 117.525558,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 113.92647699999999,
+          "gpu_ms": 15.297309,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 9.298850000000002,
+          "gpu_ms": 1.581839,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 4.273815,
+          "gpu_ms": 18.656177,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.070126,
+          "gpu_ms": 0.01676,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 15.736258,
+          "gpu_ms": 0.77187,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.771861,
+          "gpu_ms": 8.090358,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 9.336387,
+          "gpu_ms": 10.97561,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.756418,
+          "gpu_ms": 1.995911,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.697041,
+          "gpu_ms": 0.757834,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.640493,
+          "gpu_ms": 0.403091,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.322835,
+          "gpu_ms": 0.539476,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.495354,
+          "gpu_ms": 0.442521,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.155494,
+          "gpu_ms": 0.170822,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.176896,
+          "gpu_ms": 1.381402,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.512113,
+          "gpu_ms": 2.907061,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.9454279999999997,
+          "gpu_ms": 3.414989,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.38206,
+          "gpu_ms": 0.40255,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.242395,
+          "gpu_ms": 0.235119,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.37675600000000004,
+          "gpu_ms": 0.432835,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.210507,
+          "gpu_ms": 0.263246,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.27047699999999997,
+          "gpu_ms": 0.629266,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.7074130000000001,
+          "gpu_ms": 4.475779,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.352448,
+          "gpu_ms": 4.619891,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.502009,
+          "gpu_ms": 0.701545,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.276385,
+          "gpu_ms": 4.035306,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 453.696092,
+      "world_revision": 408,
+      "world_time": 7117
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 7,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 17,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 9,
+      "passes": [
+        {
+          "cpu_submit_ms": 6.329936,
+          "gpu_ms": 13.528103,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 142.777251,
+          "gpu_ms": 130.0115,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 87.81423,
+          "gpu_ms": 87.794851,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.40675100000000003,
+          "gpu_ms": 11.486949,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 11.917537000000001,
+          "gpu_ms": 118.464339,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 115.568175,
+          "gpu_ms": 13.731173,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 9.411109000000002,
+          "gpu_ms": 2.182261,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.371048,
+          "gpu_ms": 19.997294,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.07653499999999999,
+          "gpu_ms": 0.334503,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 18.212871,
+          "gpu_ms": 1.282418,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.795326,
+          "gpu_ms": 6.977775,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 7.8458250000000005,
+          "gpu_ms": 11.193368,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 10.073248,
+          "gpu_ms": 2.126707,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 2.103127,
+          "gpu_ms": 0.765952,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.500903,
+          "gpu_ms": 0.329776,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.28252499999999997,
+          "gpu_ms": 0.24555,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.227071,
+          "gpu_ms": 0.248178,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.148974,
+          "gpu_ms": 0.12248,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.102104,
+          "gpu_ms": 1.183995,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.320655,
+          "gpu_ms": 3.52189,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.4542420000000003,
+          "gpu_ms": 3.223741,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.155403,
+          "gpu_ms": 0.320622,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.24266500000000002,
+          "gpu_ms": 0.19912,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.163496,
+          "gpu_ms": 0.174553,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.175444,
+          "gpu_ms": 0.241834,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.25156799999999996,
+          "gpu_ms": 0.713278,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.698259,
+          "gpu_ms": 4.23744,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.0204439999999995,
+          "gpu_ms": 4.556931,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.501138,
+          "gpu_ms": 0.59486,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.217417,
+          "gpu_ms": 4.47656,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 446.881983,
+      "world_revision": 412,
+      "world_time": 7135
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 8,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 19,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 9,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.792692,
+          "gpu_ms": 19.499436,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 160.26641999999998,
+          "gpu_ms": 141.919106,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 82.668864,
+          "gpu_ms": 82.524858,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.352219,
+          "gpu_ms": 16.563036,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 16.963783,
+          "gpu_ms": 133.024239,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 128.574684,
+          "gpu_ms": 14.238426,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 8.790655,
+          "gpu_ms": 2.416223,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 5.28124,
+          "gpu_ms": 26.415113,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.050566,
+          "gpu_ms": 0.103927,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 23.385202,
+          "gpu_ms": 0.734896,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.541324,
+          "gpu_ms": 8.416789,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 10.855785999999998,
+          "gpu_ms": 12.359396,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.769167000000001,
+          "gpu_ms": 2.229296,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 2.082601,
+          "gpu_ms": 1.020189,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.5240079999999999,
+          "gpu_ms": 0.315064,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.21430200000000002,
+          "gpu_ms": 0.164828,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.16603,
+          "gpu_ms": 0.166725,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.120491,
+          "gpu_ms": 0.111963,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 1.233725,
+          "gpu_ms": 2.420503,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.364416,
+          "gpu_ms": 2.864977,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.857785,
+          "gpu_ms": 4.479815,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.695906,
+          "gpu_ms": 0.555569,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.179681,
+          "gpu_ms": 0.142109,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.108923,
+          "gpu_ms": 0.124282,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.123736,
+          "gpu_ms": 0.1991,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.196555,
+          "gpu_ms": 0.466892,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.5120600000000001,
+          "gpu_ms": 4.258406,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.193935000000001,
+          "gpu_ms": 4.620126,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.588318,
+          "gpu_ms": 0.600913,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.218218,
+          "gpu_ms": 4.01417,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 482.321653,
+      "world_revision": 412,
+      "world_time": 7155
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 9,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 21,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 9,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.468164,
+          "gpu_ms": 14.594928,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 154.41347,
+          "gpu_ms": 140.556889,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 85.719701,
+          "gpu_ms": 85.677537,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.530207,
+          "gpu_ms": 12.313923,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 12.522467,
+          "gpu_ms": 113.089179,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 109.479772,
+          "gpu_ms": 8.866911,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.574433999999999,
+          "gpu_ms": 1.319805,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.49864,
+          "gpu_ms": 18.110266,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.042093,
+          "gpu_ms": 0.174432,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 15.88079,
+          "gpu_ms": 0.926593,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.933083,
+          "gpu_ms": 7.261778,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.169602999999999,
+          "gpu_ms": 12.549006,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 11.438897,
+          "gpu_ms": 2.073377,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.560196,
+          "gpu_ms": 0.737869,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.709256,
+          "gpu_ms": 0.440332,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.269725,
+          "gpu_ms": 0.234563,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.229635,
+          "gpu_ms": 0.203246,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.138448,
+          "gpu_ms": 0.157457,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.178508,
+          "gpu_ms": 1.56328,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.705374,
+          "gpu_ms": 3.027021,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.029124,
+          "gpu_ms": 6.853163,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 7.087561,
+          "gpu_ms": 3.206501,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.38451799999999997,
+          "gpu_ms": 0.376566,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.22613,
+          "gpu_ms": 0.265819,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.268424,
+          "gpu_ms": 0.366852,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.32557,
+          "gpu_ms": 0.670448,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.7973089999999999,
+          "gpu_ms": 4.417582,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.3998550000000005,
+          "gpu_ms": 4.935691,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.7470669999999995,
+          "gpu_ms": 0.669778,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.225158,
+          "gpu_ms": 4.034726,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 446.03292100000004,
+      "world_revision": 412,
+      "world_time": 7157
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 10,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 23,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 9,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.6257199999999999,
+          "gpu_ms": 16.958686,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 175.218128,
+          "gpu_ms": 159.282266,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 93.909929,
+          "gpu_ms": 93.682513,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.354593,
+          "gpu_ms": 14.608092,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 15.085334000000001,
+          "gpu_ms": 128.434889,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 124.999324,
+          "gpu_ms": 9.995998,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 7.701307999999999,
+          "gpu_ms": 1.399304,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 4.037721,
+          "gpu_ms": 20.04128,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.045889,
+          "gpu_ms": 0.130732,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 17.369794000000002,
+          "gpu_ms": 0.773824,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.6007640000000001,
+          "gpu_ms": 7.668929,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 9.021703,
+          "gpu_ms": 11.418752,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.970149,
+          "gpu_ms": 1.582504,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.519434,
+          "gpu_ms": 0.684965,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.524178,
+          "gpu_ms": 0.352916,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.290617,
+          "gpu_ms": 0.258339,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.16615,
+          "gpu_ms": 0.151588,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.117877,
+          "gpu_ms": 0.12013,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.108474,
+          "gpu_ms": 1.22703,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.272743,
+          "gpu_ms": 2.875813,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.8834049999999998,
+          "gpu_ms": 3.31538,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.251549,
+          "gpu_ms": 0.217817,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.13261,
+          "gpu_ms": 0.247702,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.246651,
+          "gpu_ms": 0.164473,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.144537,
+          "gpu_ms": 0.221438,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.206721,
+          "gpu_ms": 0.461744,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.504879,
+          "gpu_ms": 3.997665,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.9856420000000004,
+          "gpu_ms": 4.49651,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.408728,
+          "gpu_ms": 0.596272,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.176185,
+          "gpu_ms": 3.93445,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 489.429122,
+      "world_revision": 412,
+      "world_time": 7175
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 11,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 25,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 9,
+      "passes": [
+        {
+          "cpu_submit_ms": 1.158982,
+          "gpu_ms": 15.41833,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 160.381405,
+          "gpu_ms": 146.559931,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 73.655305,
+          "gpu_ms": 73.560933,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.309685,
+          "gpu_ms": 10.753188,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 11.25303,
+          "gpu_ms": 106.851799,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 104.470803,
+          "gpu_ms": 9.126512,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 7.201353,
+          "gpu_ms": 2.159807,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.201714,
+          "gpu_ms": 19.745389,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.062684,
+          "gpu_ms": 0.226641,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 17.806984,
+          "gpu_ms": 0.88485,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.5695859999999999,
+          "gpu_ms": 7.665726,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.787562000000001,
+          "gpu_ms": 11.534573,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 10.358084,
+          "gpu_ms": 1.703832,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.418813,
+          "gpu_ms": 0.67807,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.583037,
+          "gpu_ms": 0.367373,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.280963,
+          "gpu_ms": 0.275765,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.25266999999999995,
+          "gpu_ms": 0.203706,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.147031,
+          "gpu_ms": 0.145369,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.13946999999999998,
+          "gpu_ms": 1.304111,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.384512,
+          "gpu_ms": 2.928584,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.870947,
+          "gpu_ms": 3.385771,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.344719,
+          "gpu_ms": 0.226841,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.198548,
+          "gpu_ms": 0.184097,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.15317,
+          "gpu_ms": 0.17317,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.163005,
+          "gpu_ms": 0.240512,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.230387,
+          "gpu_ms": 0.520693,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.520532,
+          "gpu_ms": 4.023129,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.028657,
+          "gpu_ms": 7.287998,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 7.2563699999999995,
+          "gpu_ms": 0.668435,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.204247,
+          "gpu_ms": 5.675904,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 433.16938700000003,
+      "world_revision": 412,
+      "world_time": 7177
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 12,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 27,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 9,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.48191500000000004,
+          "gpu_ms": 20.259741,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 153.331828,
+          "gpu_ms": 135.798006,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 94.263411,
+          "gpu_ms": 94.198768,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.388724,
+          "gpu_ms": 19.766285,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 20.084122,
+          "gpu_ms": 163.222019,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 161.34912300000002,
+          "gpu_ms": 9.163458,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 5.5690740000000005,
+          "gpu_ms": 1.152854,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.098539,
+          "gpu_ms": 16.681672,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.049344,
+          "gpu_ms": 0.216065,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 14.621495,
+          "gpu_ms": 0.702175,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.377678,
+          "gpu_ms": 6.348204,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 7.949342,
+          "gpu_ms": 10.271173,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 8.69257,
+          "gpu_ms": 1.474617,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.259474,
+          "gpu_ms": 0.574834,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.46117400000000003,
+          "gpu_ms": 0.268734,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.21012599999999998,
+          "gpu_ms": 0.17286,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.155193,
+          "gpu_ms": 0.141994,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.11337,
+          "gpu_ms": 0.114833,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.11269,
+          "gpu_ms": 1.134877,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.2184920000000001,
+          "gpu_ms": 2.508281,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.485407,
+          "gpu_ms": 3.363368,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.305571,
+          "gpu_ms": 0.601815,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.170967,
+          "gpu_ms": 0.164607,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.135704,
+          "gpu_ms": 0.149235,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.147733,
+          "gpu_ms": 0.20662,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.244953,
+          "gpu_ms": 0.465801,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.466351,
+          "gpu_ms": 3.626914,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.6021460000000003,
+          "gpu_ms": 4.048617,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.001106,
+          "gpu_ms": 0.526001,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.178608,
+          "gpu_ms": 3.861977,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 500.01145199999996,
+      "world_revision": 412,
+      "world_time": 7195
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 13,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 29,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 9,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.521153,
+          "gpu_ms": 19.18077,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 171.57260499999998,
+          "gpu_ms": 153.030821,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 78.673162,
+          "gpu_ms": 78.593672,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.320362,
+          "gpu_ms": 14.031355,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 14.358648,
+          "gpu_ms": 121.821842,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 117.367875,
+          "gpu_ms": 12.169006,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.232060000000001,
+          "gpu_ms": 1.361196,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.482135,
+          "gpu_ms": 18.176918,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.045318000000000004,
+          "gpu_ms": 0.290247,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 16.051593,
+          "gpu_ms": 0.982096,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.499496,
+          "gpu_ms": 7.70927,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.969384999999999,
+          "gpu_ms": 11.078545,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.658705999999999,
+          "gpu_ms": 1.504983,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.322703,
+          "gpu_ms": 0.612541,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.462485,
+          "gpu_ms": 0.333182,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.3156,
+          "gpu_ms": 0.240232,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.13545300000000002,
+          "gpu_ms": 0.121453,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.093291,
+          "gpu_ms": 0.094803,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.092499,
+          "gpu_ms": 1.1969,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.266224,
+          "gpu_ms": 2.592198,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.572418,
+          "gpu_ms": 3.105599,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.0712970000000004,
+          "gpu_ms": 0.243877,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.14182299999999998,
+          "gpu_ms": 0.138048,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.135454,
+          "gpu_ms": 0.191549,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.194613,
+          "gpu_ms": 0.211218,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.244222,
+          "gpu_ms": 0.469616,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.43890999999999997,
+          "gpu_ms": 4.400255,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.374315999999999,
+          "gpu_ms": 4.613076,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.518923999999999,
+          "gpu_ms": 0.712261,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.315405,
+          "gpu_ms": 3.898561,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 458.107689,
+      "world_revision": 412,
+      "world_time": 7197
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 14,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 31,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 5.991142,
+          "gpu_ms": 13.268177,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 142.182307,
+          "gpu_ms": 129.890761,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 81.30293800000001,
+          "gpu_ms": 81.283495,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.370357,
+          "gpu_ms": 10.801719,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 11.155467,
+          "gpu_ms": 87.209714,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 85.768317,
+          "gpu_ms": 10.599696,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 7.701108,
+          "gpu_ms": 1.259002,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.058859,
+          "gpu_ms": 17.824969,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.105318,
+          "gpu_ms": 0.176806,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 15.900741,
+          "gpu_ms": 0.75798,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.429245,
+          "gpu_ms": 6.767844,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.427445,
+          "gpu_ms": 10.701288,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.628305000000001,
+          "gpu_ms": 2.101189,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.4391740000000002,
+          "gpu_ms": 0.774735,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.6756260000000001,
+          "gpu_ms": 0.452019,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.302405,
+          "gpu_ms": 0.253901,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.209616,
+          "gpu_ms": 0.231488,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.15250999999999998,
+          "gpu_ms": 0.188444,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.264067,
+          "gpu_ms": 1.31668,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 2.433008,
+          "gpu_ms": 3.961234,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.280988,
+          "gpu_ms": 3.486993,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.1646729999999996,
+          "gpu_ms": 0.519932,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.33134800000000003,
+          "gpu_ms": 0.33215,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.165429,
+          "gpu_ms": 0.194763,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.227993,
+          "gpu_ms": 0.341744,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.33149900000000004,
+          "gpu_ms": 0.589417,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.702256,
+          "gpu_ms": 3.918552,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.9083360000000003,
+          "gpu_ms": 4.510612,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.4322729999999995,
+          "gpu_ms": 0.693813,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.272004,
+          "gpu_ms": 3.543446,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 407.63268800000003,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 15,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 33,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.671059,
+          "gpu_ms": 12.938062,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 153.527037,
+          "gpu_ms": 141.471583,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 89.579546,
+          "gpu_ms": 89.505395,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.34338599999999997,
+          "gpu_ms": 10.81573,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 11.086027,
+          "gpu_ms": 86.620057,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 86.14619,
+          "gpu_ms": 11.1078,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 7.274293,
+          "gpu_ms": 1.524251,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.525731,
+          "gpu_ms": 18.593945,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.044437000000000004,
+          "gpu_ms": 0.223221,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 16.426135000000002,
+          "gpu_ms": 0.88775,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.664409,
+          "gpu_ms": 6.959363,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.993691,
+          "gpu_ms": 13.271928,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 11.312337000000001,
+          "gpu_ms": 1.942876,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.49009,
+          "gpu_ms": 0.751095,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.664099,
+          "gpu_ms": 0.421539,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.331268,
+          "gpu_ms": 0.307523,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.215604,
+          "gpu_ms": 0.219835,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.19722699999999999,
+          "gpu_ms": 0.195118,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.174482,
+          "gpu_ms": 1.404256,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.569349,
+          "gpu_ms": 3.002178,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.164698,
+          "gpu_ms": 3.46199,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.237608,
+          "gpu_ms": 0.503001,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.349025,
+          "gpu_ms": 0.324989,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.21469300000000002,
+          "gpu_ms": 0.221509,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.2326,
+          "gpu_ms": 0.312189,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.326991,
+          "gpu_ms": 0.595189,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.678119,
+          "gpu_ms": 4.210554,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.185983,
+          "gpu_ms": 4.629946,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.4994950000000005,
+          "gpu_ms": 0.751921,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 2.4911149999999997,
+          "gpu_ms": 5.944863,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 424.645321,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 16,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 35,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 1.212924,
+          "gpu_ms": 14.785689,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 159.520248,
+          "gpu_ms": 145.574296,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 95.32379300000001,
+          "gpu_ms": 95.214584,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.320122,
+          "gpu_ms": 12.550744,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 13.117401000000001,
+          "gpu_ms": 93.985866,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 90.121601,
+          "gpu_ms": 10.25329,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 7.005202000000001,
+          "gpu_ms": 1.367957,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.4729,
+          "gpu_ms": 19.022795,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.059199,
+          "gpu_ms": 0.197252,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 16.849979,
+          "gpu_ms": 0.831219,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.876212,
+          "gpu_ms": 7.944213,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 9.621725,
+          "gpu_ms": 13.293276,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 11.627421,
+          "gpu_ms": 2.250228,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.517271,
+          "gpu_ms": 0.743348,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.727804,
+          "gpu_ms": 0.565856,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.359822,
+          "gpu_ms": 0.366185,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.24763200000000002,
+          "gpu_ms": 0.202905,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.165309,
+          "gpu_ms": 0.163611,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.15617499999999998,
+          "gpu_ms": 1.377707,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.563871,
+          "gpu_ms": 2.969454,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.006961,
+          "gpu_ms": 3.942312,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.9780809999999995,
+          "gpu_ms": 0.540117,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.271098,
+          "gpu_ms": 0.274418,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.207262,
+          "gpu_ms": 0.222549,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.20971499999999998,
+          "gpu_ms": 0.291803,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.336566,
+          "gpu_ms": 0.612376,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.689467,
+          "gpu_ms": 4.398923,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.432824999999999,
+          "gpu_ms": 4.76918,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.591783,
+          "gpu_ms": 0.746322,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.279841,
+          "gpu_ms": 3.97714,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 436.596002,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 17,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 37,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.628695,
+          "gpu_ms": 14.777181,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 144.128908,
+          "gpu_ms": 130.048284,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 83.929443,
+          "gpu_ms": 83.819256,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.35944,
+          "gpu_ms": 13.826578,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 14.429022999999999,
+          "gpu_ms": 94.527776,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 93.34981400000001,
+          "gpu_ms": 15.559753,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 8.024174,
+          "gpu_ms": 1.411602,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 4.0607050000000005,
+          "gpu_ms": 20.225628,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.048683000000000004,
+          "gpu_ms": 0.287052,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 17.541733,
+          "gpu_ms": 0.986063,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.730348,
+          "gpu_ms": 8.587971,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 10.072623,
+          "gpu_ms": 13.890323,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 12.376658,
+          "gpu_ms": 2.173968,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.732445,
+          "gpu_ms": 0.828255,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.77834,
+          "gpu_ms": 0.509346,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.323837,
+          "gpu_ms": 0.287943,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.261533,
+          "gpu_ms": 0.250777,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.16663,
+          "gpu_ms": 0.166891,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.16891399999999998,
+          "gpu_ms": 1.491693,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.7009569999999998,
+          "gpu_ms": 3.519111,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.490298,
+          "gpu_ms": 3.636547,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.606181,
+          "gpu_ms": 0.409856,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.267081,
+          "gpu_ms": 0.288664,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.16401600000000002,
+          "gpu_ms": 0.200221,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.248624,
+          "gpu_ms": 0.417969,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.362915,
+          "gpu_ms": 0.669167,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.810494,
+          "gpu_ms": 4.74905,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.763090999999999,
+          "gpu_ms": 5.178876,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.976983,
+          "gpu_ms": 0.741364,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.267673,
+          "gpu_ms": 4.581728,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 423.756514,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 18,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 39,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.839231,
+          "gpu_ms": 18.697124,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 183.662139,
+          "gpu_ms": 165.694627,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 74.777563,
+          "gpu_ms": 74.658729,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.40383800000000003,
+          "gpu_ms": 14.386584,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 14.625909,
+          "gpu_ms": 95.611211,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 93.177346,
+          "gpu_ms": 9.065459,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.724965,
+          "gpu_ms": 1.819907,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.481024,
+          "gpu_ms": 22.274293,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.045939,
+          "gpu_ms": 0.163842,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 20.132687999999998,
+          "gpu_ms": 0.761816,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.48835399999999995,
+          "gpu_ms": 7.057862,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.014099,
+          "gpu_ms": 10.710973,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.659943,
+          "gpu_ms": 1.589831,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.405002,
+          "gpu_ms": 0.652962,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.5329809999999999,
+          "gpu_ms": 0.327618,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.222925,
+          "gpu_ms": 0.217487,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.190736,
+          "gpu_ms": 0.12998,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.109415,
+          "gpu_ms": 0.110266,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.17420200000000002,
+          "gpu_ms": 1.335328,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.3385669999999998,
+          "gpu_ms": 2.972504,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.931447,
+          "gpu_ms": 3.407984,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.36538,
+          "gpu_ms": 0.205609,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.137637,
+          "gpu_ms": 0.138848,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.11558299999999999,
+          "gpu_ms": 0.206245,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.198309,
+          "gpu_ms": 0.241939,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.24647,
+          "gpu_ms": 0.561109,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.5361670000000001,
+          "gpu_ms": 3.930139,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.9468039999999998,
+          "gpu_ms": 4.462769,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.319108,
+          "gpu_ms": 0.527413,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.18501800000000002,
+          "gpu_ms": 6.79802,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 460.057996,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 19,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 41,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.445079,
+          "gpu_ms": 12.806279,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 152.476904,
+          "gpu_ms": 140.318454,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 78.190875,
+          "gpu_ms": 78.220099,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.420392,
+          "gpu_ms": 15.992779,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 16.306781,
+          "gpu_ms": 97.225257,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 94.063914,
+          "gpu_ms": 9.539371,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.131353,
+          "gpu_ms": 1.304791,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.2776379999999996,
+          "gpu_ms": 17.689295,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.046400000000000004,
+          "gpu_ms": 0.012129,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 15.729639,
+          "gpu_ms": 0.754043,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.495145,
+          "gpu_ms": 7.468719,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 9.339485999999999,
+          "gpu_ms": 11.433079,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.506998,
+          "gpu_ms": 1.68936,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.43011,
+          "gpu_ms": 0.554564,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.5204219999999999,
+          "gpu_ms": 0.368655,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.26395599999999997,
+          "gpu_ms": 0.201152,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.13846799999999998,
+          "gpu_ms": 0.133671,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.110937,
+          "gpu_ms": 0.115593,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.10617,
+          "gpu_ms": 3.752367,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 3.791891,
+          "gpu_ms": 4.429379,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.4534689999999997,
+          "gpu_ms": 3.148503,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.210331,
+          "gpu_ms": 0.353947,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.152759,
+          "gpu_ms": 0.151108,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.12646000000000002,
+          "gpu_ms": 0.132274,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.134992,
+          "gpu_ms": 0.192054,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.279209,
+          "gpu_ms": 0.515315,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.441684,
+          "gpu_ms": 3.688035,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 6.534454,
+          "gpu_ms": 6.965097,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.098242,
+          "gpu_ms": 0.587178,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.23306100000000002,
+          "gpu_ms": 3.475505,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 419.00127599999996,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 20,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 43,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.430898,
+          "gpu_ms": 12.181609,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 143.028524,
+          "gpu_ms": 131.498609,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 95.40609599999999,
+          "gpu_ms": 95.328996,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.334403,
+          "gpu_ms": 12.872452,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 13.153445,
+          "gpu_ms": 96.064036,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 91.967167,
+          "gpu_ms": 8.582764,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.739863,
+          "gpu_ms": 1.330991,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.4427049999999997,
+          "gpu_ms": 19.381068,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.049024,
+          "gpu_ms": 0.055944,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 17.203905,
+          "gpu_ms": 0.629727,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.45228999999999997,
+          "gpu_ms": 9.402306,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 12.925111,
+          "gpu_ms": 13.953148,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.466861999999999,
+          "gpu_ms": 1.497321,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.406013,
+          "gpu_ms": 0.5652,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.5095660000000001,
+          "gpu_ms": 0.322274,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.24362599999999998,
+          "gpu_ms": 0.198569,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.163216,
+          "gpu_ms": 0.157717,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.138378,
+          "gpu_ms": 0.13912,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.12335600000000001,
+          "gpu_ms": 1.259864,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.270831,
+          "gpu_ms": 2.818438,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.825077,
+          "gpu_ms": 3.212209,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.177507,
+          "gpu_ms": 0.216856,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.154132,
+          "gpu_ms": 0.15981,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.1596,
+          "gpu_ms": 0.182765,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.168233,
+          "gpu_ms": 0.242134,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.244568,
+          "gpu_ms": 0.553693,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.5784889999999999,
+          "gpu_ms": 4.814879,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.76868,
+          "gpu_ms": 4.532234,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.483671,
+          "gpu_ms": 0.598049,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.235073,
+          "gpu_ms": 3.962537,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 424.28589500000004,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 21,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 45,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.49063799999999996,
+          "gpu_ms": 14.655053,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 148.627411,
+          "gpu_ms": 134.826743,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 90.07429,
+          "gpu_ms": 90.006328,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.337548,
+          "gpu_ms": 10.125283,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 10.38951,
+          "gpu_ms": 83.383211,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 83.501649,
+          "gpu_ms": 10.950653,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.293662,
+          "gpu_ms": 1.463751,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.5632070000000002,
+          "gpu_ms": 27.929525,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.054571999999999996,
+          "gpu_ms": 0.190661,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 25.782187,
+          "gpu_ms": 0.992917,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.5956549999999999,
+          "gpu_ms": 10.865746,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 12.918802,
+          "gpu_ms": 12.961221,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 10.42943,
+          "gpu_ms": 1.627937,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.698544,
+          "gpu_ms": 1.177911,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.8630180000000001,
+          "gpu_ms": 0.548414,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.347843,
+          "gpu_ms": 0.291187,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.263997,
+          "gpu_ms": 0.240662,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.151888,
+          "gpu_ms": 0.149155,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.177417,
+          "gpu_ms": 1.501227,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.518403,
+          "gpu_ms": 3.017086,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.969074,
+          "gpu_ms": 3.343106,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.329295,
+          "gpu_ms": 0.27933,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.15934,
+          "gpu_ms": 0.1463,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.105629,
+          "gpu_ms": 0.122384,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.13259900000000002,
+          "gpu_ms": 0.410186,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.460022,
+          "gpu_ms": 0.514844,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.485439,
+          "gpu_ms": 4.550432,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.578087,
+          "gpu_ms": 6.017127,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 6.059069,
+          "gpu_ms": 0.866773,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.237256,
+          "gpu_ms": 4.24355,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 427.473236,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 22,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 47,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.709206,
+          "gpu_ms": 14.393434,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 137.397243,
+          "gpu_ms": 123.762463,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 79.88557300000001,
+          "gpu_ms": 79.812653,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.384558,
+          "gpu_ms": 12.198945,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 12.473944000000001,
+          "gpu_ms": 85.610038,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 82.721326,
+          "gpu_ms": 10.347908,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 7.483205,
+          "gpu_ms": 1.707262,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.6236979999999996,
+          "gpu_ms": 19.507193,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.042784,
+          "gpu_ms": 0.08352,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 17.301622,
+          "gpu_ms": 0.75532,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.7600830000000001,
+          "gpu_ms": 7.926472,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 9.324338999999998,
+          "gpu_ms": 12.010708,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 10.707444,
+          "gpu_ms": 2.085916,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.680662,
+          "gpu_ms": 0.723262,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.6101070000000001,
+          "gpu_ms": 0.441724,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.305089,
+          "gpu_ms": 0.240848,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.20656,
+          "gpu_ms": 0.179735,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.145168,
+          "gpu_ms": 0.126245,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.124668,
+          "gpu_ms": 1.42636,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.580897,
+          "gpu_ms": 3.106981,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.021944,
+          "gpu_ms": 3.439516,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.454118,
+          "gpu_ms": 0.384698,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.240111,
+          "gpu_ms": 0.241478,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.163045,
+          "gpu_ms": 0.178869,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.204027,
+          "gpu_ms": 0.266536,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.24907500000000002,
+          "gpu_ms": 0.482731,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.506421,
+          "gpu_ms": 3.982853,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.9911110000000005,
+          "gpu_ms": 6.113437,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 6.056636,
+          "gpu_ms": 0.710363,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.239801,
+          "gpu_ms": 3.74861,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 395.38023300000003,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 23,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 49,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.44956599999999997,
+          "gpu_ms": 14.490846,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 134.4059,
+          "gpu_ms": 120.713169,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 72.628832,
+          "gpu_ms": 72.535903,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.296315,
+          "gpu_ms": 12.390308,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 12.689859,
+          "gpu_ms": 100.810666,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 97.408221,
+          "gpu_ms": 8.752659,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.52509,
+          "gpu_ms": 1.609519,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.367637,
+          "gpu_ms": 21.079282,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.044577,
+          "gpu_ms": 0.203566,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 18.963015,
+          "gpu_ms": 0.768144,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.5291859999999999,
+          "gpu_ms": 7.825655,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.919475,
+          "gpu_ms": 11.179238,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.845953,
+          "gpu_ms": 1.386125,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.307906,
+          "gpu_ms": 0.50522,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.46515,
+          "gpu_ms": 0.291338,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.228183,
+          "gpu_ms": 0.187702,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.15465199999999998,
+          "gpu_ms": 0.150647,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.096164,
+          "gpu_ms": 0.118238,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.11309999999999999,
+          "gpu_ms": 1.22395,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.276018,
+          "gpu_ms": 2.921713,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.9335899999999997,
+          "gpu_ms": 3.28562,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.200722,
+          "gpu_ms": 0.182535,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.13431200000000001,
+          "gpu_ms": 0.134072,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.10902400000000001,
+          "gpu_ms": 0.13289,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.140822,
+          "gpu_ms": 0.217537,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.191598,
+          "gpu_ms": 0.461574,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.479541,
+          "gpu_ms": 4.163419,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.141515999999999,
+          "gpu_ms": 5.511776,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 5.509794,
+          "gpu_ms": 0.491168,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.13992,
+          "gpu_ms": 4.047726,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 399.86936699999995,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 24,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 51,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.471759,
+          "gpu_ms": 13.20304,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 154.304817,
+          "gpu_ms": 141.738669,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 86.040086,
+          "gpu_ms": 85.994562,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.5411440000000001,
+          "gpu_ms": 11.757517,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 12.159631000000001,
+          "gpu_ms": 92.919278,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 92.51197499999999,
+          "gpu_ms": 11.227466,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.403988,
+          "gpu_ms": 2.08172,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.907255,
+          "gpu_ms": 20.581558,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.055693,
+          "gpu_ms": 0.06659,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 18.531935999999998,
+          "gpu_ms": 0.662957,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.512841,
+          "gpu_ms": 9.756789,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 10.912266,
+          "gpu_ms": 14.447341,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 13.223291,
+          "gpu_ms": 1.933667,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.76273,
+          "gpu_ms": 0.66501,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.6785100000000001,
+          "gpu_ms": 0.44608,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.23939,
+          "gpu_ms": 0.263065,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.282259,
+          "gpu_ms": 0.216004,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.17160799999999998,
+          "gpu_ms": 0.184076,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.122755,
+          "gpu_ms": 1.201367,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.274561,
+          "gpu_ms": 3.036835,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.0389890000000004,
+          "gpu_ms": 4.677222,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 4.671068,
+          "gpu_ms": 0.353677,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.164528,
+          "gpu_ms": 0.150527,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.15306,
+          "gpu_ms": 0.178444,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.156626,
+          "gpu_ms": 0.260211,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.263726,
+          "gpu_ms": 0.626748,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.642987,
+          "gpu_ms": 5.406603,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 5.485156,
+          "gpu_ms": 7.748184,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 7.627332,
+          "gpu_ms": 0.839072,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.171237,
+          "gpu_ms": 5.605717,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 441.498633,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 25,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 53,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.5498569999999999,
+          "gpu_ms": 13.442114,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 147.41733200000002,
+          "gpu_ms": 136.189096,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 76.313963,
+          "gpu_ms": 76.271399,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.566712,
+          "gpu_ms": 12.270498,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 12.306712,
+          "gpu_ms": 88.771888,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 87.319169,
+          "gpu_ms": 9.852923,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.467814,
+          "gpu_ms": 1.219393,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.293602,
+          "gpu_ms": 19.580343,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.045459,
+          "gpu_ms": 0.019685,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 17.393279,
+          "gpu_ms": 0.543678,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.389015,
+          "gpu_ms": 6.843544,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.045406,
+          "gpu_ms": 10.594393,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.368414,
+          "gpu_ms": 1.445558,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.295813,
+          "gpu_ms": 0.637318,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.476947,
+          "gpu_ms": 0.282149,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.211318,
+          "gpu_ms": 0.158247,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.14425700000000002,
+          "gpu_ms": 0.170616,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.142645,
+          "gpu_ms": 0.110446,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.09424199999999999,
+          "gpu_ms": 1.080244,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.128597,
+          "gpu_ms": 2.629634,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.671186,
+          "gpu_ms": 3.017266,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 2.930416,
+          "gpu_ms": 0.289765,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.19922,
+          "gpu_ms": 0.140291,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.107521,
+          "gpu_ms": 0.122925,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.124628,
+          "gpu_ms": 0.196717,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.20149299999999998,
+          "gpu_ms": 0.406351,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.45223,
+          "gpu_ms": 3.925321,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.88126,
+          "gpu_ms": 5.14138,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 5.131525,
+          "gpu_ms": 0.704919,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.178548,
+          "gpu_ms": 3.537408,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 400.172117,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 26,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 55,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.716718,
+          "gpu_ms": 12.956199,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 168.36292699999998,
+          "gpu_ms": 156.194012,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 78.20916199999999,
+          "gpu_ms": 78.140529,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.36003100000000005,
+          "gpu_ms": 10.52324,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 10.910534,
+          "gpu_ms": 94.041975,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 93.797188,
+          "gpu_ms": 10.317271,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.599326,
+          "gpu_ms": 1.38992,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.252264,
+          "gpu_ms": 17.648343,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.044456999999999997,
+          "gpu_ms": 0.032498,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 15.716439,
+          "gpu_ms": 0.603377,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.449787,
+          "gpu_ms": 7.367697,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.642603000000001,
+          "gpu_ms": 11.753791,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 10.377567,
+          "gpu_ms": 1.620276,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.4747320000000002,
+          "gpu_ms": 0.630287,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.46495899999999996,
+          "gpu_ms": 0.250646,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.213631,
+          "gpu_ms": 0.155764,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.133681,
+          "gpu_ms": 0.1325,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.124487,
+          "gpu_ms": 0.126029,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.098688,
+          "gpu_ms": 1.23706,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.2777509999999999,
+          "gpu_ms": 2.784667,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.799259,
+          "gpu_ms": 3.298309,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.278093,
+          "gpu_ms": 0.218659,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.128353,
+          "gpu_ms": 0.130045,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.117507,
+          "gpu_ms": 0.13284,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.136726,
+          "gpu_ms": 0.245629,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.241223,
+          "gpu_ms": 0.527053,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.534278,
+          "gpu_ms": 4.008676,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.9742650000000004,
+          "gpu_ms": 5.292437,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 5.3000490000000005,
+          "gpu_ms": 2.405807,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 1.871113,
+          "gpu_ms": 3.975587,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 428.651855,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 27,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 57,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.5255909999999999,
+          "gpu_ms": 18.908893,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 135.381122,
+          "gpu_ms": 117.07862,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 75.168581,
+          "gpu_ms": 75.086557,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.313041,
+          "gpu_ms": 10.909327,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 11.195421000000001,
+          "gpu_ms": 87.490516,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 85.641286,
+          "gpu_ms": 11.258917,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.177537,
+          "gpu_ms": 1.425859,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.333972,
+          "gpu_ms": 17.594327,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.044557,
+          "gpu_ms": 0.213907,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 15.395526,
+          "gpu_ms": 0.729051,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.40424699999999997,
+          "gpu_ms": 6.280919,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 7.372044000000001,
+          "gpu_ms": 9.797785,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 8.727722,
+          "gpu_ms": 1.594477,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.4829,
+          "gpu_ms": 0.884775,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.770929,
+          "gpu_ms": 0.344739,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.266992,
+          "gpu_ms": 0.228513,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.178057,
+          "gpu_ms": 0.170476,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.121743,
+          "gpu_ms": 0.120937,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.09319,
+          "gpu_ms": 1.264647,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.318703,
+          "gpu_ms": 2.596488,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.60095,
+          "gpu_ms": 3.219355,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.25242,
+          "gpu_ms": 0.303722,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.17252,
+          "gpu_ms": 0.170812,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.144587,
+          "gpu_ms": 0.150817,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.125779,
+          "gpu_ms": 0.178889,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.189525,
+          "gpu_ms": 0.414343,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.429235,
+          "gpu_ms": 3.751781,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.7488360000000003,
+          "gpu_ms": 5.283934,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 5.253588,
+          "gpu_ms": 0.609046,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.14650000000000002,
+          "gpu_ms": 3.459096,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 382.55484099999995,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 28,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 59,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.45272,
+          "gpu_ms": 12.838958,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 132.852995,
+          "gpu_ms": 120.701867,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 84.075212,
+          "gpu_ms": 83.977866,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.316085,
+          "gpu_ms": 14.824231,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 15.606593,
+          "gpu_ms": 97.690601,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 94.737085,
+          "gpu_ms": 8.657221,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.590404,
+          "gpu_ms": 1.326173,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.307753,
+          "gpu_ms": 19.620608,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.043766,
+          "gpu_ms": 0.077357,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 18.074784,
+          "gpu_ms": 1.488719,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 1.475088,
+          "gpu_ms": 11.812774,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 12.560915000000001,
+          "gpu_ms": 15.18517,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 13.685295,
+          "gpu_ms": 2.241741,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 2.175681,
+          "gpu_ms": 0.848215,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.6436270000000001,
+          "gpu_ms": 0.305579,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.264347,
+          "gpu_ms": 0.199159,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.16425700000000001,
+          "gpu_ms": 0.1593,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.148413,
+          "gpu_ms": 0.136044,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.111267,
+          "gpu_ms": 1.52972,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.606936,
+          "gpu_ms": 3.790068,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.781085,
+          "gpu_ms": 4.426645,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 4.36979,
+          "gpu_ms": 0.318939,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.205058,
+          "gpu_ms": 0.174863,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.143876,
+          "gpu_ms": 0.170146,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.175583,
+          "gpu_ms": 0.264648,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.265449,
+          "gpu_ms": 0.640643,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.699982,
+          "gpu_ms": 8.894041,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 9.765732,
+          "gpu_ms": 11.757066,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 14.450119,
+          "gpu_ms": 7.225603,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.35557500000000003,
+          "gpu_ms": 5.342292,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 438.985701,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 29,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 61,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.475765,
+          "gpu_ms": 13.818545,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 131.43669599999998,
+          "gpu_ms": 118.232405,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 73.919754,
+          "gpu_ms": 73.855447,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.321373,
+          "gpu_ms": 12.552131,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 12.919794,
+          "gpu_ms": 84.515694,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 81.622143,
+          "gpu_ms": 9.246166,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.7329870000000005,
+          "gpu_ms": 1.33098,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.558958,
+          "gpu_ms": 19.545006,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.044005999999999997,
+          "gpu_ms": 0.070932,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 17.165284999999997,
+          "gpu_ms": 0.644003,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.483677,
+          "gpu_ms": 7.081096,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.243388000000001,
+          "gpu_ms": 11.223636,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.925524999999999,
+          "gpu_ms": 1.618742,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.408307,
+          "gpu_ms": 0.71545,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.5512680000000001,
+          "gpu_ms": 0.303476,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.210957,
+          "gpu_ms": 0.164673,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.142834,
+          "gpu_ms": 0.120982,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.108002,
+          "gpu_ms": 0.111347,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.097236,
+          "gpu_ms": 1.223674,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.258351,
+          "gpu_ms": 2.780353,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.760488,
+          "gpu_ms": 3.422542,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.41349,
+          "gpu_ms": 0.228649,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.1532,
+          "gpu_ms": 0.154357,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.162184,
+          "gpu_ms": 0.202424,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.170016,
+          "gpu_ms": 0.242514,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.247011,
+          "gpu_ms": 0.508569,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.531809,
+          "gpu_ms": 4.245024,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.228795,
+          "gpu_ms": 5.531257,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 5.5175220000000005,
+          "gpu_ms": 0.682881,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.187582,
+          "gpu_ms": 4.017612,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 377.03801999999996,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 30,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 63,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.451118,
+          "gpu_ms": 16.329519,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 134.117331,
+          "gpu_ms": 118.290838,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 79.99168,
+          "gpu_ms": 79.918966,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.320903,
+          "gpu_ms": 13.178043,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 13.482740999999999,
+          "gpu_ms": 95.839505,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 91.771922,
+          "gpu_ms": 8.00555,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.398955,
+          "gpu_ms": 1.313394,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.268622,
+          "gpu_ms": 17.495341,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.049454,
+          "gpu_ms": 0.170236,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 15.274803,
+          "gpu_ms": 0.703647,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.475344,
+          "gpu_ms": 7.079889,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.146120999999999,
+          "gpu_ms": 10.864867,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.768209,
+          "gpu_ms": 1.700645,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.4843300000000001,
+          "gpu_ms": 0.602355,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.468213,
+          "gpu_ms": 0.299811,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.250286,
+          "gpu_ms": 0.190045,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.161803,
+          "gpu_ms": 0.14652,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.11495200000000001,
+          "gpu_ms": 0.116526,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.11352,
+          "gpu_ms": 1.09135,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.17087,
+          "gpu_ms": 2.771335,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.745496,
+          "gpu_ms": 3.177004,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.157746,
+          "gpu_ms": 0.349084,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.27082700000000004,
+          "gpu_ms": 0.162935,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.15150799999999998,
+          "gpu_ms": 0.177907,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.157226,
+          "gpu_ms": 0.209054,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.215644,
+          "gpu_ms": 0.533111,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.561033,
+          "gpu_ms": 3.91312,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.881672,
+          "gpu_ms": 4.237528,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.193491,
+          "gpu_ms": 0.511158,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.189154,
+          "gpu_ms": 3.574211,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 392.147218,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 31,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 65,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.447963,
+          "gpu_ms": 13.397072,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 167.969055,
+          "gpu_ms": 155.201921,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 90.909251,
+          "gpu_ms": 90.863582,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.411949,
+          "gpu_ms": 27.471192,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 27.783952,
+          "gpu_ms": 103.523106,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 99.190911,
+          "gpu_ms": 11.867544,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 12.565046,
+          "gpu_ms": 5.512643,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 4.4690959999999995,
+          "gpu_ms": 21.770706,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.057095999999999994,
+          "gpu_ms": 0.311348,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 18.823482,
+          "gpu_ms": 0.909697,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.49737800000000004,
+          "gpu_ms": 8.628857,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 50.824034,
+          "gpu_ms": 52.85109,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 10.639453,
+          "gpu_ms": 2.188975,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.9088180000000001,
+          "gpu_ms": 0.786157,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.6128210000000001,
+          "gpu_ms": 0.369641,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.320612,
+          "gpu_ms": 0.281023,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.227732,
+          "gpu_ms": 0.2232,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.216085,
+          "gpu_ms": 0.231999,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.184718,
+          "gpu_ms": 1.267705,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.280054,
+          "gpu_ms": 3.120559,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.1133480000000002,
+          "gpu_ms": 3.365397,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.357765,
+          "gpu_ms": 0.301343,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.198909,
+          "gpu_ms": 0.187222,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.164167,
+          "gpu_ms": 0.168623,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.164798,
+          "gpu_ms": 0.224477,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.23511300000000002,
+          "gpu_ms": 0.464548,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.488044,
+          "gpu_ms": 3.730686,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.726169,
+          "gpu_ms": 3.978098,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 3.917867,
+          "gpu_ms": 0.654794,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.203976,
+          "gpu_ms": 9.833106,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 520.893782,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 32,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 67,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.49923,
+          "gpu_ms": 17.299763,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 194.24458,
+          "gpu_ms": 177.603694,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 84.847272,
+          "gpu_ms": 84.639315,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.36013100000000003,
+          "gpu_ms": 12.64384,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 13.004763,
+          "gpu_ms": 88.773271,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 86.555353,
+          "gpu_ms": 7.753281,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.107457999999999,
+          "gpu_ms": 1.275236,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.221551,
+          "gpu_ms": 20.607247,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.042623999999999995,
+          "gpu_ms": 0.056535,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 18.773391,
+          "gpu_ms": 0.880814,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.5789000000000001,
+          "gpu_ms": 7.172108,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 9.583351,
+          "gpu_ms": 16.28396,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 13.711719,
+          "gpu_ms": 2.32952,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 2.143341,
+          "gpu_ms": 0.756076,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.719647,
+          "gpu_ms": 0.400142,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.25962,
+          "gpu_ms": 0.193952,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.19358099999999998,
+          "gpu_ms": 0.187201,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.126681,
+          "gpu_ms": 0.119429,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.19428199999999998,
+          "gpu_ms": 1.637561,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.646644,
+          "gpu_ms": 3.736826,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.707071,
+          "gpu_ms": 4.409726,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 4.387002,
+          "gpu_ms": 0.325589,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.129925,
+          "gpu_ms": 0.133199,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.12400599999999999,
+          "gpu_ms": 0.150636,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.152289,
+          "gpu_ms": 0.242484,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.267432,
+          "gpu_ms": 0.641033,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.653202,
+          "gpu_ms": 5.433186,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 5.408548,
+          "gpu_ms": 6.144223,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 6.058314,
+          "gpu_ms": 0.730117,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.21859900000000002,
+          "gpu_ms": 5.759125,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 474.92620200000005,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 33,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 69,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.7481140000000001,
+          "gpu_ms": 14.032847,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 135.761521,
+          "gpu_ms": 123.012954,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 110.92874499999999,
+          "gpu_ms": 110.875536,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.48526899999999995,
+          "gpu_ms": 16.128772,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 16.644813000000003,
+          "gpu_ms": 111.331516,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 108.70776699999999,
+          "gpu_ms": 17.052976,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 13.242851,
+          "gpu_ms": 4.054768,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 4.704159000000001,
+          "gpu_ms": 24.612702,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.11316,
+          "gpu_ms": 0.619813,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 21.328988,
+          "gpu_ms": 1.372904,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.809798,
+          "gpu_ms": 11.681964,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 13.254968,
+          "gpu_ms": 15.7963,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 14.013479,
+          "gpu_ms": 1.760337,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.515699,
+          "gpu_ms": 0.608385,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.544068,
+          "gpu_ms": 0.37217,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.287172,
+          "gpu_ms": 0.223906,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.181833,
+          "gpu_ms": 0.183686,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.16679,
+          "gpu_ms": 0.166201,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.230407,
+          "gpu_ms": 2.023221,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 2.056231,
+          "gpu_ms": 3.717905,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.812391,
+          "gpu_ms": 4.03691,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.991151,
+          "gpu_ms": 0.420027,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.273251,
+          "gpu_ms": 0.312239,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.221153,
+          "gpu_ms": 0.192068,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.18002,
+          "gpu_ms": 0.240622,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.233491,
+          "gpu_ms": 0.534684,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.544859,
+          "gpu_ms": 4.07731,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.482328,
+          "gpu_ms": 4.407597,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 3.935537,
+          "gpu_ms": 0.549716,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.18735200000000002,
+          "gpu_ms": 3.618771,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 468.152599,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 34,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 71,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.887234,
+          "gpu_ms": 13.287107,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 146.85145699999998,
+          "gpu_ms": 134.40195,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 81.31680800000001,
+          "gpu_ms": 81.203878,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 1.969151,
+          "gpu_ms": 15.00517,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 13.836704,
+          "gpu_ms": 104.20516,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 100.715087,
+          "gpu_ms": 9.958593,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.979994,
+          "gpu_ms": 1.793817,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.735516,
+          "gpu_ms": 18.937141,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.042514,
+          "gpu_ms": 0.155634,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 16.560128,
+          "gpu_ms": 0.722496,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.46473899999999996,
+          "gpu_ms": 7.26912,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.84607,
+          "gpu_ms": 11.24089,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.726633999999999,
+          "gpu_ms": 1.730181,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.5185039999999999,
+          "gpu_ms": 0.995096,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.729867,
+          "gpu_ms": 0.454764,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.275594,
+          "gpu_ms": 0.242254,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.150196,
+          "gpu_ms": 0.148514,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.40565,
+          "gpu_ms": 0.418229,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.12662099999999998,
+          "gpu_ms": 1.213665,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.463761,
+          "gpu_ms": 3.129345,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 3.043987,
+          "gpu_ms": 3.087998,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 2.932418,
+          "gpu_ms": 0.20954,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.21801700000000002,
+          "gpu_ms": 0.238408,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.177456,
+          "gpu_ms": 0.168914,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.144047,
+          "gpu_ms": 0.195484,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.24401699999999998,
+          "gpu_ms": 0.509386,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.48902500000000004,
+          "gpu_ms": 3.666823,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.709267,
+          "gpu_ms": 3.998481,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 3.9208749999999997,
+          "gpu_ms": 0.660643,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.27853900000000004,
+          "gpu_ms": 3.55818,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 422.06401900000003,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 35,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 73,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.610698,
+          "gpu_ms": 14.158477,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 156.751622,
+          "gpu_ms": 143.549984,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 98.168199,
+          "gpu_ms": 98.082985,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.354773,
+          "gpu_ms": 13.998332,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 14.336155,
+          "gpu_ms": 100.727922,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 96.964083,
+          "gpu_ms": 9.645823,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 7.445775,
+          "gpu_ms": 1.835574,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 4.547847,
+          "gpu_ms": 22.193472,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.04652,
+          "gpu_ms": 0.102263,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 19.205886,
+          "gpu_ms": 0.687363,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.451079,
+          "gpu_ms": 8.685268,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 10.057501,
+          "gpu_ms": 11.757387,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 10.304432,
+          "gpu_ms": 1.63587,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.549319,
+          "gpu_ms": 1.394337,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 1.261076,
+          "gpu_ms": 0.367707,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.32341200000000003,
+          "gpu_ms": 0.317682,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.251779,
+          "gpu_ms": 0.20243,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 1.170529,
+          "gpu_ms": 1.158702,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.33134800000000003,
+          "gpu_ms": 1.435328,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.306104,
+          "gpu_ms": 2.851257,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.933511,
+          "gpu_ms": 3.180201,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.075314,
+          "gpu_ms": 0.295053,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.159851,
+          "gpu_ms": 0.158708,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.22585,
+          "gpu_ms": 0.232139,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.141342,
+          "gpu_ms": 0.213511,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.210346,
+          "gpu_ms": 0.471759,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.492521,
+          "gpu_ms": 4.448358,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 4.474277,
+          "gpu_ms": 4.72244,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.716502,
+          "gpu_ms": 0.762736,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 2.386097,
+          "gpu_ms": 6.350307,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 457.81134899999995,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 36,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 75,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 3.144628,
+          "gpu_ms": 18.486991,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 178.487853,
+          "gpu_ms": 160.933014,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 102.51983200000001,
+          "gpu_ms": 102.490006,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 2.412527,
+          "gpu_ms": 18.35036,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 16.827745,
+          "gpu_ms": 108.743403,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 107.32080400000001,
+          "gpu_ms": 12.956545,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 8.728705,
+          "gpu_ms": 2.591506,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 7.714614,
+          "gpu_ms": 25.826931,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.045058,
+          "gpu_ms": 0.037006,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 20.408709,
+          "gpu_ms": 1.057655,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.7222959999999999,
+          "gpu_ms": 8.013538,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 9.098039,
+          "gpu_ms": 13.332575,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 12.057488,
+          "gpu_ms": 1.775549,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.5114219999999998,
+          "gpu_ms": 0.707169,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.609607,
+          "gpu_ms": 0.391148,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.239951,
+          "gpu_ms": 0.197131,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.172349,
+          "gpu_ms": 0.15274,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.117617,
+          "gpu_ms": 0.120496,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.138899,
+          "gpu_ms": 1.272909,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 3.0917190000000003,
+          "gpu_ms": 4.42611,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.616984,
+          "gpu_ms": 3.222936,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.211979,
+          "gpu_ms": 0.271198,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.17099699999999998,
+          "gpu_ms": 0.143596,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.131368,
+          "gpu_ms": 0.155704,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.147191,
+          "gpu_ms": 0.237817,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.243286,
+          "gpu_ms": 0.64492,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.678139,
+          "gpu_ms": 5.340379,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 5.32055,
+          "gpu_ms": 6.088343,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 6.071537999999999,
+          "gpu_ms": 0.735896,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.224497,
+          "gpu_ms": 5.639949,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 500.75656499999997,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 37,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 77,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.472825,
+          "gpu_ms": 12.277554,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 127.278185,
+          "gpu_ms": 115.692736,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 73.319504,
+          "gpu_ms": 73.257191,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.318449,
+          "gpu_ms": 10.564378,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 10.817674,
+          "gpu_ms": 109.632861,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 107.609173,
+          "gpu_ms": 8.162723,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 5.938828,
+          "gpu_ms": 1.21656,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.339426,
+          "gpu_ms": 18.7237,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.046189,
+          "gpu_ms": 0.244988,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 16.686908,
+          "gpu_ms": 0.993649,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.44569,
+          "gpu_ms": 7.106264,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 8.148205,
+          "gpu_ms": 10.912957,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 9.747124,
+          "gpu_ms": 1.498282,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.342729,
+          "gpu_ms": 0.616737,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.5043479999999999,
+          "gpu_ms": 0.282405,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.193772,
+          "gpu_ms": 0.149444,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.14491800000000002,
+          "gpu_ms": 0.144247,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.108022,
+          "gpu_ms": 0.303206,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.309786,
+          "gpu_ms": 1.407757,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.239033,
+          "gpu_ms": 2.900751,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.896886,
+          "gpu_ms": 3.209976,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.207081,
+          "gpu_ms": 0.204397,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.12956499999999999,
+          "gpu_ms": 0.131789,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.14926499999999998,
+          "gpu_ms": 0.171968,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.144998,
+          "gpu_ms": 0.208394,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.201463,
+          "gpu_ms": 0.455725,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.51891,
+          "gpu_ms": 3.882658,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.835978,
+          "gpu_ms": 4.284722,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 4.2696890000000005,
+          "gpu_ms": 0.510217,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.14515799999999998,
+          "gpu_ms": 3.846804,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 393.043437,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 38,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 79,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.47847999999999996,
+          "gpu_ms": 13.890514,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 124.247167,
+          "gpu_ms": 111.083781,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 70.70908,
+          "gpu_ms": 70.634398,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.297637,
+          "gpu_ms": 10.285714,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 10.592255,
+          "gpu_ms": 84.786224,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 82.931035,
+          "gpu_ms": 8.887733,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.153571,
+          "gpu_ms": 1.278652,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.155184,
+          "gpu_ms": 16.851,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.041252,
+          "gpu_ms": 0.365584,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 14.810001,
+          "gpu_ms": 0.875361,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.471029,
+          "gpu_ms": 6.357338,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 7.311483,
+          "gpu_ms": 9.700675,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 8.682584,
+          "gpu_ms": 1.454266,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.2065240000000002,
+          "gpu_ms": 0.473432,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.428765,
+          "gpu_ms": 0.238258,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.20045100000000002,
+          "gpu_ms": 0.153601,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.126551,
+          "gpu_ms": 0.173792,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.14656,
+          "gpu_ms": 0.096475,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.092489,
+          "gpu_ms": 1.049087,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.114646,
+          "gpu_ms": 2.849054,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.8499100000000004,
+          "gpu_ms": 2.904477,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 2.868042,
+          "gpu_ms": 0.243837,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.150697,
+          "gpu_ms": 0.138288,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.12970500000000001,
+          "gpu_ms": 0.146461,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.129875,
+          "gpu_ms": 0.183796,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.235069,
+          "gpu_ms": 0.481745,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.46330699999999997,
+          "gpu_ms": 3.741264,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.7180440000000003,
+          "gpu_ms": 3.99104,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 3.962347,
+          "gpu_ms": 0.493783,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.147792,
+          "gpu_ms": 4.034466,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 357.414876,
+      "world_revision": 412,
+      "world_time": 6000
+    },
+    {
+      "camera": [
+        14.5,
+        67.62000274658203,
+        3.5
+      ],
+      "frame": 39,
+      "game": {
+        "client_loaded": true,
+        "dimension": "minecraft:overworld",
+        "inventory": [],
+        "inventory_open": false,
+        "loaded_columns": 81,
+        "tick": 81,
+        "tracked_entities": 0
+      },
+      "history_invalidations": 10,
+      "passes": [
+        {
+          "cpu_submit_ms": 0.457218,
+          "gpu_ms": 12.694396,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 123.783786,
+          "gpu_ms": 111.605807,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 77.77259000000001,
+          "gpu_ms": 77.742124,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.33598500000000003,
+          "gpu_ms": 12.100532,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 12.35145,
+          "gpu_ms": 87.127229,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 84.158951,
+          "gpu_ms": 8.504937,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 6.128905,
+          "gpu_ms": 1.37709,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.171268,
+          "gpu_ms": 17.829706,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.045198,
+          "gpu_ms": 0.037736,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 15.887776999999998,
+          "gpu_ms": 0.576516,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.421534,
+          "gpu_ms": 6.470829,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 7.559566,
+          "gpu_ms": 10.158944,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 8.911007999999999,
+          "gpu_ms": 1.480055,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 1.2797939999999999,
+          "gpu_ms": 0.586191,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.440612,
+          "gpu_ms": 0.266331,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.257147,
+          "gpu_ms": 0.234241,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.190596,
+          "gpu_ms": 0.158258,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.14023,
+          "gpu_ms": 0.137587,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.147272,
+          "gpu_ms": 1.208667,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 1.2704000000000002,
+          "gpu_ms": 2.552146,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 2.515843,
+          "gpu_ms": 3.110847,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 3.011808,
+          "gpu_ms": 0.187652,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.143156,
+          "gpu_ms": 0.153501,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.13965,
+          "gpu_ms": 0.16654,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.147892,
+          "gpu_ms": 0.229135,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.241033,
+          "gpu_ms": 0.475055,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.508675,
+          "gpu_ms": 3.643348,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 3.628375,
+          "gpu_ms": 3.945201,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 3.867724,
+          "gpu_ms": 0.650338,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.24605999999999997,
+          "gpu_ms": 3.545441,
+          "pass": "final"
+        }
+      ],
+      "rain": 0.0,
+      "wall_ms": 367.84439499999996,
+      "world_revision": 412,
+      "world_time": 6000
+    }
+  ],
+  "scene": "live",
+  "scene_input": "live native Minecraft chunk meshes",
+  "solid_vertices": 1814400,
+  "temperature": 0.800000011920929,
+  "water_vertices": 0,
+  "world_day": 0,
+  "world_revision": 412,
+  "world_time": 6000
+}

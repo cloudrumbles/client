@@ -25,6 +25,13 @@ pub struct ChunkVertex {
     pub light_tint: u32,
 }
 
+#[cfg(feature = "shader-packs")]
+#[derive(Clone, Copy, Default)]
+struct ShaderMeta {
+    state: u32,
+    light: [f32; 2],
+}
+
 #[derive(Copy, Clone)]
 struct TerrainVertex {
     position: [f32; 3],
@@ -35,6 +42,8 @@ struct TerrainVertex {
     /// `AtlasRegion::sprite`, resolved to a rectangle in the fragment shader.
     sprite: u16,
     light_tint: u32,
+    #[cfg(feature = "shader-packs")]
+    shader_meta: ShaderMeta,
 }
 
 impl ChunkVertex {
@@ -174,6 +183,8 @@ pub const PACKED_WHITE_SHIFTED: u32 = pack_tint_shifted([1.0, 1.0, 1.0]);
 /// its own tight AABB, giving per-section cull granularity instead of
 /// per-column.
 pub struct SectionMesh {
+    #[cfg(feature = "shader-packs")]
+    pub shader_vertices: Vec<crate::shaderpack::ShaderMeshVertex>,
     /// 0-based section index from the column's min_y; stable identity for
     /// per-section upload/replace.
     pub section_index: i32,
@@ -1222,6 +1233,17 @@ impl ChunkStoreSnapshot {
         blend_color(x, z, |bx, bz| self.dry_foliage_color_at(bx, y, bz))
     }
 
+    #[cfg(feature = "shader-packs")]
+    fn shader_light(&self, x: i32, y: i32, z: i32) -> [f32; 2] {
+        self.light
+            .get(&(x.div_euclid(16), z.div_euclid(16)))
+            .map_or([0.0, 240.0], |l| {
+                [
+                    l.get_block_light(x.rem_euclid(16), y, z.rem_euclid(16)) as f32 * 16.0,
+                    l.get_sky_light(x.rem_euclid(16), y, z.rem_euclid(16)) as f32 * 16.0,
+                ]
+            })
+    }
     fn get_light(&self, x: i32, y: i32, z: i32) -> f32 {
         let cx = x.div_euclid(16);
         let cz = z.div_euclid(16);
@@ -1421,6 +1443,8 @@ fn greedy_mesh_section(
                     sprite_uv: *uv,
                     sprite: region.sprite,
                     light_tint: pack_light_tint(lights[i], tint),
+                    #[cfg(feature = "shader-packs")]
+                    shader_meta: ShaderMeta::default(),
                 });
             }
 
@@ -1444,6 +1468,65 @@ fn greedy_mesh_section(
     compute_visibility(|x, y, z| {
         occluders[greedy::pad_linearize::<SECTION_SIZE>(x + 1, y + 1, z + 1)]
     })
+}
+
+#[cfg(feature = "shader-packs")]
+fn shader_vertices(
+    vertices: &[TerrainVertex],
+    atlas: &AtlasUVMap,
+) -> Vec<crate::shaderpack::ShaderMeshVertex> {
+    use glam::{Vec2, Vec3};
+    vertices
+        .as_chunks::<4>()
+        .0
+        .iter()
+        .flat_map(|quad| {
+            let p0 = Vec3::from(quad[0].position);
+            let edge1 = Vec3::from(quad[1].position) - p0;
+            let edge2 = Vec3::from(quad[2].position) - p0;
+            let normal = edge1.cross(edge2).normalize_or_zero();
+            let du1 = Vec2::from(quad[1].sprite_uv) - Vec2::from(quad[0].sprite_uv);
+            let du2 = Vec2::from(quad[2].sprite_uv) - Vec2::from(quad[0].sprite_uv);
+            let determinant = du1.x * du2.y - du1.y * du2.x;
+            let (tangent, handedness) = if determinant.abs() > 1e-8 {
+                let t = ((edge1 * du2.y - edge2 * du1.y) / determinant).normalize_or_zero();
+                let b = ((edge2 * du1.x - edge1 * du2.x) / determinant).normalize_or_zero();
+                (
+                    t,
+                    if normal.cross(t).dot(b) < 0.0 {
+                        -1.0
+                    } else {
+                        1.0
+                    },
+                )
+            } else {
+                (edge1.normalize_or_zero(), 1.0)
+            };
+            let [u, v, w, h] = atlas.sprite_rect(quad[0].sprite);
+            let center = quad.iter().map(|q| Vec2::from(q.sprite_uv)).sum::<Vec2>() / 4.0;
+            quad.iter().map(move |q| {
+                let rgb = q.light_tint.to_le_bytes();
+                crate::shaderpack::ShaderMeshVertex {
+                    state: q.shader_meta.state,
+                    vertex: pomme_shaderpack::scene::Vertex {
+                        position: q.position,
+                        normal: normal.to_array(),
+                        uv: [u + q.sprite_uv[0] * w, v + q.sprite_uv[1] * h],
+                        light: q.shader_meta.light,
+                        color: [
+                            rgb[1] as f32 / 255.0,
+                            rgb[2] as f32 / 255.0,
+                            rgb[3] as f32 / 255.0,
+                            1.0,
+                        ],
+                        tangent: [tangent.x, tangent.y, tangent.z, handedness],
+                        material: [q.shader_meta.state as f32, 0.0, 0.0],
+                        mid_uv: [u + center.x * w, v + center.y * h],
+                    },
+                }
+            })
+        })
+        .collect()
 }
 
 fn mesh_chunk_snapshot(
@@ -1484,7 +1567,13 @@ fn mesh_chunk_snapshot(
 
     // The type map is a state->id map, so it only needs the meshed span (+1-block
     // border for face culling); states outside it are never queried.
-    let type_map = if lod == 0 {
+    #[cfg(feature = "shader-packs")]
+    let shader_mode = crate::shaderpack::enabled();
+    #[cfg(not(feature = "shader-packs"))]
+    let shader_mode = false;
+    // Original packs sample the stitched atlas directly. Their UV ABI cannot
+    // wrap our greedy sprite-local repeats, so emit existing model quads instead.
+    let type_map = if lod == 0 && !shader_mode {
         Some(BlockTypeMap::build(
             snapshot, registry, world_x, world_z, by_start, by_end,
         ))
@@ -1572,6 +1661,8 @@ fn mesh_chunk_snapshot(
                 let model_offset = crate::world::block::block_position_offset(state, bx, bz);
                 let model_pos = (glam::Vec3::from(block_pos) + model_offset.as_vec3()).to_array();
 
+                #[cfg(feature = "shader-packs")]
+                let shader_start = sink.vertices.len();
                 if lod > 0 {
                     emit_lod_cube(
                         sink, block_pos, state, snapshot, registry, uv_map, bx, by, bz, step,
@@ -1599,6 +1690,27 @@ fn mesh_chunk_snapshot(
                     }
                     emit_missing_cube(sink, model_pos, snapshot, registry, uv_map, bx, by, bz);
                 }
+                #[cfg(feature = "shader-packs")]
+                if shader_mode {
+                    for quad in sink.vertices[shader_start..].as_chunks_mut::<4>().0 {
+                        let edge1 =
+                            glam::Vec3::from(quad[1].position) - glam::Vec3::from(quad[0].position);
+                        let edge2 =
+                            glam::Vec3::from(quad[2].position) - glam::Vec3::from(quad[0].position);
+                        let normal = edge1.cross(edge2).normalize_or_zero();
+                        for v in quad {
+                            // Sample just outside the face, preserving separate real channels.
+                            let point = glam::Vec3::from(v.position) + normal * 0.001;
+                            let x = world_x + point.x.floor() as i32;
+                            let y = min_y + s as i32 * 16 + point.y.floor() as i32;
+                            let z = world_z + point.z.floor() as i32;
+                            v.shader_meta = ShaderMeta {
+                                state: u32::from(state.id()),
+                                light: snapshot.shader_light(x, y, z),
+                            };
+                        }
+                    }
+                }
                 by += step;
             }
             local_x += step;
@@ -1623,8 +1735,16 @@ fn mesh_chunk_snapshot(
         let aabb = section_aabb(&sink.vertices);
         let mut packed = pool.take_vertices();
         packed.extend(sink.vertices.iter().map(pack_vertex));
+        #[cfg(feature = "shader-packs")]
+        let shader_vertices = if shader_mode {
+            shader_vertices(&sink.vertices, uv_map)
+        } else {
+            Vec::new()
+        };
         pool.recycle_scratch(sink.vertices);
         sections.push(SectionMesh {
+            #[cfg(feature = "shader-packs")]
+            shader_vertices,
             section_index: i as i32,
             vertices: packed,
             aabb,
@@ -2187,6 +2307,8 @@ fn emit_lod_cube(
                 sprite_uv: uvs[i],
                 sprite: region.sprite,
                 light_tint: pack_light_tint(light, tint),
+                #[cfg(feature = "shader-packs")]
+                shader_meta: ShaderMeta::default(),
             });
         }
         sink.indices_for(region.opaque).extend_from_slice(&[
@@ -2234,6 +2356,8 @@ fn emit_missing_cube(
                 sprite_uv: uv,
                 sprite: missing.sprite,
                 light_tint: pack_light_tint(light, MISSING_TINT),
+                #[cfg(feature = "shader-packs")]
+                shader_meta: ShaderMeta::default(),
             });
         }
         // The missing tile is a solid checker, so the cube goes in the solid pass.
@@ -2298,6 +2422,8 @@ fn emit_face_into(
             sprite_uv: uvs[i],
             sprite: region.sprite,
             light_tint: pack_light_tint(lights[i], tint),
+            #[cfg(feature = "shader-packs")]
+            shader_meta: ShaderMeta::default(),
         });
     }
 

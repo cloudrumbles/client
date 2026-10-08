@@ -2332,6 +2332,69 @@ fn translate_container_set_slot_765() {
     assert_eq!(data.count, 2);
 }
 
+/// 26.3 arbitrary registry tags preserve every entry and its original value;
+/// older compound payloads remain byte-identical rather than dropping a
+/// registry.
+#[test]
+fn translate_config_registry_tags_777() {
+    use azalea_buf::AzBuf;
+    use azalea_protocol::packets::config::ClientboundConfigPacket;
+    use azalea_registry::identifier::Identifier;
+    use simdnbt::owned::{NbtCompound, NbtList, NbtTag};
+    let id = |s: &str| s.parse::<Identifier>().unwrap();
+    let mut c = NbtCompound::new();
+    c.insert("height", NbtTag::Int(384));
+    let source = vec![
+        (
+            id("minecraft:a"),
+            Some(NbtTag::String("plain-value".into())),
+        ),
+        (id("minecraft:b"), Some(NbtTag::Compound(c.clone()))),
+        (id("minecraft:c"), None),
+        (
+            id("minecraft:d"),
+            Some(NbtTag::List(NbtList::Int(vec![3, 7]))),
+        ),
+    ];
+    let mut raw = Vec::new();
+    wire::write_varint(
+        &mut raw,
+        config_id(777, Direction::Clientbound, "registry_data"),
+    );
+    id("minecraft:test").azalea_write(&mut raw).unwrap();
+    source.azalea_write(&mut raw).unwrap();
+    let frames = translation_for(777).translate_config_frame(raw.into_boxed_slice());
+    assert_eq!(frames.len(), 1);
+    let packet: ClientboundConfigPacket =
+        azalea_protocol::read::deserialize_packet(&mut std::io::Cursor::new(&frames[0])).unwrap();
+    let ClientboundConfigPacket::RegistryData(p) = packet else {
+        panic!("wrong packet")
+    };
+    assert_eq!(
+        p.entries
+            .iter()
+            .map(|(n, _)| n.to_string())
+            .collect::<Vec<_>>(),
+        ["minecraft:a", "minecraft:b", "minecraft:c", "minecraft:d"]
+    );
+    assert_eq!(
+        p.entries[0]
+            .1
+            .as_ref()
+            .unwrap()
+            .string("pomme:wire_value")
+            .unwrap()
+            .to_str(),
+        "plain-value"
+    );
+    assert_eq!(p.entries[1].1, Some(c));
+    assert!(p.entries[2].1.is_none());
+    assert_eq!(
+        p.entries[3].1.as_ref().unwrap().get("pomme:wire_value"),
+        source[3].1.as_ref()
+    );
+}
+
 /// 765's single-NBT `registry_data` splits into per-registry frames whose
 /// entries reorder by their explicit ids (wire order is the id space); the
 /// captured dimension-type order then keys the 765 spawn-info rewrites,

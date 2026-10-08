@@ -108,6 +108,8 @@ struct SkyUniform {
 #[derive(Clone)]
 pub struct SkyState {
     pub day_time: u64,
+    pub day_rate: f32,
+    pub day_phase: f32,
     pub game_time: u64,
     pub rain_level: f32,
     pub thunder_level: f32,
@@ -118,6 +120,8 @@ impl SkyState {
     pub fn default_day() -> Self {
         Self {
             day_time: 6000,
+            day_rate: 1.0,
+            day_phase: 0.0,
             game_time: 6000,
             rain_level: 0.0,
             thunder_level: 0.0,
@@ -125,8 +129,24 @@ impl SkyState {
         }
     }
 
+    pub fn set_clock(&mut self, ticks: u64, phase: f32, rate: f32) {
+        if phase.is_finite() && rate.is_finite() {
+            self.day_time = ticks;
+            self.day_phase = phase;
+            self.day_rate = rate;
+        }
+    }
+    pub fn tick_clock(&mut self) {
+        let advanced = self.day_phase + self.day_rate;
+        let whole = advanced.floor();
+        self.day_time = self.day_time.wrapping_add_signed(whole as i64);
+        self.day_phase = advanced - whole;
+    }
     pub fn day_tick(&self) -> f32 {
-        (self.day_time % TICKS_PER_DAY as u64) as f32 + self.partial_tick
+        ((self.day_time % TICKS_PER_DAY as u64) as f32
+            + self.day_phase
+            + self.partial_tick * self.day_rate)
+            .rem_euclid(TICKS_PER_DAY)
     }
 
     /// Clamped rain level (server-driven). Vanilla `setRainLevel` stores prev
@@ -1155,4 +1175,34 @@ fn create_pipelines(
     device.destroy_shader_module(frag_module, None);
 
     (pipelines[0], pipelines[1])
+}
+
+#[cfg(test)]
+mod clock_tests {
+    use super::*;
+    #[test]
+    fn server_clock_freeze_phase_rates_and_resync() {
+        let mut sky = SkyState::default_day();
+        sky.set_clock(18000, 0.25, 0.0);
+        for _ in 0..120 {
+            sky.tick_clock();
+        }
+        sky.partial_tick = 0.75;
+        assert_eq!(sky.day_tick(), 18000.25);
+        sky.set_clock(6000, 0.0, 0.5);
+        sky.tick_clock();
+        assert_eq!((sky.day_time, sky.day_phase), (6000, 0.5));
+        sky.tick_clock();
+        assert_eq!((sky.day_time, sky.day_phase), (6001, 0.0));
+        sky.set_clock(6000, 0.0, 2.0);
+        sky.tick_clock();
+        assert_eq!(sky.day_time, 6002);
+        sky.set_clock(6000, 0.0, -1.0);
+        sky.tick_clock();
+        assert_eq!(sky.day_time, 5999);
+        sky.set_clock(9000, 0.5, 0.0);
+        assert_eq!(sky.day_tick(), 9000.5);
+        sky.set_clock(100, f32::NAN, 1.0);
+        assert_eq!(sky.day_time, 9000);
+    }
 }

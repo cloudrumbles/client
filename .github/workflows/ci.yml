@@ -70,6 +70,13 @@ jobs:
           cargo test -p pomme-protocol
           cargo test -p pomme-client --release --no-default-features
 
+      - name: Vulkan shader-pack feature
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cargo fmt -p pomme-shaderpack -- --check
+          cargo clippy -p pomme-client -p pomme-shaderpack --release --all-targets --no-default-features --features pomme-client/shader-packs -- -D warnings
+          cargo test -p pomme-shaderpack --release --features vulkan
+
       - name: Pin the steel revision
         if: matrix.os == 'ubuntu-latest'
         id: steel

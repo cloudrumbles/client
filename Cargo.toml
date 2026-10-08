@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "pomme-client",
+    "pomme-shaderpack",
     "pomme-launcher/src-tauri",
     "pomme-gpu-allocator",
     "pomme-block",
@@ -68,6 +69,11 @@ debug = "line-tables-only"
 
 [profile.dev.package."*"]
 opt-level = 2
+
+# Driver dispatch bindings are large. Keep the experimental pack runtime quick
+# to iterate in debug builds; performance measurements use --release.
+[profile.dev.package.pomme-shaderpack]
+opt-level = 0
 
 # Mirrors steel's own dev overrides. Its workspace profile does not apply when
 # pomme is the root, and without these worldgen is unusably slow and the density

@@ -396,6 +396,9 @@ struct ConfigIds {
     /// Native-space `registry_data` on wire versions at or below 765, whose
     /// form is one packet holding every registry as a single NBT map.
     split_registry_data: Option<u32>,
+    /// 26.3 registry values are arbitrary NBT tags, while the pinned 26.2
+    /// registry holder stores compounds. Preserve scalars in a tagged wrapper.
+    tagged_registry_data: Option<u32>,
     /// 764's config payload rewrites: disconnect's JSON component and the
     /// unsplit resource_pack (both phases share the layouts).
     v764: Option<ConfigIds764>,
@@ -975,6 +978,15 @@ impl Translation {
             tracing::debug!("Dropping inbound config packet {wire_id} with no native id");
             return Vec::new();
         };
+        if ids.tagged_registry_data == Some(id) {
+            return match translate_registry_tags_777(id, &raw[pos..]) {
+                Some(out) => vec![out.into_boxed_slice()],
+                None => {
+                    tracing::warn!("Dropping unparsable 26.3 registry data");
+                    Vec::new()
+                }
+            };
+        }
         if ids.split_registry_data == Some(id) {
             return match split_registry_data(id, &raw[pos..]) {
                 Some(frames) => frames,
@@ -1768,6 +1780,45 @@ fn skip_nbt_root(cur: &mut Cursor<&[u8]>, named: bool) -> Option<()> {
     skip_nbt_payload(cur, tag, 0)
 }
 
+/// Upstream Azalea 26.3 c_registry_data.rs (8041a147) changed NbtCompound
+/// to NbtTag. Keep entry order/IDs and original compound metadata unchanged.
+/// New scalar/list payloads are retained under `pomme:wire_value` because the
+/// pinned 26.2 holder has no arbitrary-tag slot. Existing name-based registry
+/// lookups continue to work; consumers of those new payloads need a typed
+/// adapter.
+fn translate_registry_tags_777(id: u32, payload: &[u8]) -> Option<Vec<u8>> {
+    use azalea_registry::identifier::Identifier;
+    use simdnbt::owned::{NbtCompound, NbtTag};
+    let mut cur = Cursor::new(payload);
+    let registry = Identifier::azalea_read(&mut cur).ok()?;
+    let entries = Vec::<(Identifier, Option<NbtTag>)>::azalea_read(&mut cur).ok()?;
+    if cur.position() as usize != payload.len() {
+        return None;
+    }
+    let entries = entries
+        .into_iter()
+        .map(|(name, data)| {
+            let data = data.map(|tag| match tag {
+                NbtTag::Compound(c) => c,
+                tag => {
+                    tracing::debug!(
+                        "Preserving non-compound 26.3 registry value: {registry}/{name}"
+                    );
+                    let mut c = NbtCompound::new();
+                    c.insert("pomme:wire_value", tag);
+                    c
+                }
+            });
+            (name, data)
+        })
+        .collect::<Vec<_>>();
+    let mut out = Vec::new();
+    wire::write_varint(&mut out, id);
+    registry.azalea_write(&mut out).ok()?;
+    entries.azalea_write(&mut out).ok()?;
+    Some(out)
+}
+
 /// Splits 765's single-NBT registry_data — a map of
 /// `{registry: {type, value: [{name, id, element}]}}` — into the
 /// per-registry packets 26.2 uses. Entries are ordered by their explicit
@@ -1863,7 +1914,7 @@ impl ConfigIds {
         use Direction::{Clientbound, Serverbound};
         let inbound = id_map(table, native, Phase::Configuration, Clientbound);
         let outbound = id_map(native, table, Phase::Configuration, Serverbound);
-        if identity_maps(&inbound, &outbound) {
+        if protocol != 777 && identity_maps(&inbound, &outbound) {
             return None;
         }
         let id = |dir, name| required_id(native, Phase::Configuration, dir, name);
@@ -1871,6 +1922,7 @@ impl ConfigIds {
             inbound,
             outbound,
             split_registry_data: (protocol <= 765).then(|| id(Clientbound, "registry_data")),
+            tagged_registry_data: (protocol == 777).then(|| id(Clientbound, "registry_data")),
             v764: (protocol <= 764).then(|| ConfigIds764 {
                 disconnect_id: id(Clientbound, "disconnect"),
                 resource_pack_push_id: id(Clientbound, "resource_pack_push"),

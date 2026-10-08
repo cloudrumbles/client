@@ -36,6 +36,8 @@ pub struct AtlasRegion {
 
 #[derive(Clone)]
 pub struct AtlasUVMap {
+    #[cfg(feature = "shader-packs")]
+    atlas_size: u32,
     regions: HashMap<String, AtlasRegion>,
     sprite_alpha_masks: HashMap<String, SpriteAlphaMask>,
     /// Level-0 rectangles by sprite index, as `(x, y, width, height)`.
@@ -44,6 +46,20 @@ pub struct AtlasUVMap {
 }
 
 impl AtlasUVMap {
+    #[cfg(feature = "shader-packs")]
+    pub fn sprite_rect(&self, sprite: u16) -> [f32; 4] {
+        let r = self
+            .rects
+            .get(sprite as usize)
+            .copied()
+            .unwrap_or(self.rects[0]);
+        [
+            r[0] as f32 / self.atlas_size as f32,
+            r[1] as f32 / self.atlas_size as f32,
+            r[2] as f32 / self.atlas_size as f32,
+            r[3] as f32 / self.atlas_size as f32,
+        ]
+    }
     pub fn get_region(&self, name: &str) -> AtlasRegion {
         self.regions.get(name).copied().unwrap_or(self.missing)
     }
@@ -84,6 +100,10 @@ pub fn atlas_asset_path(key: &str) -> String {
 }
 
 pub struct TextureAtlas {
+    #[cfg(feature = "shader-packs")]
+    pub cpu_pixels: Arc<Vec<u8>>,
+    #[cfg(feature = "shader-packs")]
+    pub cpu_size: [u32; 2],
     pub image: vk::Image,
     pub view: vk::ImageView,
     pub sampler: vk::Sampler,
@@ -564,12 +584,16 @@ impl TextureAtlas {
         );
 
         let uv_map = AtlasUVMap {
+            #[cfg(feature = "shader-packs")]
+            atlas_size,
             regions,
             sprite_alpha_masks,
             rects,
             missing: missing_region,
         };
 
+        #[cfg(feature = "shader-packs")]
+        let cpu_pixels = Arc::new(atlas_pixels.clone());
         let staging_pixels =
             build_mip_chain(atlas_pixels, atlas_size, mip_level, &sources, &placements);
 
@@ -604,6 +628,10 @@ impl TextureAtlas {
         );
 
         Ok(Self {
+            #[cfg(feature = "shader-packs")]
+            cpu_pixels,
+            #[cfg(feature = "shader-packs")]
+            cpu_size: [atlas_size, atlas_size],
             image,
             view,
             sampler,
