@@ -440,6 +440,21 @@ impl NativePack {
                 )?,
             )?;
             self.capture.finish();
+            // QA completion is published only after both non-atomic file writes
+            // return. The driver also parses the marker and validates the files.
+            #[cfg(feature = "renderer-fault-injection")]
+            if std::env::var_os("POMME_TEST_ACQUIRE_TRACE").is_some() {
+                std::fs::write(
+                    output.join("vulkan-live.complete.json"),
+                    serde_json::to_vec(&serde_json::json!({
+                        "event": "capture_completed",
+                        "samples": self.capture.samples.len(),
+                        "revision": pomme_shaderpack::BUILD_REVISION,
+                        "json_bytes": std::fs::metadata(output.join("vulkan-live.json"))?.len(),
+                        "png_bytes": std::fs::metadata(output.join("vulkan-live.png"))?.len(),
+                    }))?,
+                )?;
+            }
             tracing::info!("Vulkan shader capture completed: {}", options.output);
         }
         let immediate;
