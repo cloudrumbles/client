@@ -1,7 +1,6 @@
 {
   "measured_source_head": "2e278c08eb24e54ec163155aeec002b403305662",
   "measured_source_clean": true,
-  "publication_contains_new_source_fix": false,
   "binary_sha256": "ddebd3114f7b00322f6c1447051dffa60217d6589212ead0c7c672040956416a",
   "sha256": {
     "baby-native-window.png": "814e39b670872f281a442dffcc90b5ec0adf22509680ca0aa95d8f6ca7b76465",
@@ -30,5 +29,6 @@
     "compiler": "glslangValidator -V --target-env vulkan1.2 -S vert",
     "expected_result": "fails with conditional operand dimension mismatch",
     "source_has_new_fix": false
-  }
+  },
+  "captures_contain_new_source_fix": false
 }

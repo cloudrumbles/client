@@ -49,6 +49,9 @@
     "material-vec4-mesh.png": "23974c98555e13e7cf1912a05c4e5aa9d2d0e3574a00714fc09b7a1fd5bc854e",
     "material-vec4.fsh": "ef21698b71263528e08db465d688aba367e5c65eb87304d1637bd828aea05c11",
     "material-vec4.vsh": "7052113c7ee7700f2c1cceda5ccb66eedd8b980184591b04993568b49f2d305c",
-    "unit-tests.log": "f620759630bc2e43255ab96cf409d04bfb405c02d7eef15398afe78e187bfc1a"
-  }
+    "unit-tests.log": "f620759630bc2e43255ab96cf409d04bfb405c02d7eef15398afe78e187bfc1a",
+    "ci.json": "aa10ee4b093fb8188e3b14e0093020cf80d74d59451d8cb1aa6d01340289999f"
+  },
+  "ci_conclusion": "success",
+  "ci_jobs_passed": 8
 }
