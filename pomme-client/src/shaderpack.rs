@@ -439,7 +439,6 @@ impl NativePack {
                     &serde_json::json!({"backend":"Vulkan in native game window","device":unsafe{std::ffi::CStr::from_ptr(self.gpu.physical.get_properties().device_name.as_ptr())}.to_string_lossy(),"revision":pomme_shaderpack::BUILD_REVISION,"pack_hash":e.pack.digest,"options":e.pack.options,"size":self.size,"passes":e.pass_names(),"measurement":"Vulkan pack-pass timestamp queries; excludes forward actors, UI and presentation; not gameplay FPS","samples":self.capture.samples,"reloads":self.capture.reloads}),
                 )?,
             )?;
-            self.capture.finish();
             // QA completion is published only after both non-atomic file writes
             // return. The driver also parses the marker and validates the files.
             #[cfg(feature = "renderer-fault-injection")]
@@ -455,6 +454,7 @@ impl NativePack {
                     }))?,
                 )?;
             }
+            self.capture.finish();
             tracing::info!("Vulkan shader capture completed: {}", options.output);
         }
         let immediate;
