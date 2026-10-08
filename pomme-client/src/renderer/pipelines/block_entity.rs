@@ -17,6 +17,7 @@ use crate::renderer::pipelines::entity_renderer::{
 };
 use crate::renderer::{MAX_FRAMES_IN_FLIGHT, block_entity_model, util};
 
+#[derive(Clone)]
 pub struct BlockEntityRenderInfo {
     pub pos: BlockPos,
     pub kind: BlockEntityKind,

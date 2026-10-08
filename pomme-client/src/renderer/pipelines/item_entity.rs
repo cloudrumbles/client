@@ -75,6 +75,7 @@ fn pack_normal(normal: glam::Vec3) -> [i8; 4] {
     ]
 }
 
+#[derive(Clone)]
 pub struct ItemRenderInfo {
     pub item_name: String,
     pub model_matrix: Mat4,

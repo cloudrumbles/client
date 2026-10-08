@@ -49,6 +49,7 @@ pub fn precipitation_for(climate: &BiomeClimate, y: i32) -> Precip {
 
 /// One vertical precipitation column around the player. Built CPU-side each
 /// frame from chunk/biome/light data and turned into a camera-facing quad here.
+#[derive(Clone)]
 pub struct WeatherColumn {
     pub x: i32,
     pub z: i32,

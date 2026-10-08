@@ -16,6 +16,7 @@ const MAX_VERTS: usize = MAX_PARTICLE_QUADS * 6;
 
 /// One camera-facing particle billboard, extracted per frame from the
 /// particle store.
+#[derive(Clone)]
 pub struct ParticleQuad {
     /// Partial-tick-lerped world-space position (quad center).
     pub pos: [f32; 3],

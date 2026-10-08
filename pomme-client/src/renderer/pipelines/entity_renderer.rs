@@ -50,6 +50,7 @@ struct EntityInstance {
     uv_params: [f32; 4],
 }
 
+#[derive(Clone)]
 pub struct EntityRenderInfo {
     pub position: Position,
     pub head_x_rot_deg: f32,

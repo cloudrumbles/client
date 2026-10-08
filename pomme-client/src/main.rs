@@ -45,6 +45,7 @@ use crate::user::UserData;
 
 fn main() {
     let args = args::LaunchArgs::parse();
+    renderer::scene::configure(args.renderer_path);
 
     #[cfg(not(debug_assertions))]
     {

@@ -104,6 +104,7 @@ impl CloudMode {
     }
 }
 
+#[derive(Clone)]
 pub struct Camera {
     pub position: Position,
     pub look_dir: LookDirection,
@@ -514,9 +515,12 @@ impl Camera {
         let position = self.position.as_vec3() + self.third_person_offset();
         (position, position + forward, up)
     }
+    pub fn clip_planes(&self) -> [f32; 2] {
+        [NEAR, self.depth_far]
+    }
     #[cfg(feature = "shader-packs")]
     pub fn shader_clip_planes(&self) -> [f32; 2] {
-        [NEAR, self.depth_far]
+        self.clip_planes()
     }
     #[cfg(feature = "shader-packs")]
     pub fn shader_view_effect(&self) -> Mat4 {
