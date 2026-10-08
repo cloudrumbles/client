@@ -1,0 +1,6012 @@
+{
+  "arch": "x86_64",
+  "backend": "OpenGL compatibility",
+  "build_profile": "release",
+  "capabilities": {
+    "extensions": [
+      "GL_3DFX_texture_compression_FXT1",
+      "GL_AMD_conservative_depth",
+      "GL_AMD_draw_buffers_blend",
+      "GL_AMD_multi_draw_indirect",
+      "GL_AMD_pinned_memory",
+      "GL_AMD_query_buffer_object",
+      "GL_AMD_seamless_cubemap_per_texture",
+      "GL_AMD_shader_stencil_export",
+      "GL_AMD_shader_trinary_minmax",
+      "GL_AMD_texture_texture4",
+      "GL_AMD_vertex_shader_layer",
+      "GL_AMD_vertex_shader_viewport_index",
+      "GL_ANGLE_texture_compression_dxt3",
+      "GL_ANGLE_texture_compression_dxt5",
+      "GL_APPLE_packed_pixels",
+      "GL_ARB_ES2_compatibility",
+      "GL_ARB_ES3_1_compatibility",
+      "GL_ARB_ES3_2_compatibility",
+      "GL_ARB_ES3_compatibility",
+      "GL_ARB_arrays_of_arrays",
+      "GL_ARB_base_instance",
+      "GL_ARB_blend_func_extended",
+      "GL_ARB_buffer_storage",
+      "GL_ARB_clear_buffer_object",
+      "GL_ARB_clear_texture",
+      "GL_ARB_clip_control",
+      "GL_ARB_color_buffer_float",
+      "GL_ARB_compatibility",
+      "GL_ARB_compressed_texture_pixel_storage",
+      "GL_ARB_compute_shader",
+      "GL_ARB_conditional_render_inverted",
+      "GL_ARB_conservative_depth",
+      "GL_ARB_copy_buffer",
+      "GL_ARB_copy_image",
+      "GL_ARB_cull_distance",
+      "GL_ARB_debug_output",
+      "GL_ARB_depth_buffer_float",
+      "GL_ARB_depth_clamp",
+      "GL_ARB_depth_texture",
+      "GL_ARB_derivative_control",
+      "GL_ARB_direct_state_access",
+      "GL_ARB_draw_buffers",
+      "GL_ARB_draw_buffers_blend",
+      "GL_ARB_draw_elements_base_vertex",
+      "GL_ARB_draw_indirect",
+      "GL_ARB_draw_instanced",
+      "GL_ARB_enhanced_layouts",
+      "GL_ARB_explicit_attrib_location",
+      "GL_ARB_explicit_uniform_location",
+      "GL_ARB_fragment_coord_conventions",
+      "GL_ARB_fragment_layer_viewport",
+      "GL_ARB_fragment_program",
+      "GL_ARB_fragment_program_shadow",
+      "GL_ARB_fragment_shader",
+      "GL_ARB_framebuffer_no_attachments",
+      "GL_ARB_framebuffer_object",
+      "GL_ARB_framebuffer_sRGB",
+      "GL_ARB_get_program_binary",
+      "GL_ARB_get_texture_sub_image",
+      "GL_ARB_gl_spirv",
+      "GL_ARB_gpu_shader5",
+      "GL_ARB_gpu_shader_fp64",
+      "GL_ARB_gpu_shader_int64",
+      "GL_ARB_half_float_pixel",
+      "GL_ARB_half_float_vertex",
+      "GL_ARB_indirect_parameters",
+      "GL_ARB_instanced_arrays",
+      "GL_ARB_internalformat_query",
+      "GL_ARB_internalformat_query2",
+      "GL_ARB_invalidate_subdata",
+      "GL_ARB_map_buffer_alignment",
+      "GL_ARB_map_buffer_range",
+      "GL_ARB_multi_bind",
+      "GL_ARB_multi_draw_indirect",
+      "GL_ARB_multisample",
+      "GL_ARB_multitexture",
+      "GL_ARB_occlusion_query",
+      "GL_ARB_occlusion_query2",
+      "GL_ARB_parallel_shader_compile",
+      "GL_ARB_pipeline_statistics_query",
+      "GL_ARB_pixel_buffer_object",
+      "GL_ARB_point_parameters",
+      "GL_ARB_point_sprite",
+      "GL_ARB_polygon_offset_clamp",
+      "GL_ARB_post_depth_coverage",
+      "GL_ARB_program_interface_query",
+      "GL_ARB_provoking_vertex",
+      "GL_ARB_query_buffer_object",
+      "GL_ARB_robust_buffer_access_behavior",
+      "GL_ARB_robustness",
+      "GL_ARB_sample_shading",
+      "GL_ARB_sampler_objects",
+      "GL_ARB_seamless_cube_map",
+      "GL_ARB_seamless_cubemap_per_texture",
+      "GL_ARB_separate_shader_objects",
+      "GL_ARB_shader_atomic_counter_ops",
+      "GL_ARB_shader_atomic_counters",
+      "GL_ARB_shader_ballot",
+      "GL_ARB_shader_bit_encoding",
+      "GL_ARB_shader_clock",
+      "GL_ARB_shader_draw_parameters",
+      "GL_ARB_shader_group_vote",
+      "GL_ARB_shader_image_load_store",
+      "GL_ARB_shader_image_size",
+      "GL_ARB_shader_objects",
+      "GL_ARB_shader_precision",
+      "GL_ARB_shader_stencil_export",
+      "GL_ARB_shader_storage_buffer_object",
+      "GL_ARB_shader_subroutine",
+      "GL_ARB_shader_texture_image_samples",
+      "GL_ARB_shader_texture_lod",
+      "GL_ARB_shader_viewport_layer_array",
+      "GL_ARB_shading_language_100",
+      "GL_ARB_shading_language_420pack",
+      "GL_ARB_shading_language_include",
+      "GL_ARB_shading_language_packing",
+      "GL_ARB_shadow",
+      "GL_ARB_spirv_extensions",
+      "GL_ARB_stencil_texturing",
+      "GL_ARB_sync",
+      "GL_ARB_tessellation_shader",
+      "GL_ARB_texture_barrier",
+      "GL_ARB_texture_border_clamp",
+      "GL_ARB_texture_buffer_object",
+      "GL_ARB_texture_buffer_object_rgb32",
+      "GL_ARB_texture_buffer_range",
+      "GL_ARB_texture_compression",
+      "GL_ARB_texture_compression_bptc",
+      "GL_ARB_texture_compression_rgtc",
+      "GL_ARB_texture_cube_map",
+      "GL_ARB_texture_cube_map_array",
+      "GL_ARB_texture_env_add",
+      "GL_ARB_texture_env_combine",
+      "GL_ARB_texture_env_crossbar",
+      "GL_ARB_texture_env_dot3",
+      "GL_ARB_texture_filter_anisotropic",
+      "GL_ARB_texture_filter_minmax",
+      "GL_ARB_texture_float",
+      "GL_ARB_texture_gather",
+      "GL_ARB_texture_mirror_clamp_to_edge",
+      "GL_ARB_texture_mirrored_repeat",
+      "GL_ARB_texture_multisample",
+      "GL_ARB_texture_non_power_of_two",
+      "GL_ARB_texture_query_levels",
+      "GL_ARB_texture_query_lod",
+      "GL_ARB_texture_rectangle",
+      "GL_ARB_texture_rg",
+      "GL_ARB_texture_rgb10_a2ui",
+      "GL_ARB_texture_stencil8",
+      "GL_ARB_texture_storage",
+      "GL_ARB_texture_storage_multisample",
+      "GL_ARB_texture_swizzle",
+      "GL_ARB_texture_view",
+      "GL_ARB_timer_query",
+      "GL_ARB_transform_feedback2",
+      "GL_ARB_transform_feedback3",
+      "GL_ARB_transform_feedback_instanced",
+      "GL_ARB_transform_feedback_overflow_query",
+      "GL_ARB_transpose_matrix",
+      "GL_ARB_uniform_buffer_object",
+      "GL_ARB_vertex_array_bgra",
+      "GL_ARB_vertex_array_object",
+      "GL_ARB_vertex_attrib_64bit",
+      "GL_ARB_vertex_attrib_binding",
+      "GL_ARB_vertex_buffer_object",
+      "GL_ARB_vertex_program",
+      "GL_ARB_vertex_shader",
+      "GL_ARB_vertex_type_10f_11f_11f_rev",
+      "GL_ARB_vertex_type_2_10_10_10_rev",
+      "GL_ARB_viewport_array",
+      "GL_ARB_window_pos",
+      "GL_ARM_shader_framebuffer_fetch_depth_stencil",
+      "GL_ATI_blend_equation_separate",
+      "GL_ATI_draw_buffers",
+      "GL_ATI_fragment_shader",
+      "GL_ATI_meminfo",
+      "GL_ATI_separate_stencil",
+      "GL_ATI_texture_compression_3dc",
+      "GL_ATI_texture_env_combine3",
+      "GL_ATI_texture_float",
+      "GL_ATI_texture_mirror_once",
+      "GL_EXT_EGL_image_storage",
+      "GL_EXT_EGL_image_storage_compression",
+      "GL_EXT_EGL_sync",
+      "GL_EXT_abgr",
+      "GL_EXT_bgra",
+      "GL_EXT_blend_color",
+      "GL_EXT_blend_equation_separate",
+      "GL_EXT_blend_func_separate",
+      "GL_EXT_blend_minmax",
+      "GL_EXT_blend_subtract",
+      "GL_EXT_compiled_vertex_array",
+      "GL_EXT_copy_texture",
+      "GL_EXT_debug_label",
+      "GL_EXT_direct_state_access",
+      "GL_EXT_draw_buffers2",
+      "GL_EXT_draw_instanced",
+      "GL_EXT_draw_range_elements",
+      "GL_EXT_fog_coord",
+      "GL_EXT_framebuffer_blit",
+      "GL_EXT_framebuffer_multisample",
+      "GL_EXT_framebuffer_multisample_blit_scaled",
+      "GL_EXT_framebuffer_object",
+      "GL_EXT_framebuffer_sRGB",
+      "GL_EXT_gpu_program_parameters",
+      "GL_EXT_gpu_shader4",
+      "GL_EXT_memory_object",
+      "GL_EXT_memory_object_fd",
+      "GL_EXT_multi_draw_arrays",
+      "GL_EXT_packed_depth_stencil",
+      "GL_EXT_packed_float",
+      "GL_EXT_packed_pixels",
+      "GL_EXT_pixel_buffer_object",
+      "GL_EXT_point_parameters",
+      "GL_EXT_polygon_offset_clamp",
+      "GL_EXT_provoking_vertex",
+      "GL_EXT_rescale_normal",
+      "GL_EXT_secondary_color",
+      "GL_EXT_separate_specular_color",
+      "GL_EXT_shader_framebuffer_fetch",
+      "GL_EXT_shader_framebuffer_fetch_non_coherent",
+      "GL_EXT_shader_image_load_formatted",
+      "GL_EXT_shader_integer_mix",
+      "GL_EXT_shadow_funcs",
+      "GL_EXT_stencil_two_side",
+      "GL_EXT_stencil_wrap",
+      "GL_EXT_subtexture",
+      "GL_EXT_texture",
+      "GL_EXT_texture3D",
+      "GL_EXT_texture_array",
+      "GL_EXT_texture_buffer_object",
+      "GL_EXT_texture_compression_dxt1",
+      "GL_EXT_texture_compression_latc",
+      "GL_EXT_texture_compression_rgtc",
+      "GL_EXT_texture_compression_s3tc",
+      "GL_EXT_texture_cube_map",
+      "GL_EXT_texture_edge_clamp",
+      "GL_EXT_texture_env_add",
+      "GL_EXT_texture_env_combine",
+      "GL_EXT_texture_env_dot3",
+      "GL_EXT_texture_filter_anisotropic",
+      "GL_EXT_texture_filter_minmax",
+      "GL_EXT_texture_integer",
+      "GL_EXT_texture_lod_bias",
+      "GL_EXT_texture_mirror_clamp",
+      "GL_EXT_texture_object",
+      "GL_EXT_texture_rectangle",
+      "GL_EXT_texture_sRGB",
+      "GL_EXT_texture_sRGB_R8",
+      "GL_EXT_texture_sRGB_RG8",
+      "GL_EXT_texture_sRGB_decode",
+      "GL_EXT_texture_shadow_lod",
+      "GL_EXT_texture_shared_exponent",
+      "GL_EXT_texture_snorm",
+      "GL_EXT_texture_storage",
+      "GL_EXT_texture_swizzle",
+      "GL_EXT_timer_query",
+      "GL_EXT_transform_feedback",
+      "GL_EXT_vertex_array",
+      "GL_EXT_vertex_array_bgra",
+      "GL_EXT_vertex_attrib_64bit",
+      "GL_IBM_multimode_draw_arrays",
+      "GL_IBM_rasterpos_clip",
+      "GL_IBM_texture_mirrored_repeat",
+      "GL_INGR_blend_func_separate",
+      "GL_INTEL_shader_atomic_float_minmax",
+      "GL_KHR_blend_equation_advanced",
+      "GL_KHR_blend_equation_advanced_coherent",
+      "GL_KHR_context_flush_control",
+      "GL_KHR_debug",
+      "GL_KHR_no_error",
+      "GL_KHR_parallel_shader_compile",
+      "GL_KHR_robust_buffer_access_behavior",
+      "GL_KHR_robustness",
+      "GL_KHR_texture_compression_astc_ldr",
+      "GL_KHR_texture_compression_astc_sliced_3d",
+      "GL_MESA_framebuffer_flip_y",
+      "GL_MESA_pack_invert",
+      "GL_MESA_shader_integer_functions",
+      "GL_MESA_texture_signed_rgba",
+      "GL_MESA_window_pos",
+      "GL_NVX_gpu_memory_info",
+      "GL_NV_ES1_1_compatibility",
+      "GL_NV_alpha_to_coverage_dither_control",
+      "GL_NV_blend_square",
+      "GL_NV_conditional_render",
+      "GL_NV_copy_depth_to_color",
+      "GL_NV_copy_image",
+      "GL_NV_depth_clamp",
+      "GL_NV_fog_distance",
+      "GL_NV_half_float",
+      "GL_NV_light_max_exponent",
+      "GL_NV_packed_depth_stencil",
+      "GL_NV_primitive_restart",
+      "GL_NV_shader_atomic_float",
+      "GL_NV_texgen_reflection",
+      "GL_NV_texture_barrier",
+      "GL_NV_texture_env_combine4",
+      "GL_NV_texture_rectangle",
+      "GL_OES_EGL_image",
+      "GL_OES_read_format",
+      "GL_OVR_multiview",
+      "GL_OVR_multiview2",
+      "GL_S3_s3tc",
+      "GL_SGIS_generate_mipmap",
+      "GL_SGIS_texture_border_clamp",
+      "GL_SGIS_texture_edge_clamp",
+      "GL_SGIS_texture_lod",
+      "GL_SUN_multi_draw_arrays"
+    ],
+    "glsl": "4.50",
+    "max_compute_shared_memory": 32768,
+    "max_draw_buffers": 8,
+    "max_texture_size": 16384,
+    "max_texture_units": 192,
+    "nv_mesh_shader": false,
+    "nv_representative_fragment_test": false,
+    "nv_vertex_buffer_unified_memory": false,
+    "nvidium_missing_extensions": [
+      "GL_NV_mesh_shader",
+      "GL_NV_uniform_buffer_unified_memory",
+      "GL_NV_vertex_buffer_unified_memory",
+      "GL_NV_representative_fragment_test",
+      "GL_ARB_sparse_buffer",
+      "GL_NV_bindless_multi_draw_indirect"
+    ],
+    "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "vendor": "Mesa",
+    "version": "4.5 (Compatibility Profile) Mesa 25.0.7-2+deb13u1"
+  },
+  "dimension": "world0",
+  "fixture_revision": 2,
+  "ignored_profile_options": [
+    "GTAO"
+  ],
+  "invalidations": 8,
+  "measurement": "serialized offscreen frames; GPU timer queries; excludes presentation; not target-GPU qualification",
+  "options": {
+    "AIR_FOG_COLORED_LIGHT_SHAFTS": "false",
+    "BLOCK_ENTITY_SHADOWS": "false",
+    "COLORED_LIGHTS": "false",
+    "ENTITY_SHADOWS": "false",
+    "ENVIRONMENT_REFLECTIONS": "false",
+    "INFO": "0",
+    "SHADOW_COLOR": "false",
+    "SHADOW_PCF": "true",
+    "SHADOW_SSRT": "false",
+    "SHADOW_VPS": "false",
+    "SH_SKYLIGHT": "false",
+    "VL": "false",
+    "WATER_CAUSTICS": "false",
+    "WATER_PARALLAX": "false",
+    "shadowMapResolution": "1024"
+  },
+  "os": "linux",
+  "pack_sha256": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+  "passes": [
+    "prepare",
+    "shadow",
+    "gbuffers_terrain",
+    "deferred",
+    "deferred1",
+    "deferred2",
+    "deferred3",
+    "deferred4",
+    "gbuffers_water",
+    "composite",
+    "composite1",
+    "composite4",
+    "composite5",
+    "composite6",
+    "composite7",
+    "composite8",
+    "composite9",
+    "composite10",
+    "composite11",
+    "composite12",
+    "composite13",
+    "composite14",
+    "composite15",
+    "composite16",
+    "composite17",
+    "composite18",
+    "composite19",
+    "composite21",
+    "composite22",
+    "final"
+  ],
+  "profile": "low",
+  "rain": 0.0,
+  "resolution": [
+    320,
+    180
+  ],
+  "runtime_revision": "f21d7938be2e03f7f5a6e3d16000520a6f85a295",
+  "samples": [
+    {
+      "frame": 8,
+      "input": {
+        "camera": [
+          28.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 0.0,
+        "target": [
+          0.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 0.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 6000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.32569899999999996,
+          "gpu_ms": 6.104616,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 11.997964,
+          "gpu_ms": 6.6598,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.507623,
+          "gpu_ms": 5.403076,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.292269,
+          "gpu_ms": 6.5434,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.599736,
+          "gpu_ms": 19.352745,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 16.642469,
+          "gpu_ms": 6.151376,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.337431,
+          "gpu_ms": 0.913595,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.34103,
+          "gpu_ms": 3.959034,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.041383,
+          "gpu_ms": 0.283707,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.912326,
+          "gpu_ms": 0.534635,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.269194,
+          "gpu_ms": 1.019093,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.7965520000000001,
+          "gpu_ms": 2.250725,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.266946,
+          "gpu_ms": 0.702757,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.5299470000000001,
+          "gpu_ms": 0.493092,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.223406,
+          "gpu_ms": 0.234503,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.16964500000000002,
+          "gpu_ms": 0.196926,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.142955,
+          "gpu_ms": 0.132239,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.137897,
+          "gpu_ms": 0.129214,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.128884,
+          "gpu_ms": 0.277628,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.28548,
+          "gpu_ms": 0.550078,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.523878,
+          "gpu_ms": 0.681865,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.5314789999999999,
+          "gpu_ms": 0.252019,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.155444,
+          "gpu_ms": 0.165339,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.12594,
+          "gpu_ms": 0.128103,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.145869,
+          "gpu_ms": 0.16018,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.13647499999999999,
+          "gpu_ms": 0.17926,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.229204,
+          "gpu_ms": 0.64485,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.567224,
+          "gpu_ms": 0.942018,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.8543449999999999,
+          "gpu_ms": 0.349045,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.14097200000000001,
+          "gpu_ms": 0.594614,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 56.542275000000004
+    },
+    {
+      "frame": 9,
+      "input": {
+        "camera": [
+          28.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 0.0,
+        "target": [
+          0.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 0.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 6000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.320993,
+          "gpu_ms": 7.400114,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 14.577674,
+          "gpu_ms": 7.981303,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.514784,
+          "gpu_ms": 5.453091,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.5836180000000001,
+          "gpu_ms": 6.404372,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.161727,
+          "gpu_ms": 21.6437,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 18.177358,
+          "gpu_ms": 4.92056,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.238593,
+          "gpu_ms": 0.87767,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.4831139999999996,
+          "gpu_ms": 4.162215,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.085268,
+          "gpu_ms": 0.341113,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.922181,
+          "gpu_ms": 0.607143,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.39286,
+          "gpu_ms": 1.198538,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 2.016292,
+          "gpu_ms": 2.502644,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.378794,
+          "gpu_ms": 0.573903,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.297337,
+          "gpu_ms": 0.258099,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.21254,
+          "gpu_ms": 0.232495,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.135804,
+          "gpu_ms": 0.13007,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.116996,
+          "gpu_ms": 0.111388,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.116175,
+          "gpu_ms": 0.156946,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.164427,
+          "gpu_ms": 0.282194,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.281894,
+          "gpu_ms": 0.53813,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.492191,
+          "gpu_ms": 0.713708,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.587283,
+          "gpu_ms": 0.225594,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.127582,
+          "gpu_ms": 0.137146,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.125769,
+          "gpu_ms": 0.128674,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.127101,
+          "gpu_ms": 0.141789,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.153541,
+          "gpu_ms": 0.198975,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.190106,
+          "gpu_ms": 0.582487,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.553973,
+          "gpu_ms": 1.014987,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.9337139999999999,
+          "gpu_ms": 0.291032,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.145029,
+          "gpu_ms": 0.575576,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 60.856904
+    },
+    {
+      "frame": 10,
+      "input": {
+        "camera": [
+          28.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 0.0,
+        "target": [
+          0.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 0.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 6000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.334623,
+          "gpu_ms": 6.268538,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 12.752789,
+          "gpu_ms": 7.045756,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.555165,
+          "gpu_ms": 5.478869,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.343146,
+          "gpu_ms": 6.499355,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.520004999999999,
+          "gpu_ms": 20.469405,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 18.009695,
+          "gpu_ms": 5.480773,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.452825,
+          "gpu_ms": 0.996349,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.358397,
+          "gpu_ms": 4.271874,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.041122,
+          "gpu_ms": 0.35273,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 2.235151,
+          "gpu_ms": 0.634945,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.265359,
+          "gpu_ms": 1.102127,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.8486,
+          "gpu_ms": 2.273104,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.331632,
+          "gpu_ms": 0.524213,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.293311,
+          "gpu_ms": 0.29884,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.247021,
+          "gpu_ms": 0.258324,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.139931,
+          "gpu_ms": 0.148739,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.121162,
+          "gpu_ms": 0.13954,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.15451199999999998,
+          "gpu_ms": 0.135393,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.136716,
+          "gpu_ms": 0.285859,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.281684,
+          "gpu_ms": 0.541344,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.513832,
+          "gpu_ms": 0.717705,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.552141,
+          "gpu_ms": 0.277417,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.13959000000000002,
+          "gpu_ms": 0.135463,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.126811,
+          "gpu_ms": 0.151759,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.169324,
+          "gpu_ms": 0.171228,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.147561,
+          "gpu_ms": 0.194438,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.210696,
+          "gpu_ms": 0.636848,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.571048,
+          "gpu_ms": 0.841495,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.750378,
+          "gpu_ms": 0.345394,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.17038599999999998,
+          "gpu_ms": 0.590443,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 59.061323
+    },
+    {
+      "frame": 11,
+      "input": {
+        "camera": [
+          28.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 0.0,
+        "target": [
+          0.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 0.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 6000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.284748,
+          "gpu_ms": 6.325744,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 12.481231000000001,
+          "gpu_ms": 6.918565,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.744459,
+          "gpu_ms": 5.635185,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.28970599999999996,
+          "gpu_ms": 6.88561,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.953307,
+          "gpu_ms": 22.510815,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 19.513837,
+          "gpu_ms": 6.91841,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.357451,
+          "gpu_ms": 1.001566,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.40707,
+          "gpu_ms": 4.303733,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.048553,
+          "gpu_ms": 0.343206,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 2.190394,
+          "gpu_ms": 0.606011,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.257317,
+          "gpu_ms": 1.191803,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 2.030554,
+          "gpu_ms": 2.636385,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.500326,
+          "gpu_ms": 0.788126,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.371188,
+          "gpu_ms": 0.340162,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.25277999999999995,
+          "gpu_ms": 0.284668,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.15672599999999998,
+          "gpu_ms": 0.169715,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.129124,
+          "gpu_ms": 0.108714,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.121353,
+          "gpu_ms": 0.135554,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.127852,
+          "gpu_ms": 0.29256,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.29376199999999997,
+          "gpu_ms": 0.536317,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.492792,
+          "gpu_ms": 0.637389,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.586251,
+          "gpu_ms": 0.2399,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.128434,
+          "gpu_ms": 0.13939,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.128353,
+          "gpu_ms": 0.141814,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.142464,
+          "gpu_ms": 0.171719,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.15253,
+          "gpu_ms": 0.224288,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.215604,
+          "gpu_ms": 0.693373,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.663488,
+          "gpu_ms": 1.093585,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.9160079999999999,
+          "gpu_ms": 0.450027,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.175394,
+          "gpu_ms": 0.706383,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 61.51925
+    },
+    {
+      "frame": 12,
+      "input": {
+        "camera": [
+          28.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 0.0,
+        "target": [
+          0.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 0.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.37028700000000003,
+          "gpu_ms": 7.224536,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 13.555537,
+          "gpu_ms": 7.594442,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 7.2910960000000005,
+          "gpu_ms": 7.05498,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.386391,
+          "gpu_ms": 11.957168,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 12.027949,
+          "gpu_ms": 32.692998,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 24.296310000000002,
+          "gpu_ms": 7.157815,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.38957,
+          "gpu_ms": 1.109869,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.059367,
+          "gpu_ms": 3.423388,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.041172,
+          "gpu_ms": 0.307664,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.62914,
+          "gpu_ms": 2.569464,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 2.272427,
+          "gpu_ms": 1.113725,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.887618,
+          "gpu_ms": 3.206522,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 2.226848,
+          "gpu_ms": 1.349184,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.487022,
+          "gpu_ms": 0.324598,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.210667,
+          "gpu_ms": 0.226325,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.11144799999999999,
+          "gpu_ms": 0.11658,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.112409,
+          "gpu_ms": 0.106941,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.096876,
+          "gpu_ms": 0.09375,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.104557,
+          "gpu_ms": 0.253131,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.255474,
+          "gpu_ms": 0.453907,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.403567,
+          "gpu_ms": 0.510427,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.50524,
+          "gpu_ms": 0.423252,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.305179,
+          "gpu_ms": 0.121492,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.11785799999999999,
+          "gpu_ms": 0.123917,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.120181,
+          "gpu_ms": 0.140692,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.110736,
+          "gpu_ms": 0.151548,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.168183,
+          "gpu_ms": 0.598971,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.5798920000000001,
+          "gpu_ms": 0.771169,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.6902780000000001,
+          "gpu_ms": 0.247366,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.12732100000000002,
+          "gpu_ms": 0.662571,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 80.835921
+    },
+    {
+      "frame": 13,
+      "input": {
+        "camera": [
+          28.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 0.0,
+        "target": [
+          0.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 0.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.290857,
+          "gpu_ms": 5.896217,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 13.562056,
+          "gpu_ms": 8.582803,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 7.485547,
+          "gpu_ms": 7.304846,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.352851,
+          "gpu_ms": 6.046493,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.060905,
+          "gpu_ms": 25.429374,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 22.948302,
+          "gpu_ms": 5.99103,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.9961620000000002,
+          "gpu_ms": 1.033183,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.169392,
+          "gpu_ms": 3.707216,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.076264,
+          "gpu_ms": 0.237408,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.779396,
+          "gpu_ms": 0.530998,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.295755,
+          "gpu_ms": 0.967129,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.714358,
+          "gpu_ms": 2.146883,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.257911,
+          "gpu_ms": 0.540894,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.295014,
+          "gpu_ms": 0.268635,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.21688600000000002,
+          "gpu_ms": 0.29244,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.20377599999999998,
+          "gpu_ms": 0.21697,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.128243,
+          "gpu_ms": 0.112249,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.115984,
+          "gpu_ms": 0.140621,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.15262,
+          "gpu_ms": 0.267322,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.261263,
+          "gpu_ms": 0.484719,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.452741,
+          "gpu_ms": 0.594364,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.522937,
+          "gpu_ms": 0.258609,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.113871,
+          "gpu_ms": 0.116555,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.13781700000000002,
+          "gpu_ms": 0.239591,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.222154,
+          "gpu_ms": 0.14581,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.18623,
+          "gpu_ms": 0.229295,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.205289,
+          "gpu_ms": 0.783903,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.7433179999999999,
+          "gpu_ms": 0.838,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.593292,
+          "gpu_ms": 0.291413,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.140821,
+          "gpu_ms": 0.541084,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 65.834529
+    },
+    {
+      "frame": 14,
+      "input": {
+        "camera": [
+          28.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 0.0,
+        "target": [
+          0.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 0.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.384007,
+          "gpu_ms": 7.807667,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 16.032380999999997,
+          "gpu_ms": 9.276155,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 6.211181,
+          "gpu_ms": 6.100028,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.304948,
+          "gpu_ms": 6.158101,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.231152,
+          "gpu_ms": 25.23414,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 21.778142,
+          "gpu_ms": 7.693881,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.44975,
+          "gpu_ms": 0.962122,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.2896129999999997,
+          "gpu_ms": 4.195635,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.04015,
+          "gpu_ms": 0.391349,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 2.2186660000000002,
+          "gpu_ms": 0.686302,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.279119,
+          "gpu_ms": 1.142939,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.866247,
+          "gpu_ms": 2.472117,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.521929,
+          "gpu_ms": 0.789597,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.36112299999999997,
+          "gpu_ms": 0.330087,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.21453299999999997,
+          "gpu_ms": 0.231233,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.136365,
+          "gpu_ms": 0.146595,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.128043,
+          "gpu_ms": 0.137467,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.148454,
+          "gpu_ms": 0.127271,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.127832,
+          "gpu_ms": 0.288884,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.28584,
+          "gpu_ms": 0.553973,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.544099,
+          "gpu_ms": 0.687884,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.561304,
+          "gpu_ms": 0.241994,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.13109800000000002,
+          "gpu_ms": 0.13952,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.136034,
+          "gpu_ms": 0.135073,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.13835799999999998,
+          "gpu_ms": 0.160246,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.151007,
+          "gpu_ms": 0.21652,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.205569,
+          "gpu_ms": 0.667344,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.647745,
+          "gpu_ms": 0.847825,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.668565,
+          "gpu_ms": 0.300471,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.158198,
+          "gpu_ms": 0.708411,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 66.864489
+    },
+    {
+      "frame": 15,
+      "input": {
+        "camera": [
+          28.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 0.0,
+        "target": [
+          0.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 0.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.29627499999999996,
+          "gpu_ms": 7.157028,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 13.825463,
+          "gpu_ms": 7.549138,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.775936,
+          "gpu_ms": 5.736026,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.360302,
+          "gpu_ms": 6.740011,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.7886500000000005,
+          "gpu_ms": 25.113308,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 21.843231,
+          "gpu_ms": 7.232537,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.3945470000000002,
+          "gpu_ms": 0.995331,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.331697,
+          "gpu_ms": 4.115824,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.038798,
+          "gpu_ms": 0.322274,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 2.112547,
+          "gpu_ms": 0.613362,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.262445,
+          "gpu_ms": 1.142684,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.848059,
+          "gpu_ms": 2.467721,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.455439,
+          "gpu_ms": 0.721685,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.321133,
+          "gpu_ms": 0.333412,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.25274,
+          "gpu_ms": 0.282319,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.140792,
+          "gpu_ms": 0.143506,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.10736200000000001,
+          "gpu_ms": 0.103045,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.128023,
+          "gpu_ms": 0.122234,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.127331,
+          "gpu_ms": 0.294083,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.288063,
+          "gpu_ms": 0.660118,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.629586,
+          "gpu_ms": 0.712051,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.566982,
+          "gpu_ms": 0.248023,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.131688,
+          "gpu_ms": 0.133691,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.12491800000000002,
+          "gpu_ms": 0.13589,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.14217400000000002,
+          "gpu_ms": 0.175273,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.15258,
+          "gpu_ms": 0.215659,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.180872,
+          "gpu_ms": 0.676478,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.663788,
+          "gpu_ms": 0.922237,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.756829,
+          "gpu_ms": 0.381353,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.14655,
+          "gpu_ms": 0.702742,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 64.601455
+    },
+    {
+      "frame": 16,
+      "input": {
+        "camera": [
+          28.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          0.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.434793,
+          "gpu_ms": 7.813656,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 16.818624,
+          "gpu_ms": 10.194517,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 6.285933,
+          "gpu_ms": 6.082308,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.396597,
+          "gpu_ms": 6.934439,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 7.172237,
+          "gpu_ms": 36.541566,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 32.786889,
+          "gpu_ms": 9.802537,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.349549,
+          "gpu_ms": 1.066784,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.4982770000000003,
+          "gpu_ms": 4.656993,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.051918,
+          "gpu_ms": 0.351598,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 2.496284,
+          "gpu_ms": 0.709306,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.355675,
+          "gpu_ms": 1.153354,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.856402,
+          "gpu_ms": 2.518557,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.508208,
+          "gpu_ms": 0.763498,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.40006200000000003,
+          "gpu_ms": 0.415449,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.257918,
+          "gpu_ms": 0.293906,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.14912399999999998,
+          "gpu_ms": 0.153901,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.12723199999999998,
+          "gpu_ms": 0.121533,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.14715099999999998,
+          "gpu_ms": 0.142825,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.132899,
+          "gpu_ms": 0.311778,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.31686600000000004,
+          "gpu_ms": 0.551989,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.475545,
+          "gpu_ms": 0.685726,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.627013,
+          "gpu_ms": 0.309275,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.156345,
+          "gpu_ms": 0.162634,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.142544,
+          "gpu_ms": 0.145549,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.140462,
+          "gpu_ms": 0.177952,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.15714599999999998,
+          "gpu_ms": 0.242289,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.25588500000000003,
+          "gpu_ms": 0.710249,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.643468,
+          "gpu_ms": 0.798491,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.642987,
+          "gpu_ms": 0.316226,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.155523,
+          "gpu_ms": 0.711695,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 85.072413
+    },
+    {
+      "frame": 17,
+      "input": {
+        "camera": [
+          28.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          0.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.340793,
+          "gpu_ms": 7.300469,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 13.952664,
+          "gpu_ms": 7.405687,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 6.124401,
+          "gpu_ms": 5.93754,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.370477,
+          "gpu_ms": 6.597522,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.61606,
+          "gpu_ms": 34.358272,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 30.416003,
+          "gpu_ms": 8.367929,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.390711,
+          "gpu_ms": 1.02396,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.5735810000000003,
+          "gpu_ms": 4.819408,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.042004,
+          "gpu_ms": 0.387462,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 2.585319,
+          "gpu_ms": 0.730118,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.28567000000000004,
+          "gpu_ms": 1.294547,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 2.049523,
+          "gpu_ms": 2.497596,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.5403660000000001,
+          "gpu_ms": 0.807034,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.36479900000000004,
+          "gpu_ms": 0.327773,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.237747,
+          "gpu_ms": 0.266626,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.153922,
+          "gpu_ms": 0.157667,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.121393,
+          "gpu_ms": 0.121452,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.172489,
+          "gpu_ms": 0.16654,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.127542,
+          "gpu_ms": 0.294663,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.292279,
+          "gpu_ms": 0.567554,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.53175,
+          "gpu_ms": 0.680478,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.563087,
+          "gpu_ms": 0.254913,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.136315,
+          "gpu_ms": 0.180231,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.17945,
+          "gpu_ms": 0.151503,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.14824299999999999,
+          "gpu_ms": 0.293216,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.284618,
+          "gpu_ms": 0.230697,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.19478299999999998,
+          "gpu_ms": 0.706498,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.692431,
+          "gpu_ms": 0.731861,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.6659809999999999,
+          "gpu_ms": 0.383591,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.128724,
+          "gpu_ms": 0.665366,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 74.649476
+    },
+    {
+      "frame": 18,
+      "input": {
+        "camera": [
+          28.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          0.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.306581,
+          "gpu_ms": 7.103519,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 14.085543000000001,
+          "gpu_ms": 8.031024,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 6.1954769999999995,
+          "gpu_ms": 5.892067,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.343076,
+          "gpu_ms": 8.256647,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 8.391414999999999,
+          "gpu_ms": 38.570471,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 33.887524,
+          "gpu_ms": 10.858956,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.3298800000000002,
+          "gpu_ms": 0.984106,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.441632,
+          "gpu_ms": 4.537453,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.042504,
+          "gpu_ms": 0.349275,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 2.4569,
+          "gpu_ms": 0.92171,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 1.853298,
+          "gpu_ms": 2.723917,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 2.129463,
+          "gpu_ms": 2.714813,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.6959,
+          "gpu_ms": 0.687864,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.40542,
+          "gpu_ms": 0.386421,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.246891,
+          "gpu_ms": 0.26623,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.142555,
+          "gpu_ms": 0.151042,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.127051,
+          "gpu_ms": 0.115784,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.114993,
+          "gpu_ms": 0.132529,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.134603,
+          "gpu_ms": 0.307302,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.32068199999999997,
+          "gpu_ms": 0.556036,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.515195,
+          "gpu_ms": 0.739172,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.716738,
+          "gpu_ms": 0.312309,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.15551399999999999,
+          "gpu_ms": 0.170496,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.14618,
+          "gpu_ms": 0.141272,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.157267,
+          "gpu_ms": 0.212299,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.18332600000000002,
+          "gpu_ms": 0.21929,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.211849,
+          "gpu_ms": 0.625736,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.570929,
+          "gpu_ms": 0.597789,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.512541,
+          "gpu_ms": 0.247107,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.15335100000000002,
+          "gpu_ms": 0.658712,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 81.279849
+    },
+    {
+      "frame": 19,
+      "input": {
+        "camera": [
+          28.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          0.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.357537,
+          "gpu_ms": 7.399698,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 14.318414,
+          "gpu_ms": 7.934313,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 6.506436,
+          "gpu_ms": 6.297907,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.370968,
+          "gpu_ms": 9.697223,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 9.749017,
+          "gpu_ms": 40.295246,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 34.184711,
+          "gpu_ms": 14.777758,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 4.083907,
+          "gpu_ms": 1.483982,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.591327,
+          "gpu_ms": 4.847451,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.048433000000000004,
+          "gpu_ms": 0.332255,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 2.617026,
+          "gpu_ms": 0.651875,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.324197,
+          "gpu_ms": 1.276299,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 2.071555,
+          "gpu_ms": 2.678599,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.543221,
+          "gpu_ms": 0.787109,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.370227,
+          "gpu_ms": 0.329206,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.21264,
+          "gpu_ms": 0.240501,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.143285,
+          "gpu_ms": 0.152175,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.150827,
+          "gpu_ms": 0.145078,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.144157,
+          "gpu_ms": 0.144592,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.13615400000000003,
+          "gpu_ms": 0.317757,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.3196,
+          "gpu_ms": 0.59182,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.5492659999999999,
+          "gpu_ms": 0.693518,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.5801120000000001,
+          "gpu_ms": 0.188618,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.130016,
+          "gpu_ms": 0.141528,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.129224,
+          "gpu_ms": 0.131453,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.149955,
+          "gpu_ms": 0.162935,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.151027,
+          "gpu_ms": 0.237593,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.24568,
+          "gpu_ms": 0.706863,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.629106,
+          "gpu_ms": 0.749988,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.608736,
+          "gpu_ms": 0.297332,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.148653,
+          "gpu_ms": 0.718481,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 85.031861
+    },
+    {
+      "frame": 20,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.41462299999999996,
+          "gpu_ms": 7.323774,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 13.927256,
+          "gpu_ms": 7.65353,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.503957000000001,
+          "gpu_ms": 5.418959,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.349215,
+          "gpu_ms": 6.548449,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.615149,
+          "gpu_ms": 37.060786,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 33.473362,
+          "gpu_ms": 4.935172,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.8680590000000001,
+          "gpu_ms": 1.088762,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 3.3615060000000003,
+          "gpu_ms": 5.167802,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.047842,
+          "gpu_ms": 0.065908,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 2.173488,
+          "gpu_ms": 0.389696,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.308334,
+          "gpu_ms": 1.199974,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.9329370000000001,
+          "gpu_ms": 2.609904,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.580777,
+          "gpu_ms": 0.772322,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.384489,
+          "gpu_ms": 0.333522,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.206851,
+          "gpu_ms": 0.22569,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.146851,
+          "gpu_ms": 0.159269,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.127803,
+          "gpu_ms": 0.113501,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.123005,
+          "gpu_ms": 0.129475,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.133571,
+          "gpu_ms": 0.316235,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.308614,
+          "gpu_ms": 0.601154,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.560984,
+          "gpu_ms": 0.742246,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.5847,
+          "gpu_ms": 0.281674,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.16225399999999998,
+          "gpu_ms": 0.145959,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.135163,
+          "gpu_ms": 0.132981,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.132329,
+          "gpu_ms": 0.153301,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.158788,
+          "gpu_ms": 0.215835,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.230476,
+          "gpu_ms": 0.693092,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.6357459999999999,
+          "gpu_ms": 1.200286,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 1.076649,
+          "gpu_ms": 0.663538,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.181803,
+          "gpu_ms": 0.717208,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 83.44219
+    },
+    {
+      "frame": 21,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.310357,
+          "gpu_ms": 7.210724,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 14.277822,
+          "gpu_ms": 8.103087,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 6.81599,
+          "gpu_ms": 6.706166,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.395856,
+          "gpu_ms": 6.43732,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.45679,
+          "gpu_ms": 36.390217,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 32.742016,
+          "gpu_ms": 11.494267,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.266159,
+          "gpu_ms": 0.845026,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.434056,
+          "gpu_ms": 4.136601,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.042414,
+          "gpu_ms": 0.522867,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.981971,
+          "gpu_ms": 0.760619,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.321683,
+          "gpu_ms": 1.064931,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.5196649999999998,
+          "gpu_ms": 1.994095,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.2508409999999999,
+          "gpu_ms": 0.584995,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.29776800000000003,
+          "gpu_ms": 0.329686,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.205579,
+          "gpu_ms": 0.299971,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.18979500000000002,
+          "gpu_ms": 0.183726,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.15941999999999998,
+          "gpu_ms": 0.095063,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.11546400000000001,
+          "gpu_ms": 0.112093,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.11312,
+          "gpu_ms": 0.255323,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.234002,
+          "gpu_ms": 0.431834,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.422075,
+          "gpu_ms": 0.576087,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.49213999999999997,
+          "gpu_ms": 0.167031,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.098118,
+          "gpu_ms": 0.101232,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.088453,
+          "gpu_ms": 0.097587,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.130256,
+          "gpu_ms": 0.147061,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.110386,
+          "gpu_ms": 0.173501,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.176956,
+          "gpu_ms": 0.483357,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.446031,
+          "gpu_ms": 0.409396,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.379992,
+          "gpu_ms": 0.161664,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.268193,
+          "gpu_ms": 0.667975,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 75.02970400000001
+    },
+    {
+      "frame": 22,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.306471,
+          "gpu_ms": 5.270771,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 10.87138,
+          "gpu_ms": 6.394191,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.2391190000000005,
+          "gpu_ms": 5.211368,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.5186999999999999,
+          "gpu_ms": 13.937285,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 15.248296999999999,
+          "gpu_ms": 46.426081,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 36.147228000000005,
+          "gpu_ms": 9.344663,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.317512,
+          "gpu_ms": 0.722732,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.126338,
+          "gpu_ms": 3.837646,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.043685,
+          "gpu_ms": 0.421979,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 2.080003,
+          "gpu_ms": 0.790283,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.30476400000000003,
+          "gpu_ms": 1.010816,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 3.807055,
+          "gpu_ms": 4.585657,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.6137359999999998,
+          "gpu_ms": 0.685411,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.341674,
+          "gpu_ms": 0.260321,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.202995,
+          "gpu_ms": 0.232028,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.13312,
+          "gpu_ms": 0.143365,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.131348,
+          "gpu_ms": 0.120441,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.203055,
+          "gpu_ms": 0.205589,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.138798,
+          "gpu_ms": 0.298389,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.28466800000000003,
+          "gpu_ms": 0.510868,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.48475900000000005,
+          "gpu_ms": 0.640553,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.552711,
+          "gpu_ms": 0.216706,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.149976,
+          "gpu_ms": 0.156406,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.335324,
+          "gpu_ms": 0.361143,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.150397,
+          "gpu_ms": 0.155654,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.14330500000000002,
+          "gpu_ms": 0.225789,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.229906,
+          "gpu_ms": 0.659491,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.627454,
+          "gpu_ms": 0.769347,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.6313799999999999,
+          "gpu_ms": 0.256676,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.12455699999999999,
+          "gpu_ms": 0.683809,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 85.902681
+    },
+    {
+      "frame": 23,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 0,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.29963100000000004,
+          "gpu_ms": 7.379408,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 14.206465,
+          "gpu_ms": 8.380894,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.770538,
+          "gpu_ms": 5.569667,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.458629,
+          "gpu_ms": 6.381707,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.295427999999999,
+          "gpu_ms": 38.130295,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 34.566856,
+          "gpu_ms": 8.945754,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.244562,
+          "gpu_ms": 0.679342,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.0564519999999997,
+          "gpu_ms": 3.774977,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.041363,
+          "gpu_ms": 0.434433,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.9635529999999999,
+          "gpu_ms": 0.684284,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.222024,
+          "gpu_ms": 0.776318,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.344392,
+          "gpu_ms": 1.700477,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.062538,
+          "gpu_ms": 0.563728,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.409476,
+          "gpu_ms": 0.425064,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.175463,
+          "gpu_ms": 0.192029,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.109384,
+          "gpu_ms": 0.117712,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.093391,
+          "gpu_ms": 0.085568,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.088223,
+          "gpu_ms": 0.093802,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.107682,
+          "gpu_ms": 0.266535,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.27219899999999997,
+          "gpu_ms": 0.539021,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.46563000000000004,
+          "gpu_ms": 0.540102,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.43035799999999996,
+          "gpu_ms": 0.203591,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.127111,
+          "gpu_ms": 0.116585,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.089925,
+          "gpu_ms": 0.098143,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.117847,
+          "gpu_ms": 0.135473,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.101202,
+          "gpu_ms": 0.143015,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.14985500000000002,
+          "gpu_ms": 0.636527,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.6206029999999999,
+          "gpu_ms": 0.706312,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.498389,
+          "gpu_ms": 0.242389,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.100231,
+          "gpu_ms": 0.501514,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 74.686262
+    },
+    {
+      "frame": 24,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.395505,
+          "gpu_ms": 8.210032,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 14.521089,
+          "gpu_ms": 7.10822,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.848145,
+          "gpu_ms": 5.78115,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.298699,
+          "gpu_ms": 6.128126,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.178376999999999,
+          "gpu_ms": 33.714649,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 30.284254999999998,
+          "gpu_ms": 8.314144,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.315699,
+          "gpu_ms": 0.813839,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.0826529999999996,
+          "gpu_ms": 3.70026,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.039469,
+          "gpu_ms": 0.43855,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.890433,
+          "gpu_ms": 0.692977,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.243356,
+          "gpu_ms": 0.948646,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.547523,
+          "gpu_ms": 2.060258,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.2602550000000001,
+          "gpu_ms": 0.579922,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.41343199999999997,
+          "gpu_ms": 0.446251,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.22635,
+          "gpu_ms": 0.232775,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.144847,
+          "gpu_ms": 0.154983,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.10875399999999999,
+          "gpu_ms": 0.094452,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.103586,
+          "gpu_ms": 0.096245,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.081773,
+          "gpu_ms": 0.217938,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.218829,
+          "gpu_ms": 0.574574,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.568295,
+          "gpu_ms": 0.565346,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.47266,
+          "gpu_ms": 0.177642,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.127351,
+          "gpu_ms": 0.132765,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.158519,
+          "gpu_ms": 0.169605,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.137627,
+          "gpu_ms": 0.148073,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.12657000000000002,
+          "gpu_ms": 0.191909,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.166451,
+          "gpu_ms": 0.620959,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.598209,
+          "gpu_ms": 0.703223,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.570669,
+          "gpu_ms": 0.337583,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.189755,
+          "gpu_ms": 0.598029,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 78.20656199999999
+    },
+    {
+      "frame": 25,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.343607,
+          "gpu_ms": 6.467156,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 13.302286,
+          "gpu_ms": 7.544841,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 6.698194,
+          "gpu_ms": 6.761665,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.539552,
+          "gpu_ms": 22.781466,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 22.882494,
+          "gpu_ms": 54.018149,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 34.926131,
+          "gpu_ms": 7.092006,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.228097,
+          "gpu_ms": 0.851916,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.64666,
+          "gpu_ms": 4.338715,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.041012,
+          "gpu_ms": 0.254052,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 2.109002,
+          "gpu_ms": 0.577589,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.28593,
+          "gpu_ms": 1.112919,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 2.059006,
+          "gpu_ms": 2.46698,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.3149069999999998,
+          "gpu_ms": 0.61778,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.38608000000000003,
+          "gpu_ms": 0.354764,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.23228,
+          "gpu_ms": 0.285569,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.43893,
+          "gpu_ms": 0.419667,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.169685,
+          "gpu_ms": 0.276661,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.234343,
+          "gpu_ms": 0.122374,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.122464,
+          "gpu_ms": 0.287277,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.30171400000000004,
+          "gpu_ms": 0.489546,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.44640100000000005,
+          "gpu_ms": 0.57842,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.501134,
+          "gpu_ms": 0.206541,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.133992,
+          "gpu_ms": 0.135835,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.11812800000000001,
+          "gpu_ms": 0.141793,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.14661000000000002,
+          "gpu_ms": 0.173717,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.152189,
+          "gpu_ms": 0.217453,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.19902,
+          "gpu_ms": 0.711686,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.669567,
+          "gpu_ms": 0.683854,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.614744,
+          "gpu_ms": 0.321995,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.17983,
+          "gpu_ms": 0.589016,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 94.535749
+    },
+    {
+      "frame": 26,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.31100700000000003,
+          "gpu_ms": 6.731103,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 13.406192,
+          "gpu_ms": 7.757206,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 9.454779,
+          "gpu_ms": 9.224117,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.364018,
+          "gpu_ms": 6.483035,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.620457,
+          "gpu_ms": 43.570698,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 39.598553,
+          "gpu_ms": 13.520034,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.507277,
+          "gpu_ms": 0.7448,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 1.899847,
+          "gpu_ms": 3.800295,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.041432,
+          "gpu_ms": 0.093035,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 2.241481,
+          "gpu_ms": 0.389675,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.297628,
+          "gpu_ms": 1.202698,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.992086,
+          "gpu_ms": 2.620916,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.54971,
+          "gpu_ms": 0.784434,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.366211,
+          "gpu_ms": 0.356535,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.235574,
+          "gpu_ms": 0.261338,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.14506799999999997,
+          "gpu_ms": 0.156976,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.13278,
+          "gpu_ms": 0.128814,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.150156,
+          "gpu_ms": 0.150622,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.146841,
+          "gpu_ms": 0.311243,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.29819900000000005,
+          "gpu_ms": 0.52563,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.47759799999999997,
+          "gpu_ms": 0.666242,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.609817,
+          "gpu_ms": 0.254062,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.123325,
+          "gpu_ms": 0.124783,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.12622,
+          "gpu_ms": 0.141087,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.133351,
+          "gpu_ms": 0.16652,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.16729200000000002,
+          "gpu_ms": 0.227902,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.222154,
+          "gpu_ms": 0.676717,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.635686,
+          "gpu_ms": 0.775787,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.6315099999999999,
+          "gpu_ms": 0.320682,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.149204,
+          "gpu_ms": 0.716422,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 85.48938
+    },
+    {
+      "frame": 27,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 0,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.311709,
+          "gpu_ms": 7.030588,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 13.381054,
+          "gpu_ms": 7.365297,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.496906999999999,
+          "gpu_ms": 5.284928,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.302846,
+          "gpu_ms": 6.833762,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 7.053037,
+          "gpu_ms": 27.469357,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 24.018612,
+          "gpu_ms": 3.222361,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.304702,
+          "gpu_ms": 0.768531,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 1.700537,
+          "gpu_ms": 3.332462,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.045409,
+          "gpu_ms": 0.484178,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.884965,
+          "gpu_ms": 0.743728,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.230366,
+          "gpu_ms": 1.001917,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.883953,
+          "gpu_ms": 2.249017,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.227686,
+          "gpu_ms": 0.616867,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.33921,
+          "gpu_ms": 0.275004,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.176756,
+          "gpu_ms": 0.196966,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.112539,
+          "gpu_ms": 0.118563,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.093751,
+          "gpu_ms": 0.084216,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.08642,
+          "gpu_ms": 0.132334,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.155664,
+          "gpu_ms": 0.241428,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.237808,
+          "gpu_ms": 0.441359,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.397067,
+          "gpu_ms": 0.484844,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.411229,
+          "gpu_ms": 0.217307,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.188924,
+          "gpu_ms": 0.163762,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.134943,
+          "gpu_ms": 0.140977,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.127842,
+          "gpu_ms": 0.131909,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.12364599999999999,
+          "gpu_ms": 0.190321,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.301864,
+          "gpu_ms": 0.728666,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.5533330000000001,
+          "gpu_ms": 0.764289,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.6732119999999999,
+          "gpu_ms": 0.364804,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.133912,
+          "gpu_ms": 0.568916,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 64.334204
+    },
+    {
+      "frame": 28,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 1,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.378469,
+          "gpu_ms": 6.283876,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 11.98202,
+          "gpu_ms": 6.657672,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.673903,
+          "gpu_ms": 5.59828,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.336265,
+          "gpu_ms": 6.634488,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.722770000000001,
+          "gpu_ms": 33.050175,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 28.866923999999997,
+          "gpu_ms": 7.756886,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.198752,
+          "gpu_ms": 0.759878,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 1.9702629999999999,
+          "gpu_ms": 3.645677,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.07239899999999999,
+          "gpu_ms": 0.445324,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.933157,
+          "gpu_ms": 0.6983,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.223396,
+          "gpu_ms": 0.95102,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.604182,
+          "gpu_ms": 2.082732,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.2889380000000001,
+          "gpu_ms": 0.821695,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.6487259999999999,
+          "gpu_ms": 0.379796,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.231107,
+          "gpu_ms": 0.309566,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.177257,
+          "gpu_ms": 0.140967,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.105669,
+          "gpu_ms": 0.09292,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.089084,
+          "gpu_ms": 0.097943,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.097236,
+          "gpu_ms": 0.242555,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.24929500000000002,
+          "gpu_ms": 0.452215,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.429546,
+          "gpu_ms": 0.53543,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.444338,
+          "gpu_ms": 0.191303,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.109264,
+          "gpu_ms": 0.123521,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.098738,
+          "gpu_ms": 0.096019,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.112099,
+          "gpu_ms": 0.150867,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.22434700000000002,
+          "gpu_ms": 0.302925,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.180401,
+          "gpu_ms": 0.597549,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.556347,
+          "gpu_ms": 0.572856,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.481294,
+          "gpu_ms": 0.214568,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.137887,
+          "gpu_ms": 0.576132,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 72.146552
+    },
+    {
+      "frame": 29,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 1,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.290707,
+          "gpu_ms": 6.155677,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 12.85965,
+          "gpu_ms": 7.642239,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.059689,
+          "gpu_ms": 4.969934,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.287823,
+          "gpu_ms": 6.744433,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.988580000000001,
+          "gpu_ms": 37.222544,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 33.926392,
+          "gpu_ms": 10.618915,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.2921740000000002,
+          "gpu_ms": 0.76442,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.0879700000000003,
+          "gpu_ms": 3.71317,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.0402,
+          "gpu_ms": 0.425135,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.8954410000000002,
+          "gpu_ms": 0.679347,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.210907,
+          "gpu_ms": 0.912583,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.487026,
+          "gpu_ms": 2.222387,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.5223389999999999,
+          "gpu_ms": 0.750098,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.366031,
+          "gpu_ms": 0.443042,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 1.281027,
+          "gpu_ms": 1.302684,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.127021,
+          "gpu_ms": 0.14649,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.136485,
+          "gpu_ms": 0.107272,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.08808200000000001,
+          "gpu_ms": 0.096765,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.09949,
+          "gpu_ms": 0.225324,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.229595,
+          "gpu_ms": 0.456035,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.435545,
+          "gpu_ms": 0.535055,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.459671,
+          "gpu_ms": 0.195975,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.088142,
+          "gpu_ms": 0.097877,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.11191799999999999,
+          "gpu_ms": 0.291775,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.434403,
+          "gpu_ms": 0.293991,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.139209,
+          "gpu_ms": 0.195204,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.188354,
+          "gpu_ms": 0.626217,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.562025,
+          "gpu_ms": 0.551299,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.450748,
+          "gpu_ms": 0.217773,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.13217900000000002,
+          "gpu_ms": 0.627194,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 74.413462
+    },
+    {
+      "frame": 30,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 1,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.340672,
+          "gpu_ms": 6.182218,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 11.458853,
+          "gpu_ms": 5.990323,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.55213,
+          "gpu_ms": 5.382309,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.294804,
+          "gpu_ms": 5.936889,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 5.9415960000000005,
+          "gpu_ms": 33.588775,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 29.960297999999998,
+          "gpu_ms": 8.298871,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.278452,
+          "gpu_ms": 0.579121,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 1.6686800000000002,
+          "gpu_ms": 3.173588,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.036886,
+          "gpu_ms": 0.361238,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.707869,
+          "gpu_ms": 0.541524,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.169565,
+          "gpu_ms": 1.000375,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.647107,
+          "gpu_ms": 2.060283,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.227176,
+          "gpu_ms": 0.579967,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.307462,
+          "gpu_ms": 0.318218,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.19616499999999998,
+          "gpu_ms": 0.215684,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.111378,
+          "gpu_ms": 0.124111,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.101162,
+          "gpu_ms": 0.088794,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.08733199999999999,
+          "gpu_ms": 0.246015,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.264237,
+          "gpu_ms": 0.241478,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.23895,
+          "gpu_ms": 0.458108,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.446822,
+          "gpu_ms": 0.572066,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.470518,
+          "gpu_ms": 0.206235,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.098788,
+          "gpu_ms": 0.109765,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.10942500000000001,
+          "gpu_ms": 0.273782,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.268093,
+          "gpu_ms": 0.193656,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.17540399999999998,
+          "gpu_ms": 0.184939,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.16135300000000002,
+          "gpu_ms": 0.621269,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.60532,
+          "gpu_ms": 0.601164,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.463457,
+          "gpu_ms": 0.177071,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.155033,
+          "gpu_ms": 0.579502,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 66.93888100000001
+    },
+    {
+      "frame": 31,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 1,
+        "material_revision": 0,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.282936,
+          "gpu_ms": 5.888026,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 11.649118999999999,
+          "gpu_ms": 6.709956,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.170266,
+          "gpu_ms": 4.903164,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.280893,
+          "gpu_ms": 5.557954,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 5.594453,
+          "gpu_ms": 34.786656,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 31.828998,
+          "gpu_ms": 9.038168,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.341978,
+          "gpu_ms": 0.82781,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.0911649999999997,
+          "gpu_ms": 3.508987,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.038388,
+          "gpu_ms": 0.324562,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.6844729999999999,
+          "gpu_ms": 0.579626,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.260562,
+          "gpu_ms": 1.019188,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.917884,
+          "gpu_ms": 2.348702,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.280325,
+          "gpu_ms": 0.604384,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.34248500000000004,
+          "gpu_ms": 0.361684,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.237707,
+          "gpu_ms": 0.28229,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.167883,
+          "gpu_ms": 0.173676,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.119289,
+          "gpu_ms": 0.110957,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.138558,
+          "gpu_ms": 0.162509,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.136976,
+          "gpu_ms": 0.393997,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.414052,
+          "gpu_ms": 0.612111,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.45209,
+          "gpu_ms": 0.589176,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.504579,
+          "gpu_ms": 0.241648,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.175504,
+          "gpu_ms": 0.230442,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.168774,
+          "gpu_ms": 0.127687,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.15955,
+          "gpu_ms": 0.190181,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.156085,
+          "gpu_ms": 0.22929,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.20885399999999998,
+          "gpu_ms": 0.642962,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.646212,
+          "gpu_ms": 0.632145,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.471169,
+          "gpu_ms": 0.251769,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.178579,
+          "gpu_ms": 0.60505,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 69.260042
+    },
+    {
+      "frame": 32,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 1,
+        "material_revision": 1,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.375756,
+          "gpu_ms": 5.946658,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 11.629249,
+          "gpu_ms": 6.631889,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 4.995483,
+          "gpu_ms": 4.795852,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.330146,
+          "gpu_ms": 5.948441,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 5.960675,
+          "gpu_ms": 31.542518,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 28.327523,
+          "gpu_ms": 7.442278,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.1071449999999998,
+          "gpu_ms": 0.623167,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 1.992486,
+          "gpu_ms": 3.439868,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.038838000000000004,
+          "gpu_ms": 0.335319,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.7592759999999998,
+          "gpu_ms": 0.635215,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.25275,
+          "gpu_ms": 0.939429,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 2.69319,
+          "gpu_ms": 3.159802,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.228888,
+          "gpu_ms": 0.588851,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.34502900000000003,
+          "gpu_ms": 0.364493,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.24166300000000002,
+          "gpu_ms": 0.273576,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.15451199999999998,
+          "gpu_ms": 0.153035,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.144047,
+          "gpu_ms": 0.14272,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.161272,
+          "gpu_ms": 0.15977,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.124127,
+          "gpu_ms": 0.264858,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.275064,
+          "gpu_ms": 0.670824,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.610889,
+          "gpu_ms": 0.93037,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.706432,
+          "gpu_ms": 0.275485,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.120141,
+          "gpu_ms": 0.117987,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.118769,
+          "gpu_ms": 0.13952,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.138688,
+          "gpu_ms": 0.154873,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.148904,
+          "gpu_ms": 0.213346,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.211528,
+          "gpu_ms": 0.637313,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.576928,
+          "gpu_ms": 0.653373,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.554333,
+          "gpu_ms": 0.327302,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.145959,
+          "gpu_ms": 0.575376,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 71.447622
+    },
+    {
+      "frame": 33,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 1,
+        "material_revision": 1,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.262284,
+          "gpu_ms": 8.467884,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 15.055392000000001,
+          "gpu_ms": 9.061417,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.15313,
+          "gpu_ms": 4.965092,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.31134799999999996,
+          "gpu_ms": 7.317565,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 7.388742000000001,
+          "gpu_ms": 37.557329,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 33.892281000000004,
+          "gpu_ms": 7.731738,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.395869,
+          "gpu_ms": 0.654148,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 2.185137,
+          "gpu_ms": 3.806685,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.049333999999999996,
+          "gpu_ms": 0.215984,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.859616,
+          "gpu_ms": 0.447122,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.23575500000000002,
+          "gpu_ms": 1.105243,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.9347100000000002,
+          "gpu_ms": 2.449445,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.467737,
+          "gpu_ms": 0.794204,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.397568,
+          "gpu_ms": 0.36878,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.235173,
+          "gpu_ms": 0.261168,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.144227,
+          "gpu_ms": 0.153846,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.132259,
+          "gpu_ms": 0.347748,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.36939500000000003,
+          "gpu_ms": 0.144673,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.143395,
+          "gpu_ms": 0.318885,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.310808,
+          "gpu_ms": 0.616677,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.572391,
+          "gpu_ms": 0.703303,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.5870829999999999,
+          "gpu_ms": 0.252439,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.14951499999999998,
+          "gpu_ms": 0.170927,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.157026,
+          "gpu_ms": 0.152089,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.165309,
+          "gpu_ms": 0.198223,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.16317600000000002,
+          "gpu_ms": 0.219991,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.209585,
+          "gpu_ms": 0.692792,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.645771,
+          "gpu_ms": 0.749372,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.612692,
+          "gpu_ms": 0.339199,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.176405,
+          "gpu_ms": 0.725291,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 77.85363600000001
+    },
+    {
+      "frame": 34,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 1,
+        "material_revision": 1,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.422605,
+          "gpu_ms": 7.188361,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 13.138019,
+          "gpu_ms": 7.003568,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.338118000000001,
+          "gpu_ms": 5.23987,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.42505899999999996,
+          "gpu_ms": 5.68831,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 5.643147,
+          "gpu_ms": 36.139406,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 33.946874,
+          "gpu_ms": 10.62552,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.18309,
+          "gpu_ms": 0.620638,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 1.501468,
+          "gpu_ms": 2.893357,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.038708,
+          "gpu_ms": 0.315099,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.599095,
+          "gpu_ms": 0.491444,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.207792,
+          "gpu_ms": 0.923208,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.497933,
+          "gpu_ms": 2.037919,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.301327,
+          "gpu_ms": 0.537223,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.264658,
+          "gpu_ms": 0.310317,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.24828399999999998,
+          "gpu_ms": 0.258735,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.109785,
+          "gpu_ms": 0.114813,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.109725,
+          "gpu_ms": 0.104632,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.11400199999999999,
+          "gpu_ms": 0.114578,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.104517,
+          "gpu_ms": 0.254447,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.25993099999999997,
+          "gpu_ms": 0.478315,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.444909,
+          "gpu_ms": 0.586372,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.478269,
+          "gpu_ms": 0.197687,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.12643100000000002,
+          "gpu_ms": 0.141387,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.09675500000000001,
+          "gpu_ms": 0.093035,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.09757700000000001,
+          "gpu_ms": 0.116666,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.11180799999999999,
+          "gpu_ms": 0.151559,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.170707,
+          "gpu_ms": 0.589817,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.560673,
+          "gpu_ms": 0.567879,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.448334,
+          "gpu_ms": 0.194888,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.132429,
+          "gpu_ms": 0.615641,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 71.422394
+    },
+    {
+      "frame": 35,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 1,
+        "material_revision": 1,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.307333,
+          "gpu_ms": 5.769872,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 11.412553,
+          "gpu_ms": 6.508649,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.470888,
+          "gpu_ms": 5.322349,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.313301,
+          "gpu_ms": 5.776773,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 5.803749000000001,
+          "gpu_ms": 31.365867,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 28.171908,
+          "gpu_ms": 7.331471,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.171151,
+          "gpu_ms": 0.638746,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 1.6811289999999999,
+          "gpu_ms": 2.875639,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.037686,
+          "gpu_ms": 0.219735,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.392474,
+          "gpu_ms": 0.382215,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.17956999999999998,
+          "gpu_ms": 0.784785,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.46229,
+          "gpu_ms": 1.934684,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.17039,
+          "gpu_ms": 0.502761,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.303116,
+          "gpu_ms": 0.312716,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.17937,
+          "gpu_ms": 0.199686,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.115704,
+          "gpu_ms": 0.13993,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.115173,
+          "gpu_ms": 0.092309,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.08818300000000001,
+          "gpu_ms": 0.092408,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.125569,
+          "gpu_ms": 0.257368,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.23043599999999997,
+          "gpu_ms": 0.508004,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.495145,
+          "gpu_ms": 0.615906,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.47345200000000004,
+          "gpu_ms": 0.183681,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.089325,
+          "gpu_ms": 0.094402,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.095744,
+          "gpu_ms": 0.106205,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.101022,
+          "gpu_ms": 0.119696,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.11974,
+          "gpu_ms": 0.200331,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.227762,
+          "gpu_ms": 0.638621,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.5257000000000001,
+          "gpu_ms": 0.572361,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.475686,
+          "gpu_ms": 0.240217,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.11791700000000001,
+          "gpu_ms": 0.549081,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 63.56074
+    },
+    {
+      "frame": 36,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 1,
+        "material_revision": 1,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.275024,
+          "gpu_ms": 5.875902,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 11.216047999999999,
+          "gpu_ms": 6.238146,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.626072000000001,
+          "gpu_ms": 5.447878,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.27323099999999995,
+          "gpu_ms": 6.220039,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.466846,
+          "gpu_ms": 31.689338,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 27.925999,
+          "gpu_ms": 6.211226,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.1271149999999999,
+          "gpu_ms": 0.651585,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 1.5875869999999999,
+          "gpu_ms": 3.004463,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.035424,
+          "gpu_ms": 0.320336,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.638624,
+          "gpu_ms": 0.517468,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.194983,
+          "gpu_ms": 0.891365,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.518343,
+          "gpu_ms": 1.981059,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.166995,
+          "gpu_ms": 0.53844,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.293711,
+          "gpu_ms": 0.294272,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.173131,
+          "gpu_ms": 0.192305,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.098908,
+          "gpu_ms": 0.132108,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.122063,
+          "gpu_ms": 0.092328,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.089695,
+          "gpu_ms": 0.094211,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.11147800000000001,
+          "gpu_ms": 0.241714,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.229265,
+          "gpu_ms": 0.486422,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.459771,
+          "gpu_ms": 0.610613,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.482896,
+          "gpu_ms": 0.183912,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.099389,
+          "gpu_ms": 0.108814,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.10935399999999999,
+          "gpu_ms": 0.10968,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.095924,
+          "gpu_ms": 0.114663,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.11440199999999999,
+          "gpu_ms": 0.17939,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.172139,
+          "gpu_ms": 0.580503,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.524189,
+          "gpu_ms": 0.55177,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.45996200000000004,
+          "gpu_ms": 0.225274,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.115684,
+          "gpu_ms": 0.555506,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 63.882144000000004
+    },
+    {
+      "frame": 37,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 1,
+        "material_revision": 1,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.29437199999999997,
+          "gpu_ms": 6.558729,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 12.22147,
+          "gpu_ms": 6.545804,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 4.996504,
+          "gpu_ms": 4.933625,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.301203,
+          "gpu_ms": 6.212718,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.242058,
+          "gpu_ms": 32.348659,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 28.712001,
+          "gpu_ms": 8.363307,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.176529,
+          "gpu_ms": 0.673668,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 1.634939,
+          "gpu_ms": 3.299382,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.037366,
+          "gpu_ms": 0.676772,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.892466,
+          "gpu_ms": 0.89077,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.223206,
+          "gpu_ms": 0.98076,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.760768,
+          "gpu_ms": 2.04484,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.999043,
+          "gpu_ms": 0.318129,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.238218,
+          "gpu_ms": 0.273672,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.300162,
+          "gpu_ms": 0.323712,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.12682000000000002,
+          "gpu_ms": 0.131172,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.091919,
+          "gpu_ms": 0.088093,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.111318,
+          "gpu_ms": 0.108623,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.107221,
+          "gpu_ms": 0.355906,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.387633,
+          "gpu_ms": 0.579882,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.400252,
+          "gpu_ms": 0.478029,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.389887,
+          "gpu_ms": 0.151293,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.216235,
+          "gpu_ms": 0.238559,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.11258,
+          "gpu_ms": 0.111568,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.20615999999999998,
+          "gpu_ms": 0.240106,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.136034,
+          "gpu_ms": 0.291859,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.29314100000000004,
+          "gpu_ms": 0.748265,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.5825370000000001,
+          "gpu_ms": 0.501744,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.384828,
+          "gpu_ms": 0.148349,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.107411,
+          "gpu_ms": 0.624259,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 65.85409
+    },
+    {
+      "frame": 38,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 1,
+        "material_revision": 1,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.26565,
+          "gpu_ms": 5.133701,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 11.056047,
+          "gpu_ms": 6.616896,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 4.804196,
+          "gpu_ms": 4.738357,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.268294,
+          "gpu_ms": 5.524068,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 5.617659,
+          "gpu_ms": 27.124603,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 23.799572,
+          "gpu_ms": 4.778251,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 1.171472,
+          "gpu_ms": 0.731335,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 1.79472,
+          "gpu_ms": 3.066977,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.037286,
+          "gpu_ms": 0.238048,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.492194,
+          "gpu_ms": 0.410277,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.189115,
+          "gpu_ms": 0.813028,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.511623,
+          "gpu_ms": 1.772656,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 0.981176,
+          "gpu_ms": 0.357658,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.267562,
+          "gpu_ms": 0.263972,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.179791,
+          "gpu_ms": 0.198383,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.108333,
+          "gpu_ms": 0.1165,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.168814,
+          "gpu_ms": 0.174633,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.104817,
+          "gpu_ms": 0.090747,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.12375600000000002,
+          "gpu_ms": 0.268193,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.244157,
+          "gpu_ms": 0.426747,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.387643,
+          "gpu_ms": 0.481965,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.410337,
+          "gpu_ms": 0.171974,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.11307,
+          "gpu_ms": 0.111117,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.08988499999999999,
+          "gpu_ms": 0.098719,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.120661,
+          "gpu_ms": 0.143695,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.108894,
+          "gpu_ms": 0.145208,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.151368,
+          "gpu_ms": 0.593012,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.5620449999999999,
+          "gpu_ms": 0.589107,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.468965,
+          "gpu_ms": 0.210356,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.212359,
+          "gpu_ms": 0.576603,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 57.830563
+    },
+    {
+      "frame": 39,
+      "input": {
+        "camera": [
+          44.0,
+          76.0,
+          36.0
+        ],
+        "lighting_revision": 1,
+        "material_revision": 1,
+        "rain": 1.0,
+        "target": [
+          16.0,
+          65.0,
+          0.0
+        ],
+        "wetness": 1.0,
+        "world_day": 0,
+        "world_revision": 1,
+        "world_time": 18000
+      },
+      "passes": [
+        {
+          "cpu_submit_ms": 0.302966,
+          "gpu_ms": 5.15652,
+          "pass": "prepare"
+        },
+        {
+          "cpu_submit_ms": 10.733943,
+          "gpu_ms": 6.445719,
+          "pass": "shadow"
+        },
+        {
+          "cpu_submit_ms": 5.584549,
+          "gpu_ms": 5.383727,
+          "pass": "gbuffers_terrain"
+        },
+        {
+          "cpu_submit_ms": 0.28643100000000005,
+          "gpu_ms": 5.959382,
+          "pass": "deferred"
+        },
+        {
+          "cpu_submit_ms": 6.07727,
+          "gpu_ms": 27.176402,
+          "pass": "deferred1"
+        },
+        {
+          "cpu_submit_ms": 23.555495,
+          "gpu_ms": 3.498081,
+          "pass": "deferred2"
+        },
+        {
+          "cpu_submit_ms": 0.941426,
+          "gpu_ms": 0.460772,
+          "pass": "deferred3"
+        },
+        {
+          "cpu_submit_ms": 1.5081179999999998,
+          "gpu_ms": 2.853601,
+          "pass": "deferred4"
+        },
+        {
+          "cpu_submit_ms": 0.037306,
+          "gpu_ms": 0.302064,
+          "pass": "gbuffers_water"
+        },
+        {
+          "cpu_submit_ms": 1.543101,
+          "gpu_ms": 0.499371,
+          "pass": "composite"
+        },
+        {
+          "cpu_submit_ms": 0.21094700000000002,
+          "gpu_ms": 0.812768,
+          "pass": "composite1"
+        },
+        {
+          "cpu_submit_ms": 1.383411,
+          "gpu_ms": 1.970969,
+          "pass": "composite4"
+        },
+        {
+          "cpu_submit_ms": 1.3065550000000001,
+          "gpu_ms": 0.632071,
+          "pass": "composite5"
+        },
+        {
+          "cpu_submit_ms": 0.273301,
+          "gpu_ms": 0.271067,
+          "pass": "composite6"
+        },
+        {
+          "cpu_submit_ms": 0.171628,
+          "gpu_ms": 0.190892,
+          "pass": "composite7"
+        },
+        {
+          "cpu_submit_ms": 0.108873,
+          "gpu_ms": 0.175199,
+          "pass": "composite8"
+        },
+        {
+          "cpu_submit_ms": 0.173351,
+          "gpu_ms": 0.11281,
+          "pass": "composite9"
+        },
+        {
+          "cpu_submit_ms": 0.09351100000000001,
+          "gpu_ms": 0.087241,
+          "pass": "composite10"
+        },
+        {
+          "cpu_submit_ms": 0.09124700000000001,
+          "gpu_ms": 0.215384,
+          "pass": "composite11"
+        },
+        {
+          "cpu_submit_ms": 0.218208,
+          "gpu_ms": 0.418894,
+          "pass": "composite12"
+        },
+        {
+          "cpu_submit_ms": 0.38892499999999997,
+          "gpu_ms": 0.49224,
+          "pass": "composite13"
+        },
+        {
+          "cpu_submit_ms": 0.39892999999999995,
+          "gpu_ms": 0.140511,
+          "pass": "composite14"
+        },
+        {
+          "cpu_submit_ms": 0.092419,
+          "gpu_ms": 0.098979,
+          "pass": "composite15"
+        },
+        {
+          "cpu_submit_ms": 0.08902399999999999,
+          "gpu_ms": 0.089114,
+          "pass": "composite16"
+        },
+        {
+          "cpu_submit_ms": 0.097387,
+          "gpu_ms": 0.120506,
+          "pass": "composite17"
+        },
+        {
+          "cpu_submit_ms": 0.17937,
+          "gpu_ms": 0.242485,
+          "pass": "composite18"
+        },
+        {
+          "cpu_submit_ms": 0.175133,
+          "gpu_ms": 0.5056,
+          "pass": "composite19"
+        },
+        {
+          "cpu_submit_ms": 0.47883000000000003,
+          "gpu_ms": 0.414358,
+          "pass": "composite21"
+        },
+        {
+          "cpu_submit_ms": 0.381825,
+          "gpu_ms": 0.135949,
+          "pass": "composite22"
+        },
+        {
+          "cpu_submit_ms": 0.09675500000000001,
+          "gpu_ms": 0.54864,
+          "pass": "final"
+        }
+      ],
+      "wall_ms": 58.107648999999995
+    }
+  ],
+  "scenario": "state-changes",
+  "scene": "terrain",
+  "scene_input": "deterministic block fixture; not a loaded Minecraft world",
+  "schema": 1,
+  "solid_vertices": 84852,
+  "time": 6000,
+  "warmup": 8,
+  "water_vertices": 0
+}

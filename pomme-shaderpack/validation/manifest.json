@@ -1,0 +1,30 @@
+{
+  "runtime_commit": "f21d7938be2e03f7f5a6e3d16000520a6f85a295",
+  "photon_commit": "15458c0937f8647c37eb6a501bef5eb3bf3da31b",
+  "measurement": "sequential serialized offscreen runs, software only, excludes presentation",
+  "fixture_revision": 2,
+  "scene_input": "generated block fixture, not a real Minecraft world",
+  "atlas": {
+    "source": "user-local official Mojang Minecraft 1.21.11 client JAR",
+    "jar_sha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
+    "png_sha256": "5123d91af72fb0f98e744846c227c859bd5f6ff26cd55531af42cc1c9a5e7132",
+    "tiles": [
+      "grass_block_top",
+      "stone",
+      "oak_leaves",
+      "water_still (first frame)"
+    ]
+  },
+  "checks": {
+    "native_client_no_default_features_tests": 756,
+    "native_client_no_default_features_build": "passed",
+    "shaderpack_unit_input_tests": 7,
+    "shaderpack_egl_driver_test": "passed",
+    "shaderpack_release_build": "passed",
+    "clippy": "both native client and shaderpack all-targets -D warnings passed",
+    "format": "both native client and shaderpack passed",
+    "nvidia_hardware": "unavailable; no /dev/dri; no NVIDIA GPU",
+    "iris_reference_visual_comparison": "unrun",
+    "singleplayer_default_build": "unrun"
+  }
+}
