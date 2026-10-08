@@ -173,6 +173,7 @@ pub struct FrameInput {
     pub lighting_revision: u64,
     pub material_revision: u64,
     pub fov_degrees: f32,
+    pub view_effect: Mat4,
     pub near: f32,
     pub far: f32,
     pub eye_in_water: bool,
@@ -197,6 +198,7 @@ impl FrameInput {
             lighting_revision: 0,
             material_revision: 0,
             fov_degrees: 70.0,
+            view_effect: Mat4::IDENTITY,
             near: 0.05,
             far: 256.0,
             eye_in_water: false,
@@ -977,7 +979,8 @@ impl Runtime {
             }
             self.attach(&[], Some(self.depths[0]))?;
             self.gl.Clear(gl::DEPTH_BUFFER_BIT);
-            let view = glam::camera::rh::view::look_at_mat4(input.camera, input.target, input.up);
+            let view = input.view_effect
+                * glam::camera::rh::view::look_at_mat4(input.camera, input.target, input.up);
             let relative = view * Mat4::from_translation(input.camera);
             let projection = glam::camera::rh::proj::opengl::perspective(
                 input.fov_degrees.to_radians(),

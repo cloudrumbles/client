@@ -66,3 +66,10 @@ Photon, an active unbound sampler triggers controlled pack shutdown, and F7 retu
 to Photon in the same window. No Vulkan validation errors occur across recovery.
 The inventory screenshot was taken after returning to Photon; inventory graphics
 remain native forward/UI draws. The injected QA source is not a Photon substitute.
+
+The subsequent live 26.3 session changes from Overworld to Nether and End using
+server commands. Original Photon activates `world-1` at frame 715 and `world1` at
+frame 1462, recorded in `current/dimension-events.txt` with native-window PNGs.
+These screenshots use the pre-depth-alignment build; later code aligns the pack
+projection far plane and hurt/bob matrix with native forward geometry, with a
+projection equality test. No target-GPU performance result is implied.

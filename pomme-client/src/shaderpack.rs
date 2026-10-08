@@ -246,7 +246,7 @@ impl Bridge {
         &mut self,
         camera: &Camera,
         sky: &SkyState,
-        render_distance: u32,
+        _render_distance: u32,
         eyes_in_water: bool,
     ) {
         let (position, target, up) = camera.shader_view();
@@ -265,8 +265,8 @@ impl Bridge {
         frame.up = up;
         frame.world_day = (sky.day_time / 24000) as i32;
         frame.fov_degrees = camera.fov_degrees();
-        frame.near = 0.1;
-        frame.far = (render_distance * 16 * 4).max(256) as f32;
+        [frame.near, frame.far] = camera.shader_clip_planes();
+        frame.view_effect = camera.shader_view_effect();
         frame.eye_in_water = eyes_in_water;
         frame.eye_brightness = self.eye_brightness;
         frame.temperature = self.climate[0];

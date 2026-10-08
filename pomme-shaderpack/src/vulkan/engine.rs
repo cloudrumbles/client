@@ -749,7 +749,8 @@ impl Engine {
             }
         }
         self.depths[0].clear(cmd, [0.; 4]);
-        let view = glam::camera::rh::view::look_at_mat4(input.camera, input.target, input.up);
+        let view = input.view_effect
+            * glam::camera::rh::view::look_at_mat4(input.camera, input.target, input.up);
         let relative = view * Mat4::from_translation(input.camera);
         let projection = glam::camera::rh::proj::opengl::perspective(
             input.fov_degrees.to_radians(),
