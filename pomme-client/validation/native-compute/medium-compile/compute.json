@@ -1,0 +1,38 @@
+[
+  {
+    "base": "deferred4",
+    "groups": [
+      1,
+      1,
+      1
+    ],
+    "images": [
+      {
+        "access": "WriteOnly",
+        "binding": 30,
+        "format": "rgba16f",
+        "name": "colorimg4",
+        "qualifiers": [],
+        "ty": "image2D"
+      }
+    ],
+    "local_size": [
+      256,
+      1,
+      1
+    ],
+    "program": "deferred4_a",
+    "samplers": [
+      {
+        "binding": 11,
+        "name": "colortex4",
+        "ty": "sampler2D"
+      }
+    ],
+    "shared_memory_driver_allocation_bytes": null,
+    "shared_memory_logical_bytes": 27648,
+    "spirv_capabilities": [
+      1
+    ]
+  }
+]

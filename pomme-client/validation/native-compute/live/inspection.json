@@ -1,0 +1,159 @@
+{
+  "revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f",
+  "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "samples": 120,
+  "pack_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+  "compute_programs": [
+    {
+      "base": "deferred4",
+      "groups": [
+        1,
+        1,
+        1
+      ],
+      "images": [
+        {
+          "access": "WriteOnly",
+          "binding": 30,
+          "format": "rgba16f",
+          "name": "colorimg4",
+          "qualifiers": [],
+          "ty": "image2D"
+        }
+      ],
+      "local_size": [
+        256,
+        1,
+        1
+      ],
+      "program": "deferred4_a",
+      "samplers": [
+        {
+          "binding": 11,
+          "name": "colortex4",
+          "ty": "sampler2D"
+        }
+      ],
+      "shared_memory_driver_allocation_bytes": null,
+      "shared_memory_logical_bytes": 27648,
+      "spirv_capabilities": [
+        1
+      ]
+    }
+  ],
+  "last_dispatch": [
+    {
+      "groups": [
+        1,
+        1,
+        1
+      ],
+      "local_size": [
+        256,
+        1,
+        1
+      ],
+      "program": "deferred4_a",
+      "storage_images": [
+        "colorimg4"
+      ]
+    }
+  ],
+  "validation_status": "verified",
+  "validation_errors": 0,
+  "physical_GTX_1650_Ti_tested": false,
+  "binary_sha256": "f9b26708a3c30267212a270469b4959b526353a0ec36d131e44cf5fe8096f8af",
+  "measured_scope": "Vulkan pack-pass timestamp queries; includes lowered actors; excludes remaining forward actors, UI and presentation; not gameplay FPS",
+  "last_input": {
+    "camera": [
+      0.5,
+      67.62000274658203,
+      12.5
+    ],
+    "world_time": 6000,
+    "world_day": 0,
+    "rain": 0.0,
+    "world_revision": 340
+  },
+  "last_geometry_stages": [
+    {
+      "draws": 24,
+      "material_ids": [
+        10015
+      ],
+      "requested": "shadow_entities",
+      "resolved": "shadow_entities",
+      "vertices": 1404
+    },
+    {
+      "draws": 3,
+      "material_ids": [
+        10030
+      ],
+      "requested": "shadow_block",
+      "resolved": "shadow_block",
+      "vertices": 108
+    },
+    {
+      "draws": 24,
+      "material_ids": [
+        10015
+      ],
+      "requested": "gbuffers_entities",
+      "resolved": "gbuffers_entities",
+      "vertices": 1404
+    },
+    {
+      "draws": 3,
+      "material_ids": [
+        10030
+      ],
+      "requested": "gbuffers_block",
+      "resolved": "gbuffers_block",
+      "vertices": 108
+    },
+    {
+      "draws": 1,
+      "material_ids": [
+        -1
+      ],
+      "requested": "gbuffers_hand",
+      "resolved": "gbuffers_hand",
+      "vertices": 36
+    },
+    {
+      "draws": 0,
+      "material_ids": [],
+      "requested": "gbuffers_entities_translucent",
+      "resolved": "gbuffers_entities_translucent",
+      "vertices": 0
+    },
+    {
+      "draws": 0,
+      "material_ids": [],
+      "requested": "gbuffers_block_translucent",
+      "resolved": "gbuffers_block_translucent",
+      "vertices": 0
+    },
+    {
+      "draws": 0,
+      "material_ids": [],
+      "requested": "gbuffers_hand_water",
+      "resolved": "gbuffers_hand_water",
+      "vertices": 0
+    }
+  ],
+  "last_geometry_preparation": {
+    "cpu_ms": 0.004527,
+    "draws": 28,
+    "mesh_assets": 4,
+    "mesh_upload_bytes": 0,
+    "texture_assets": 4,
+    "texture_upload_bytes": 0,
+    "uniform_capacity_bytes": 262144
+  },
+  "history_invalidations": [
+    1,
+    14
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "source_revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f",
+  "base_revision": "79f639df7e3c71f585aa72f56eac4b435398e423",
+  "pull_request": "https://github.com/cloudrumbles/client/pull/7",
+  "capture_date_UTC": "2026-10-08T14:59:07.014558+00:00",
+  "runtime_device": "Mesa llvmpipe25.0.7 LLVM19.1.7 (software Vulkan)",
+  "target_hardware_tested": false,
+  "pack": {
+    "canonical_repository": "https://github.com/sixthsurge/photon",
+    "revision": "15458c0937f8647c37eb6a501bef5eb3bf3da31b",
+    "content_hash": "c286e149eed07ca55685a0d1b7df49b45921b20401bb9ffb2f9baea9c57a2845",
+    "profile": "low(native/state-change);medium(compile)",
+    "SH_SKYLIGHT": "default enabled; no false override; actual dispatch recorded every frame",
+    "sources_bundled": false
+  },
+  "binaries": {
+    "native": {
+      "file": "compute-8d8f41b-client",
+      "sha256": "f9b26708a3c30267212a270469b4959b526353a0ec36d131e44cf5fe8096f8af"
+    },
+    "vulkan": {
+      "file": "compute-8d8f41b-vulkan",
+      "sha256": "3a764e94785591b3dd3ee0858b893fa20d40f531a1f312676cb21e4d57fbed93"
+    }
+  },
+  "build": {
+    "command": "cargo build --locked --release -p pomme-client -p pomme-shaderpack --no-default-features --features pomme-client/shader-packs",
+    "toolchain": "nightly-2026-08-21",
+    "git_clean": true,
+    "stamp_check": "both capture reports embed exact source revision without dirty suffix",
+    "shaderc_runtime": "Debian2025.2-1"
+  },
+  "checks": {
+    "clean_release_build": "passed",
+    "headless_original_Photon_low_32_samples_16_warmup_7_state_invalidations": "passed",
+    "raw_RGBA16F_sky_SH_rows_2_to_11_finite_nonzero": "passed",
+    "native_original_Photon_26_3_world_120_samples": "passed",
+    "native_and_headless_positive_validation_layer_activation": "passed",
+    "native_and_headless_VUID_errors": 0,
+    "release_actor_Vulkan_2_tests": "passed",
+    "release_compute_Vulkan_producer_writeonly_consumer_readonly_and_coherent": "passed",
+    "release_GPU_fixtures_positive_validation_layer_activation": "passed",
+    "release_GPU_fixtures_validation_errors": 0,
+    "original_Photon_medium_38_graphics_1_compute_compile": "passed",
+    "original_Photon_medium_compute_spirv_val_vulkan_1_2": "passed",
+    "exact_head_CI": {
+      "run_id": 37794726297,
+      "url": "https://github.com/cloudrumbles/client/actions/runs/37794726297",
+      "status": "in_progress"
+    },
+    "exact_head_release_shaderpack_unit": "31 passed;2 opt-in ignored; GPU fixtures executed separately",
+    "exact_head_release_alltarget_shaderpack_client_strict_Clippy": "passed",
+    "exact_head_cargo_fmt_and_git_diff_check": "passed"
+  },
+  "known_limits": [
+    "Complete Photon/Iris visual parity remains unqualified.",
+    "Custom image/SSBO LPV and optional SPIR-V capabilities remain rejected.",
+    "Only supported actor lowering is qualified; other actors still use forward rendering.",
+    "Routine terrain revision increments trigger global temporal history resets.",
+    "Predecessor2627b8f screenshot shows a cloud checker pattern; exact-head14:56:27 native screenshot is visually smooth. Causal link to resets is an inference, not frame-correlated proof.",
+    "No physical GTX1650Ti or target-resolution presented gameplay FPS/thermal/memory measurement.",
+    "Private restricted Voxy integration is not included."
+  ],
+  "unrun": [
+    "GTX1650Ti Vulkan/OpenGL driver capabilities and native display QA",
+    "1280x720 low/1920x1080 medium gameplay performance,1% lows,GPU memory,thermal behavior",
+    "Matched Iris original-pack visual parity",
+    "Full ultra LPV/custom resources",
+    "Remaining actor families"
+  ],
+  "evidence_distinction": {
+    "qualified": "all directories except explicitly named predecessor",
+    "predecessor-2627b8f-known-temporal-issue": "original earlier source2627b8f captures/screenshot only; not final8d qualification"
+  }
+}

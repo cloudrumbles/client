@@ -1,0 +1,8 @@
+{
+  "source_revision": "8d8f41bb29b0e2e83a7eab8a3f2e60e12dbc685f",
+  "graphics_programs": 38,
+  "compute_programs": 1,
+  "compute_spirv_val_vulkan_1_2": "passed",
+  "compute_spirv_sha256": "b9858a8578e9c7f0684d6f3947f1be48c0a7b69c357c0b6b592bab5596b3d9a1",
+  "shader_source_not_bundled": true
+}

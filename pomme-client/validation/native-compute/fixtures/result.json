@@ -1,0 +1,50 @@
+{
+  "fixtures": [
+    {
+      "fixture": "actor_vulkan",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--release",
+        "-p",
+        "pomme-shaderpack",
+        "--features",
+        "vulkan",
+        "--test",
+        "actor_vulkan",
+        "--",
+        "--ignored",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "validation_status": "verified",
+      "validation_errors": 0,
+      "passed": true,
+      "log": "/workspace/native-results/compute-8d8f41b-fixtures/actor_vulkan.log"
+    },
+    {
+      "fixture": "compute_vulkan",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--release",
+        "-p",
+        "pomme-shaderpack",
+        "--features",
+        "vulkan",
+        "--test",
+        "compute_vulkan",
+        "--",
+        "--ignored",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "validation_status": "verified",
+      "validation_errors": 0,
+      "passed": true,
+      "log": "/workspace/native-results/compute-8d8f41b-fixtures/compute_vulkan.log"
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+pack profile references undeclared option GTAO; ignored
+[Vulkan Loader] LAYER:          Searching for implicit layer manifest files
+[Vulkan Loader] LAYER:             In following locations:
+[Vulkan Loader] LAYER:                /home/agent/.config/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /etc/xdg/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /etc/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /home/agent/.local/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /usr/local/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:                /usr/share/vulkan/implicit_layer.d
+[Vulkan Loader] LAYER:             Found no files
+[Vulkan Loader] LAYER:          Searching for explicit layer manifest files
+[Vulkan Loader] LAYER:             In following locations:
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d
+[Vulkan Loader] LAYER:             Found the following files:
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_MESA_overlay.json
+[Vulkan Loader] LAYER:                /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_INTEL_nullhw.json
+[Vulkan Loader] WARNING | LAYER: env var 'VK_INSTANCE_LAYERS' defined and adding layers "VK_LAYER_KHRONOS_validation"
+[Vulkan Loader] WARNING | LAYER: env var 'VK_INSTANCE_LAYERS' defined and adding layers "VK_LAYER_KHRONOS_validation"
+[Vulkan Loader] DEBUG | LAYER:  Loading layer library libVkLayer_khronos_validation.so
+[Vulkan Loader] INFO | LAYER:   Insert instance layer "VK_LAYER_KHRONOS_validation" (libVkLayer_khronos_validation.so)
+[Vulkan Loader] LAYER:          vkCreateInstance layer callstack setup to:
+[Vulkan Loader] LAYER:             <Application>
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             <Loader>
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             VK_LAYER_KHRONOS_validation
+[Vulkan Loader] LAYER:                     Type: Explicit
+[Vulkan Loader] LAYER:                     Enabled By: Environment Variable VK_INSTANCE_LAYERS
+[Vulkan Loader] LAYER:                     Manifest: /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                     Library:  libVkLayer_khronos_validation.so
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] LAYER:             <Drivers>
+[Vulkan Loader] INFO | LAYER:   Inserted device layer "VK_LAYER_KHRONOS_validation" (libVkLayer_khronos_validation.so)
+[Vulkan Loader] DRIVER:         vkCreateDevice layer callstack setup to:
+[Vulkan Loader] DRIVER:            <Application>
+[Vulkan Loader] DRIVER:              ||
+[Vulkan Loader] DRIVER:            <Loader>
+[Vulkan Loader] DRIVER:              ||
+[Vulkan Loader] LAYER:             VK_LAYER_KHRONOS_validation
+[Vulkan Loader] LAYER:                     Type: Explicit
+[Vulkan Loader] LAYER:                     Enabled By: Environment Variable VK_INSTANCE_LAYERS
+[Vulkan Loader] LAYER:                     Manifest: /workspace/client-tools/sysroot/usr/share/vulkan/explicit_layer.d/VkLayer_khronos_validation.json
+[Vulkan Loader] LAYER:                     Library:  libVkLayer_khronos_validation.so
+[Vulkan Loader] LAYER:               ||
+[Vulkan Loader] DRIVER:            <Device>
+[Vulkan Loader] DRIVER:                Using "llvmpipe (LLVM 19.1.7, 256 bits)" with driver: "libvulkan_lvp.so"
+Vulkan compiled shadow: 13 uniforms, 2 samplers
+Vulkan compiled shadow_entities: 5 uniforms, 1 samplers
+Vulkan compiled shadow_block: 8 uniforms, 1 samplers
+Vulkan compiled prepare: 15 uniforms, 1 samplers
+Vulkan compiled gbuffers_terrain: 20 uniforms, 2 samplers
+Vulkan compiled gbuffers_entities: 17 uniforms, 1 samplers
+Vulkan compiled gbuffers_block: 20 uniforms, 1 samplers
+Vulkan compiled gbuffers_hand: 15 uniforms, 1 samplers
+Vulkan compiled deferred: 38 uniforms, 5 samplers
+Vulkan compiled deferred1: 31 uniforms, 6 samplers
+Vulkan compiled deferred2: 15 uniforms, 6 samplers
+Vulkan compiled deferred3: 14 uniforms, 5 samplers
+Vulkan compiled deferred4: 47 uniforms, 12 samplers
+Vulkan compiled gbuffers_water: 53 uniforms, 6 samplers
+Vulkan compiled gbuffers_entities_translucent: 52 uniforms, 5 samplers
+Vulkan compiled gbuffers_block_translucent: 51 uniforms, 5 samplers
+Vulkan compiled gbuffers_hand_water: 50 uniforms, 5 samplers
+Vulkan compiled composite: 20 uniforms, 1 samplers
+Vulkan compiled composite1: 32 uniforms, 10 samplers
+Vulkan compiled composite4: 8 uniforms, 3 samplers
+Vulkan compiled composite5: 1 uniforms, 1 samplers
+Vulkan compiled composite6: 1 uniforms, 1 samplers
+Vulkan compiled composite7: 1 uniforms, 1 samplers
+Vulkan compiled composite8: 1 uniforms, 1 samplers
+Vulkan compiled composite9: 1 uniforms, 1 samplers
+Vulkan compiled composite10: 1 uniforms, 1 samplers
+Vulkan compiled composite11: 0 uniforms, 1 samplers
+Vulkan compiled composite12: 1 uniforms, 1 samplers
+Vulkan compiled composite13: 1 uniforms, 1 samplers
+Vulkan compiled composite14: 1 uniforms, 1 samplers
+Vulkan compiled composite15: 1 uniforms, 1 samplers
+Vulkan compiled composite16: 1 uniforms, 1 samplers
+Vulkan compiled composite17: 1 uniforms, 1 samplers
+Vulkan compiled composite18: 1 uniforms, 1 samplers
+Vulkan compiled composite19: 5 uniforms, 2 samplers
+Vulkan compiled composite21: 1 uniforms, 1 samplers
+Vulkan compiled composite22: 2 uniforms, 1 samplers
+Vulkan compiled final: 0 uniforms, 1 samplers
+Vulkan packed HDR fallback: colortex0 uses RGBA16F for filtered mip support
+[Vulkan Loader] DEBUG | LAYER:  Unloading layer library libVkLayer_khronos_validation.so

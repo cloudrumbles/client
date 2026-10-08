@@ -1,0 +1,5 @@
+   Compiling pomme-shaderpack v0.1.0 (/workspace/minecraft-client/pomme-shaderpack)
+    Checking pomme-client v0.1.0 (/workspace/minecraft-client/pomme-client)
+    Finished `release` profile [optimized] target(s) in 14.83s
+warning: the following packages contain code that will be rejected by a future version of Rust: glutin v0.32.3, glutin-winit v0.5.0, nix v0.31.3, winit v0.30.13
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 3`
