@@ -1,0 +1,48 @@
+{
+  "primary_version": "26.3",
+  "older_regression": "1.21.11",
+  "platform": "Debian 13 x86_64, Xvfb, Mesa 25.0.7 llvmpipe LLVM 19.1.7",
+  "target_hardware_present": false,
+  "photon_revision": "15458c0937f8647c37eb6a501bef5eb3bf3da31b",
+  "alternate_photon_revision": "77d677fb5d484b4acc749386e9db99760a4397e0",
+  "server_26_3_sha1": "33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c",
+  "client_26_3_sha1": "e877b6a07acd633fb3bb475002175cec036e7b87",
+  "server_1_21_11_sha1": "64bb6d763bed0a9f1d632ec347938594144943ed",
+  "runtime_commits": {
+    "initial_live": "f75b191cebe5dd4a43abd3e4ac4ee7fc54793dad",
+    "clock_fix": "7d876fee05c4b59970f03053064fe47464e17674"
+  },
+  "checks": {
+    "26.3_join_chunks": true,
+    "26.3_inventory_receipt": true,
+    "26.3_entities_received": true,
+    "26.3_camera_teleport": true,
+    "26.3_pack_swap": true,
+    "26.3_rain": true,
+    "26.3_time_command": true,
+    "26.3_world_edit_revision": true,
+    "26.3_inventory_open": true,
+    "26.3_frozen_clock_fixed": true,
+    "1.21.11_join_chunks": true,
+    "1.21.11_freeze_after_command": true
+  },
+  "remaining": [
+    "physical GTX 1650 Ti and display/driver qualification",
+    "Iris reference comparison",
+    "Vulkan pack backend and final single-window integration decision",
+    "actors/UI/animated atlas in pack rendering",
+    "partial pack ABI and original SH_SKYLIGHT compute execution",
+    "26.3 configuration registry_data warning: Expected compound tag; not yet isolated"
+  ],
+  "files": {
+    "26.3-vulkan-inventory.png": "c6be93743f62a9846e04af69d3a66950bab0fd623c9b25dcef9966e5d5d4911a",
+    "26.3-state.png": "a70ae2ce62219235b33fffc83868fb8fce79011f40fedca7601279e9c8992387",
+    "26.3-day.json": "4b88413189fff4fc6512f60fcb8103417cf51e50d7b67820bef4a20a2cdc2324",
+    "26.3-frozen-clock.json": "7faa43b586e08dcb7255ac0c5847a91feae3be178da370765f3398140b97e1f6",
+    "26.3-frozen-clock.png": "eaf0b16b15a91243327d21a4d746377eb9106c8b65d087e23892e83a618d9340",
+    "1.21.11-regression.png": "e5390d9086d7dcb27b6b9383010a1285b331d864ff80b4631f74f81943b8b44b",
+    "26.3-day.png": "466420ca6f1a27f96c534c13ed003f41cb5e0f0758330a8f20813dfac22b133f",
+    "1.21.11-regression.json": "1e044341fbc709a23c765f1ea0a55e4660ad715bdc39933b890a2ba1149786fb",
+    "26.3-state.json": "157af37ebec99819402ff44b99476caa6b1afb62b40ffa4f22e63970b0bb55f5"
+  }
+}

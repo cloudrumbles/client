@@ -42,3 +42,7 @@ Target qualification still needs the physical GTX 1650 Ti, original skylight
 compute linking/execution, live-world integration, reference Iris images, release
 frame intervals including presentation, cold/warm traversal and edit/time/weather/
 resource-pack reload scenarios at 1080p with power/thermal conditions recorded.
+
+The newer [live-client evidence](live/README.md) exercises actual Minecraft 26.3
+and a 1.21.11 regression. It includes a repaired frozen-clock bug and describes
+the OpenGL reference/Vulkan game boundary explicitly.
